@@ -1,17 +1,31 @@
-import { BrowserRouter as Router } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
+import Home from "./pages/Home";
+import ProductList from "./pages/ProductList";
+import ProductDetail from "./pages/ProductDetail";
+import Cart from "./pages/Cart";
+import Checkout from "./pages/Checkout";
+import ProtectedRoute from "./router/ProtectedRoute";
 
 function App() {
   return (
-    <Router>
-      <div className="min-h-screen bg-blue-100">
-        <h1 className="text-center text-4xl font-bold text-green-800 py-20">
-          Project E-commerce ReactJS - Đang xây dựng...
-        </h1>
-        <p className="text-center text-yellow-600">
-          Chúng ta sẽ bắt đầu từ Authentication → Router → Context
-        </p>
-      </div>
-    </Router>
+    <BrowserRouter>
+      <Routes>
+        {/* Public */}
+        <Route path="/" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+
+        {/* Protected */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/home" element={<Home />} />
+          <Route path="/products" element={<ProductList />} />
+          <Route path="/product/:id" element={<ProductDetail />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/checkout" element={<Checkout />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 }
 
