@@ -10,17 +10,28 @@ import ProtectedRoute from "./router/ProtectedRoute";
 import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer";
 
+// --- PHẦN ADMIN ---
+import AdminLogin from './components/AdminLogin'; 
+import HomePage from './components/HomePage';
+import Dashboard from './components/Dashboard';
+import Orders from './components/OrderManagement';
+import Inventory from './components/Inventory';
+import Customers from './components/CustomerDirectory';
+import './App.css';
+
 function App() {
   return (
     <>
       <Header />
       <Routes>
+        {/* --- ROUTES CỦA USER --- */}
         <Route path="/" element={<Home />} />
         <Route path="/products" element={<ProductList />} />
         <Route path="/product/:id" element={<ProductDetail />} />
-        
         <Route path="/cart" element={<Cart />} />
-        
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+      
         <Route
           path="/checkout"
           element={
@@ -30,8 +41,13 @@ function App() {
           }
         />
 
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        {/* --- ROUTES CỦA ADMIN --- */}
+        <Route path="/admin-login" element={<AdminLogin />} />
+        <Route path="/admin/homepage" element={<HomePage />} />
+        <Route path="/admin/dashboard" element={<Dashboard />} />
+        <Route path="/admin/order" element={<Orders />} />
+        <Route path="/admin/inventory" element={<Inventory />} />
+        <Route path="/admin/customer" element={<Customers />} />
       </Routes>
       <Footer />
     </>
