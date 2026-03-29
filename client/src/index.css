@@ -11,3 +11,10 @@
     @apply bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300;
   }
 }
+
+*{
+  padding: 0;
+  margin: 0;
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  box-sizing: border-box;
+}
