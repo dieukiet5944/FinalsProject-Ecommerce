@@ -182,3 +182,75 @@
     border-right-color: var(--border);
   }
 }
+
+
+
+/* Admin */
+
+.navigate.ant-btn {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; 
+    gap: 12px;
+    padding: 22px 20px; 
+    border-radius: 12px;
+    margin-bottom: 12px;
+    transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+    cursor: pointer;
+    background-color: #ffffff;
+    border: 1px solid #f0f0f0; 
+    width: 100%; 
+    height: auto; 
+    box-shadow: none; 
+}
+.navigate.ant-btn p {
+    margin: 0; 
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.navigate.ant-btn:hover {
+    background-color: #EE2B6C !important;
+    color: white !important; 
+}
+
+.navigate.active-menu {
+    background-color: #EE2B6C;
+    color: white;
+    border-color: #EE2B6C;
+}
+
+.btn-orders{
+    padding: 12px 24px;
+    font-weight: bold;
+    transition: all 0.6s ease;
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: #777;
+    
+}
+
+.btn-orders:hover{
+    
+    color: #EE2B6C;
+    border-radius: 5px;
+    background-color: #ffffff;
+}
+
+.btn-customer{
+    padding: 5px 10px;
+    font-weight: bold;
+    transition: all 0.6s ease;
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: #777;
+}
+
+.btn-customer:hover{
+    color: #EE2B6C;
+    border-radius: 5px;
+    background-color: #ffdbe6;
+    border: 1px solid #EE2B6C;
+}
