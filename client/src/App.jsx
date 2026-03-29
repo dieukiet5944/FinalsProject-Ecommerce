@@ -11,12 +11,12 @@ import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer";
 
 // --- PHẦN ADMIN ---
-import AdminLogin from './components/AdminLogin'; 
-import HomePage from './components/HomePage';
-import Dashboard from './components/Dashboard';
-import Orders from './components/OrderManagement';
-import Inventory from './components/Inventory';
-import Customers from './components/CustomerDirectory';
+import AdminLogin from './components/admin/AdminLogin'; 
+import HomePage from './components/admin/HomePage';
+import Dashboard from './components/admin/Dashboard';
+import Orders from './components/admin/OrderManagement';
+import Inventory from './components/admin/Inventory';
+import Customers from './components/admin/CustomerDirectory';
 import './App.css';
 
 function App() {
