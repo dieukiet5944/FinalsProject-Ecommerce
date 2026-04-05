@@ -87,19 +87,22 @@ const HomePage = () => {
                         style={{
                             display: "flex",
                             alignItems: "center",
+                            justifyContent: "flex-start",
                             gap: "12px",
                             width: "100%",
                             height: "50px",
+                            padding: "0 20px", 
                             borderRadius: "10px",
                             border: "none",
                             fontSize: "16px",
                             cursor: "pointer",
                             transition: "0.3s",
+                            boxShadow: "none",
                             backgroundColor: currentPage === 'dashboard' ? '#EE2B6C' : '#ffffff',
                             color: currentPage === 'dashboard' ? '#ffffff' : '#555555',
                         }}
                     >
-                        <MenuUnfoldOutlined /> <p>Dashboard</p>
+                        <MenuUnfoldOutlined style={{ fontSize: '20px' }}/> <span style={{ margin: 0, lineHeight: 1 }}>Dashboard</span>
                     </Button>
 
                     <Button 
@@ -107,19 +110,22 @@ const HomePage = () => {
                         style={{
                             display: "flex",
                             alignItems: "center",
+                            justifyContent: "flex-start",
                             gap: "12px",
                             width: "100%",
                             height: "50px",
+                            padding: "0 20px", 
                             borderRadius: "10px",
                             border: "none",
                             fontSize: "16px",
                             cursor: "pointer",
                             transition: "0.3s",
+                            boxShadow: "none",
                             backgroundColor: currentPage === 'orders' ? '#EE2B6C' : '#ffffff',
                             color: currentPage === 'orders' ? '#ffffff' : '#555555',
                         }}
                     >
-                        <ShoppingOutlined /> <p>Orders</p>
+                        <ShoppingOutlined style={{ fontSize: '20px' }}/> <span style={{ margin: 0, lineHeight: 1 }}>Orders</span>
                     </Button>
 
                     <Button 
@@ -127,19 +133,22 @@ const HomePage = () => {
                         style={{
                             display: "flex",
                             alignItems: "center",
+                            justifyContent: "flex-start",
                             gap: "12px",
                             width: "100%",
                             height: "50px",
+                            padding: "0 20px", 
                             borderRadius: "10px",
                             border: "none",
                             fontSize: "16px",
                             cursor: "pointer",
                             transition: "0.3s",
+                            boxShadow: "none",
                             backgroundColor: currentPage === 'inventory' ? '#EE2B6C' : '#ffffff',
                             color: currentPage === 'inventory' ? '#ffffff' : '#555555',
                         }}
                     >
-                        <InboxOutlined /> <p>Inventory</p>
+                        <InboxOutlined style={{ fontSize: '20px' }}/> <span style={{ margin: 0, lineHeight: 1 }}>Inventory</span>
                     </Button>
 
                     <Button 
@@ -147,19 +156,45 @@ const HomePage = () => {
                         style={{
                             display: "flex",
                             alignItems: "center",
+                            justifyContent: "flex-start",
                             gap: "12px",
                             width: "100%",
                             height: "50px",
+                            padding: "0 20px", 
                             borderRadius: "10px",
                             border: "none",
                             fontSize: "16px",
                             cursor: "pointer",
                             transition: "0.3s",
+                            boxShadow: "none",
                             backgroundColor: currentPage === 'customers' ? '#EE2B6C' : '#ffffff',
                             color: currentPage === 'customers' ? '#ffffff' : '#555555',
                         }}
                     >
-                        <TeamOutlined /> <p>Customers</p>
+                        <TeamOutlined style={{ fontSize: '20px' }}/> <span style={{ margin: 0, lineHeight: 1 }}>Customers</span>
+                    </Button>
+
+                    <Button 
+                        onClick={() => setCurrentPage('setting')}
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "flex-start",
+                            gap: "12px",
+                            width: "100%",
+                            height: "50px",
+                            padding: "0 20px", 
+                            borderRadius: "10px",
+                            border: "none",
+                            fontSize: "16px",
+                            cursor: "pointer",
+                            transition: "0.3s",
+                            boxShadow: "none", 
+                            backgroundColor: currentPage === 'setting' ? '#EE2B6C' : '#ffffff',
+                            color: currentPage === 'setting' ? '#ffffff' : '#555555',
+                        }}
+                    >
+                        <SettingOutlined style={{ fontSize: '20px' }}/> <span style={{ margin: 0, lineHeight: 1 }}>Setting</span>
                     </Button>
                     
                 </div>

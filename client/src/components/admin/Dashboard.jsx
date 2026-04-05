@@ -1,6 +1,33 @@
 import React, { useState } from 'react'
 import {PoundCircleOutlined, ShoppingCartOutlined, UserAddOutlined, ThunderboltOutlined, ArrowRightOutlined} from '@ant-design/icons'
-import {Cascader, Row, Col} from 'antd'
+import {Cascader, Row, Col, Progress} from 'antd'
+
+const classNames = {
+  root: 'demo-progress-root',
+  rail: 'demo-progress-rail',
+  track: 'demo-progress-track',
+};
+
+const stylesFn = info => {
+  const percent = info?.props?.percent ?? 0;
+  const hue = 200 - (200 * percent) / 100;
+  return {
+    track: {
+      backgroundImage: `
+        linear-gradient(
+          to right,
+          hsla(${hue}, 85%, 65%, 1),
+          hsla(${hue + 30}, 90%, 55%, 0.95)
+        )`,
+      borderRadius: 8,
+      transition: 'all 0.3s ease',
+    },
+    rail: {
+      backgroundColor: 'rgba(0, 0, 0, 0.1)',
+      borderRadius: 8,
+    },
+  };
+};
 
 const options = [
   {
@@ -70,8 +97,8 @@ const Dashboard = ({name}) => {
         </div>
 
         {/* Progress here slide-2 */}
-        <div style={{display:"grid", gridTemplateColumns:"2fr 1fr", gridGap:"10px"}}>
-            <div style={{display:"grid", gridTemplateRows:"1fr 2fr", backgroundColor:"#fff",padding:"20px", borderRadius: "10px"}}>
+        <div style={{display:"grid", gridTemplateColumns:"2fr 1fr", gridGap:"10px", height: "80vh"}}>
+            <div style={{display:"grid", gridTemplateRows:"1fr 4fr", backgroundColor:"#fff",padding:"20px", borderRadius: "10px", gridGap:"10px"}}>
                 <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
                      <div>
                         <h2>Weekly Sales Performance</h2>
@@ -82,12 +109,8 @@ const Dashboard = ({name}) => {
                 </div>
 
 
-                <div style={{display:"grid", gridTemplateRows:"3fr 1fr"}}>
-                    <div style={{display:"grid", gridTemplateColumns:"repeat(7, 1fr)", gridGap:"10px", textAlign:"center"}} >
-                        
-                    </div>
-
-                    <div style={{display:"grid", gridTemplateColumns:"repeat(7, 1fr)", gridGap:"10px", textAlign:"center"}}>
+                <div style={{display:"grid", gridTemplateColumns:"1fr 6fr"}}>
+                    <div style={{display:"grid", gridTemplateRows:"repeat(7, 1fr)", gridGap:"20px", textAlign:"center"}}>
                         <p style={{color:"#999"}}>Mon</p>
                         <p style={{color:"#999"}}>Tue</p>
                         <p style={{color:"#999"}}>Web</p>
@@ -96,13 +119,97 @@ const Dashboard = ({name}) => {
                         <p style={{color:"#999"}}>Sat</p>
                         <p style={{color:"#999"}}>Sun</p>
                     </div>
+
+                    <div style={{display:"grid", gridTemplateRows:"repeat(7, 1fr)", gridGap:"20px", textAlign:"center"}} >
+                         <Progress classNames={classNames} styles={stylesFn} percent={10} />
+                         <Progress classNames={classNames} styles={stylesFn} percent={20} />
+                         <Progress classNames={classNames} styles={stylesFn} percent={40} />
+                         <Progress classNames={classNames} styles={stylesFn} percent={60} />
+                         <Progress classNames={classNames} styles={stylesFn} percent={80} />
+                         <Progress classNames={classNames} styles={stylesFn} percent={90} />
+                         <Progress classNames={classNames} styles={stylesFn} percent={99} />
+                    </div>
                 </div>
             </div> 
 
 
-            <div style={{backgroundColor:"#fff",padding:"20px", borderRadius: "10px", display:"flex", flexDirection:"column", gap:"10px"}}>
-                 <h2>Top Selling Items</h2>
+            <div className="right-column-scroll" style={{backgroundColor:"#fff",padding:"20px", borderRadius: "10px", position:"relative",overflowY:"auto",display:"flex", flexDirection:"column", gap:"10px", height: "80vh",}}>
+                 <h2 style={{backgroundColor: "#fff",top: "-20px",zIndex:"1050",position:"sticky",paddingBottom: "10px", margin: "0"}}>Top Selling Items</h2>
 
+                 <div style={{display: "flex", justifyContent:"space-between", alignItems:"center", gap:"10px"}}>
+                    <img src="../src/assets/logo.png" alt="" style={{width:"100px", height:"100px"}}/>
+
+                    <div>
+                        <h3>Midnight Chocolate Cake</h3>
+                        <p style={{color:"#999"}}>24 sales to day</p>
+                    </div>
+
+                    <h3 style={{color:"rgb(239, 61, 120)"}}>$285</h3>
+                 </div>
+
+                 <div style={{display: "flex", justifyContent:"space-between", alignItems:"center", gap:"10px"}}>
+                    <img src="../src/assets/logo.png" alt="" style={{width:"100px", height:"100px"}}/>
+
+                    <div>
+                        <h3>Midnight Chocolate Cake</h3>
+                        <p style={{color:"#999"}}>24 sales to day</p>
+                    </div>
+
+                    <h3 style={{color:"rgb(239, 61, 120)"}}>$285</h3>
+                 </div>
+
+                 <div style={{display: "flex", justifyContent:"space-between", alignItems:"center", gap:"10px"}}>
+                    <img src="../src/assets/logo.png" alt="" style={{width:"100px", height:"100px"}}/>
+
+                    <div>
+                        <h3>Midnight Chocolate Cake</h3>
+                        <p style={{color:"#999"}}>24 sales to day</p>
+                    </div>
+
+                    <h3 style={{color:"rgb(239, 61, 120)"}}>$285</h3>
+                 </div>
+
+                 <div style={{display: "flex", justifyContent:"space-between", alignItems:"center", gap:"10px"}}>
+                    <img src="../src/assets/logo.png" alt="" style={{width:"100px", height:"100px"}}/>
+
+                    <div>
+                        <h3>Midnight Chocolate Cake</h3>
+                        <p style={{color:"#999"}}>24 sales to day</p>
+                    </div>
+
+                    <h3 style={{color:"rgb(239, 61, 120)"}}>$285</h3>
+                 </div>
+
+                 <div style={{display: "flex", justifyContent:"space-between", alignItems:"center", gap:"10px"}}>
+                    <img src="../src/assets/logo.png" alt="" style={{width:"100px", height:"100px"}}/>
+
+                    <div>
+                        <h3>Midnight Chocolate Cake</h3>
+                        <p style={{color:"#999"}}>24 sales to day</p>
+                    </div>
+
+                    <h3 style={{color:"rgb(239, 61, 120)"}}>$285</h3>
+                 </div>
+                 <div style={{display: "flex", justifyContent:"space-between", alignItems:"center", gap:"10px"}}>
+                    <img src="../src/assets/logo.png" alt="" style={{width:"100px", height:"100px"}}/>
+
+                    <div>
+                        <h3>Midnight Chocolate Cake</h3>
+                        <p style={{color:"#999"}}>24 sales to day</p>
+                    </div>
+
+                    <h3 style={{color:"rgb(239, 61, 120)"}}>$285</h3>
+                 </div>
+                 <div style={{display: "flex", justifyContent:"space-between", alignItems:"center", gap:"10px"}}>
+                    <img src="../src/assets/logo.png" alt="" style={{width:"100px", height:"100px"}}/>
+
+                    <div>
+                        <h3>Midnight Chocolate Cake</h3>
+                        <p style={{color:"#999"}}>24 sales to day</p>
+                    </div>
+
+                    <h3 style={{color:"rgb(239, 61, 120)"}}>$285</h3>
+                 </div>
                  <div style={{display: "flex", justifyContent:"space-between", alignItems:"center", gap:"10px"}}>
                     <img src="../src/assets/logo.png" alt="" style={{width:"100px", height:"100px"}}/>
 
