@@ -4,10 +4,10 @@ import {useNavigate} from 'react-router-dom'
 import {MenuUnfoldOutlined, ShoppingOutlined, InboxOutlined, TeamOutlined, StockOutlined, SettingOutlined, SearchOutlined, BellOutlined, LogoutOutlined} from '@ant-design/icons'
 import { Input,Button, Modal } from 'antd'
 
-import Dashboard from './Dashboard'
-import Orders from './OrderManagement'
-import Inventory from './Inventory'
-import Customers from './CustomerDirectory'
+import Dashboard from '../../components/admin/Dashboard'
+import Orders from '../../components/admin/OrderManagement'
+import Inventory from '../../components/admin/Inventory'
+import Customers from '../../components/admin/CustomerDirectory'
 
 
 

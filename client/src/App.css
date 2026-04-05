@@ -187,21 +187,31 @@
 
 /* Admin */
 
+/* hidden scrollbar side all */
+.slide-navigation::-webkit-scrollbar {
+    display: none;
+}
+
+.slide-navigation{
+    -ms-overflow-style: none; 
+    scrollbar-width: none; 
+}
+
 .navigate.ant-btn {
     display: flex;
     align-items: center;
-    justify-content: flex-start; 
+    justify-content: flex-start; /* Căn trái icon và chữ */
     gap: 12px;
-    padding: 22px 20px; 
+    padding: 22px 20px; /* Tăng padding để button cao hơn, chuyên nghiệp hơn */
     border-radius: 12px;
     margin-bottom: 12px;
     transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
     cursor: pointer;
     background-color: #ffffff;
-    border: 1px solid #f0f0f0; 
-    width: 100%; 
-    height: auto; 
-    box-shadow: none; 
+    border: 1px solid #f0f0f0; /* Viền rất nhạt */
+    width: 100%; /* Chiếm hết chiều ngang sidebar */
+    height: auto; /* Để padding tự quyết định chiều cao */
+    box-shadow: none; /* Bỏ bóng mặc định của antd */
 }
 .navigate.ant-btn p {
     margin: 0; 
@@ -253,4 +263,21 @@
     border-radius: 5px;
     background-color: #ffdbe6;
     border: 1px solid #EE2B6C;
+}
+
+.right-column-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+
+.right-column-scroll {
+    -ms-overflow-style: none; 
+    scrollbar-width: none;  
+}
+
+
+.row-disabled {
+    opacity: 0.4;
+    pointer-events: none; 
+    filter: grayscale(100%);
 }
