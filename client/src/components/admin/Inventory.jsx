@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useMemo} from 'react'
 import {RiseOutlined, WalletOutlined, MoreOutlined, EditOutlined, DeleteOutlined, PlusCircleOutlined, AlertOutlined, PlusOutlined} from "@ant-design/icons"
-import { fetchProducts, restockProductApi, updateProductApi,deleteProductApi, createProductApi } from '../api/api';
-import { Table, Tag, Avatar, Space, Button, Progress, Spin, Modal, List, Badge, message, InputNumber, Dropdown, Form, Input, Select} from 'antd';
+import { fetchProducts, restockProductApi, updateProductApi,deleteProductApi, createProductApi } from '../../services/api';
+import { Table, Tag, Avatar, Space, Button, Progress, Spin, Modal, Badge, message, InputNumber, Dropdown, Form, Input, Select} from 'antd';
 // import {inventorySource} from './data'
 
 const Inventory = () =>{

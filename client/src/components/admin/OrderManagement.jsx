@@ -1,17 +1,47 @@
-import React, { useState } from 'react'
-import { dataSource } from './data'
-import { Table, Tag, Avatar, Space, Button } from 'antd';
+import React, { useState, useEffect } from 'react'
+import { Table, Tag, Avatar, Space, Button, Spin } from 'antd';
 import { MoreOutlined } from '@ant-design/icons'
+import { fetchUsers } from '../../services/api';
 
 
 const Orders = () => {
     const [filterStatus, setFilterStatus] = useState('ALL');
+    const [dataSource, setDataSource] = useState([])
+    const [loading, setLoading] = useState(false);
+
     const handleFilter = (status) => {
         setFilterStatus(status);
     };
 
+    const loadOrdersData = async () => {
+      setLoading(true);
+       try{
+         const users = await fetchUsers();
+         const allOrders = users.flatMap(user => 
+          user.history_orders.map(order => ({
+            ...order,
+            key: order.orderId,
+            customer: {
+              name: user.username,
+              avatar: user.avatar,
+              email: user.email
+            }
+          }))
+        );
+        setDataSource(allOrders); 
+       }catch (error) {
+        console.error("Lỗi khi load đơn hàng:", error);
+      }finally {
+      setLoading(false);
+    }
+    }
+
+    useEffect(() => {
+    loadOrdersData();
+  }, []);
+
     const filteredData = filterStatus === 'ALL' 
-    ? dataSource 
+    ? dataSource
     : dataSource.filter(item => item.status === filterStatus);
 
     const columns = [
@@ -27,7 +57,7 @@ const Orders = () => {
       key: 'customer',
       render: (customer) => (
         <Space>
-          <Avatar src={customer.avatar} />
+          <Avatar src={`/product/avtusers/${customer.avatar}`} size={45} />
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <span style={{ fontWeight: 'bold', color: '#2d2424' }}>{customer.name}</span>
             <span style={{ fontSize: '12px', color: '#8c8c8c' }}>{customer.email}</span>
@@ -53,10 +83,8 @@ const Orders = () => {
       dataIndex: 'status',
       render: (status) => {
         let color = '';
-        if (status === 'PENDING') color = 'warning';
-        if (status === 'PROCESSING') color = 'processing';
-        if (status === 'COMPLETED') color = 'success';
-        if (status === 'CANCELLED') color = 'error';
+        if (status === 'Processing') color = 'processing';
+        if (status === 'Completed') color = 'success';
         
         return (
           <Tag color={color} style={{ borderRadius: '12px', fontWeight: 'bold', padding: '0 10px' }}>
@@ -118,20 +146,20 @@ const Orders = () => {
             <div style={{display:"flex", justifyContent:"center", alignItems:"center", padding:"14p 24px"}}>
                 <div style={{display:"grid", gridTemplateColumns:"repeat(5, 1fr)", borderRadius:"5px",backgroundColor:"#edf4fdce", padding:"5px 10px", textAlign:"center"}}>
                         <button className='btn-orders' onClick={() => handleFilter('ALL')}>ALL</button>
-                        <button className='btn-orders' onClick={() => handleFilter('PENDING')}>PENDING</button>
-                        <button className='btn-orders' onClick={() => handleFilter('PROCESSING')}>PROCESSING</button>
-                        <button className='btn-orders' onClick={() => handleFilter('COMPLETED')}>COMPLETED</button>
-                        <button className='btn-orders' onClick={() => handleFilter('CANCELLED')}>CANCELLED</button>
+                        <button className='btn-orders' onClick={() => handleFilter('Processing')}>PROCESSING</button>
+                        <button className='btn-orders' onClick={() => handleFilter('Completed')}>COMPLETED</button>
                 </div>
             </div>
 
 
             <div style={{ padding: '20px', background: '#fff', borderRadius: '8px' }}>
+              <Spin spinning={loading}>
                 <Table 
                     columns={columns} 
                     dataSource={filteredData} 
                     pagination={{ pageSize: 5 }}
                 />
+              </Spin>
                 <div style={{ marginTop: '-45px', color: '#8c8c8c' }}>
                     Showing 1 to 5 of 128 orders
                 </div>
