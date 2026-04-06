@@ -1,7 +1,7 @@
 import React, {useState, useEffect}from 'react'
 import {DownloadOutlined, UserAddOutlined, TeamOutlined, TagOutlined, DollarOutlined, FireOutlined, FunnelPlotOutlined, MoreOutlined, ProfileOutlined, DeleteOutlined} from '@ant-design/icons'
 import {Modal, Table, Tag, Avatar, Space, Button, Dropdown, Spin, message} from 'antd'
-import {fetchUsers} from '../api/api'
+import {fetchUsers} from '../../services/api'
 // import {customerSource} from './data'
 
 const Customers = () => {

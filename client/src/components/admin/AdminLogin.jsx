@@ -48,7 +48,7 @@ const AdminLogin = () => {
 
     if (userExists) {
         message.success('Đăng nhập thành công!');
-        navigate('/homepage');
+        navigate('/admin/homepage');
     } else {
         message.error('Sai tài khoản hoặc mật khẩu!');
     }
