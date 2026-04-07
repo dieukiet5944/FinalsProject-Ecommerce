@@ -1,17 +1,17 @@
-import React from 'react';
+// src/components/layout/UserLayout.jsx   (hoặc src/layout/UserLayout.jsx)
 import { Outlet } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
 
 const UserLayout = () => {
   return (
-    <div className="user-app-container">
+    <div className="flex flex-col min-h-screen text-white bg-zinc-950">
       <Header />
 
-      <main>
-        <Outlet />
+      <main className="flex-1">
+        <Outlet />          {/* ← Dòng này cực kỳ quan trọng */}
       </main>
-      
+
       <Footer />
     </div>
   );
