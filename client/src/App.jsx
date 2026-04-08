@@ -45,6 +45,14 @@ function App() {
           </ProtectedRoute>
         }
       />
+      
+      <Route path='/admin-login' element={<AdminLogin />}>
+        <Route path="/homepage" element={<HomePage />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/order" element={<Orders />} />
+        <Route path="/inventory" element={<Inventory />} />
+        <Route path='/customer' element={<Customers />} />     
+      </Route>
     </Routes>
   );
 }
