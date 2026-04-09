@@ -74,11 +74,11 @@ export const fetchProducts = async () => {
 };
 
 // 2. Nhập thêm hàng (PATCH)
-export const restockProductApi = async (id, newStockData) => {
+export const restockProductApi = async (id, payload) => {
     const res = await fetch(`${API_URL_PRODUCTS}/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ stock: newStockData }),
+        body: JSON.stringify(payload),
     });
     if (!res.ok) throw new Error("Không thể nhập hàng");
     return await res.json();

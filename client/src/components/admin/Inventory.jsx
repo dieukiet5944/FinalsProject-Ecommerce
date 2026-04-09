@@ -11,6 +11,8 @@ const Inventory = () =>{
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState(null);
     const [form] = Form.useForm();
+
+    const category = Form.useWatch('category', form);
     
     useEffect(() => {
       const loadData = async () => {
@@ -73,7 +75,7 @@ const Inventory = () =>{
     render: (stock) => {
       if (!stock) return "N/A";
       
-      const percentage = Math.round((stock.currentstock / stock.allstock) * 100);
+      const percentage = Math.round((stock.currentstock / stock.capacity) * 100);
       const strokecolor = percentage <= 20 ? '#ff4d4f' : percentage <= 60 ? '#faad14' : '#52c41a';
 
       return (
@@ -85,7 +87,7 @@ const Inventory = () =>{
             marginBottom: 4 
           }}>
             <span style={{ fontSize: '12px', fontWeight: '500' }}>
-              {stock.currentstock}/{stock.allstock} <span style={{ color: '#8c8c8c' }}>Units</span>
+              {stock.currentstock}/{stock.capacity} <span style={{ color: '#8c8c8c' }}>Units</span>
             </span>
             <span style={{ fontSize: '12px', color: '#6F4E37', fontWeight: 'bold' }}>
               {percentage}%
@@ -111,15 +113,16 @@ const Inventory = () =>{
     title: 'STATUS',
     dataIndex: 'status',
     key: 'status',
-    render: (status) => {
-      let color = '';
-      if (status === 'IN STOCK') color = 'success';
-      if (status === 'LOW STOCK') color = 'error';
-      if (status === 'OUT OF STOCK') color = 'default';
+    render: (_, record) => {
+
+      const currentStatus = calculateStatus(record.stock.currentstock, record.stock.capacity);
+      let color = 'green';
+      if (currentStatus === 'OUT OF STOCK') color = 'default';
+      if (currentStatus === 'LOW STOCK') color = 'error';
       
       return (
         <Tag color={color} style={{ borderRadius: '12px', fontWeight: 'bold', padding: '0 10px' }}>
-          {status}
+          {currentStatus}
         </Tag>
       );
     },
@@ -134,20 +137,20 @@ const Inventory = () =>{
       const actionItems = [
       { 
         key: 'restock', 
-        label: 'Nhập hàng', 
+        label: 'Restock', 
         icon: <PlusCircleOutlined />,
         onClick: () => handleRestock(record) 
       },
       { 
         key: 'edit', 
-        label: 'Sửa thông tin', 
+        label: 'Edit', 
         icon: <EditOutlined />,
         onClick: () => handleEdit(record) 
       },
       { type: 'divider' }, 
       { 
         key: 'delete', 
-        label: 'Vô hiệu hóa', 
+        label: 'Disable', 
         icon: <DeleteOutlined />, 
         danger: true,
         onClick: () => handleDelete(record)
@@ -169,27 +172,35 @@ const Inventory = () =>{
 ];
 
 // TOTAL SKU 
-const lowStockCount = (Array.isArray(data) ? data : []).filter(item => {
+const lowStockCount = (
+  Array.isArray(data) ? data : []).filter(item => {
     const current = item.stock?.currentstock || 0;
-    const all = item.stock?.allstock || 1; 
+    const all = item.stock?.capacity || 1; 
     const percent = (current / all) * 100;
     return percent <= 20; 
 }).length;
 
 //  Status for all product 
 const getStatusByStock = (current, all) => {
-  const percent = (current / all) * 100;
-  if (current <= 0) return "OUT OF STOCK";
-  if (percent <= 20) return "LOW STOCK";
+  const curr = Number(current) || 0;
+  const total = Number(all) || 1; 
+
+  const percent = (curr / total) * 100;
+
+  if (curr <= 0) return "OUT OF STOCK";
+  if (percent <= 20) return "LOW STOCK"; 
   return "IN STOCK";
 };
 
 
 // LOW STOCK ALERTS
 const handleActionRequest = () => {
-  const lowStockItems = data.filter(item => 
-    (item.stock.currentstock / item.stock.allstock) * 100 <= 20
-  );
+  const lowStockItems = data.filter(item => {
+    const current = item.stock?.currentstock ?? 0; 
+    const capacity = item.stock?.capacity || 100;
+    const percentage = (current / capacity) * 100;
+    return percentage <= 20;
+  });
   if (lowStockItems.length === 0) {
     message.success("All items are in stock, Admin, please rest assured.");
     return;
@@ -224,7 +235,7 @@ const handleActionRequest = () => {
               <div>
                 <b style={{ color: '#2d2424', display: 'block' }}>{item.name}</b>
                 <span style={{ fontSize: '12px', color: '#8c8c8c' }}>
-                  Still available: <b style={{ color: '#ff4d4f' }}>{item.stock.currentstock}</b> / {item.stock.allstock} Units
+                  Still available: <b style={{ color: '#ff4d4f' }}>{item.stock?.currentstock ?? 0}</b> / {item.stock?.capacity || 100} Units
                 </span>
                 <div style={{ marginTop: '4px' }}>
                   <Badge status="error" text="Alert!" style={{ fontSize: '11px' }} />
@@ -259,33 +270,48 @@ const handleActionRequest = () => {
         
         await Promise.all(itemsToUpdate.map(async (item) => {
           const addedAmount = tempAmounts[item.id];
-          const newCurrentStock = item.stock.currentstock + addedAmount;
 
-          const newStatus = getStatusByStock(newCurrentStock, item.stock.allstock);
+          const current = item.stock?.currentstock || 0;
+
+          const capacity = item.stock?.capacity || 100;
+
+          const newCurrentStock = current+ addedAmount;
+
+          const newStatus = getStatusByStock(newCurrentStock, capacity);
           
-          const updatedStock = { ...item, stock: { ...item.stock, currentstock: newCurrentStock }, status: newStatus };
+          const payload = { 
+            stock: { 
+              capacity: capacity, 
+              currentstock: newCurrentStock 
+            }, 
+            status: newStatus 
+          };
 
-          return restockProductApi(item.id, updatedStock);
+          return restockProductApi(item.id, payload);
         }));
 
         setData((prev) =>
           prev.map((item) => {
             const addedAmount = tempAmounts[item.id];
             if (addedAmount > 0) {
-              const newCurrentStock = item.stock.currentstock + addedAmount;
+              const current = item.stock?.currentstock || 0;
+              const capacity = item.stock?.capacity || 100;
+              const newCurrentStock = current + addedAmount;
+              const newStatus = getStatusByStock(newCurrentStock, capacity);
               return { 
                 ...item, 
-                stock: { ...item.stock, currentstock: newCurrentStock },
-                status: getStatusByStock(newCurrentStock, item.stock.allstock) 
+                stock: { ...item.stock, currentstock: newCurrentStock, capacity: capacity },
+                status: newStatus
               };
             }
             return item;
           })
         );
 
-        message.success(`Đã cập nhật kho cho ${itemsToUpdate.length} sản phẩm!`);
+        message.success(`Successfully restocked ${itemsToUpdate.length} products!`);
       } catch (error) {
-        message.error("Lỗi khi nhập hàng hàng loạt!");
+        console.error("Lỗi đây Hòa ơi:", error);
+        message.error("Batch restock failed!");
       } finally {
         setLoading(false);
       }
@@ -293,22 +319,41 @@ const handleActionRequest = () => {
   });
 };
 
+const countCake = () => {
+    return data.reduce((sum, index) => {
+       if(index.category === "CAKE"){
+           sum += 1
+       }
+       return sum
+    }, 0)
+}
 
+const countDrink = () => {
+    return data.reduce((sum, index) => {
+       if(index.category === "DRINK"){
+           sum += 1
+       }
+
+       return sum
+    }, 0)
+}
 
 //Use the results for comparison to establish the state. [useMemo]
 
 const avgFreshness = useMemo(() => {
     if (!Array.isArray(data) || data.length === 0) return 100;
 
-    const cakes = data.filter(item => item.category === 'CAKE' && item.manufacturedDate);
+    const cakes = data.filter(item => item.category === 'CAKE' && item.createdAt && item.expiryDate);
     if (cakes.length === 0) return 100;
 
     const now = new Date();
     const totalFreshness = cakes.reduce((sum, item) => {
-        const releaseDate = new Date(item.manufacturedDate);
-        const passInHours = (now - releaseDate) / (1000 * 60 * 60);
-        const shelfLife = item.shelfLife || 24; 
-        const itemFreshness = ((shelfLife - passInHours) / shelfLife) * 100;
+        const start = new Date(item.createdAt);
+        const end = new Date(item.expiryDate);
+        const totalLifeSpan = end - start;
+        const timePassed = now - start;
+        let itemFreshness = ((totalLifeSpan - timePassed) / totalLifeSpan) * 100;
+
         return sum + Math.max(0, Math.min(100, itemFreshness));
     }, 0);
 
@@ -321,10 +366,25 @@ const getFreshnessColor = (percent) => {
     return "#ff4d4f"; 
 };
 
+const calculateStatus = (current, total) => {
+    const percentage = (current / total) * 100;
+
+    if (current <= 0) {
+        return "OUT OF STOCK";
+    } else if (percentage <= 20) {
+        return "LOW STOCK";
+    } else {
+        return "IN STOCK";
+    }
+};
+
 // Action - Restock
 const handleRestock = async (record) => {
 
   let inputAmount = 0;
+
+  const maxCapacity = record.stock?.capacity || 100; 
+  const current = record.stock?.currentstock || 0;
 
   Modal.confirm({
     title: `Nhập hàng cho: ${record.name}`,
@@ -334,6 +394,7 @@ const handleRestock = async (record) => {
         <span>Nhập thêm số lượng: </span>
         <InputNumber 
           min={1} 
+          max={maxCapacity - current}
           defaultValue={0} 
           onChange={(val) => (inputAmount = val)} 
           style={{ width: '100%' }}
@@ -342,36 +403,44 @@ const handleRestock = async (record) => {
     ),
     onOk: async () => {
       if (inputAmount <= 0) {
-        message.warning("Vui lòng nhập số lượng lớn hơn 0");
-        return;
+        message.warning("Please enter a quantity greater than 0.");
+        return Promise.reject();
+      }
+
+      if (current + inputAmount > maxCapacity) {
+        message.error(`Exceeds capacity!`);
+        return Promise.reject(); 
       }
 
       try {
         setLoading(true);
-        const newCurrentStock = record.stock.currentstock + inputAmount;
+        const newCurrentStock = current + inputAmount;
+        const newStatus = calculateStatus(newCurrentStock, maxCapacity  );
 
-        const newStatus = calculateStatus(newCurrentStock, record.stock.allstock);
-
-        const updatedStock = { 
-          ...record.stock, 
+        const cleanStock = { 
+          capacity: maxCapacity, 
           currentstock: newCurrentStock 
         };
-        await restockProductApi(record.id, {
-             stock: updatedStock, 
-             status: newStatus
-        });
+
+        const payload = {
+          stock: cleanStock, 
+          status: newStatus
+        };
+
+
+        await restockProductApi(record.id, payload);
 
         setData((prev) =>
           prev.map((item) =>
             item.id === record.id 
-              ? { ...item, stock: updatedStock, status: newStatus } 
+              ? { ...item, stock: cleanStock, status: newStatus } 
               : item
           )
         );
 
-        message.success(`Đã nhập thêm ${inputAmount} sản phẩm. Trạng thái: ${newStatus}`);
+        message.success(`Goods received successfully! Main warehouse: ${newCurrentStock}`)
       } catch (error) {
-        message.error("Lỗi khi nhập hàng!");
+        message.error("Error during goods receiving!");
       } finally {
         setLoading(false);
       }
@@ -402,24 +471,29 @@ const handleEdit = (product) => {
 
 const handleSaveEdit = async () => {
   try {
-    console.log("Đang bắt đầu validate form...");
     const values = await form.validateFields();
     setLoading(true);
 
+
+    const { stock: formStock, ...otherValues } = values;
     const payload = {
-      ...values, 
+      ...otherValues, 
       stock: {
-        allstock: values.stock.allstock, 
-        currentstock: editingProduct ? editingProduct.stock.currentstock : 0 
+        capacity: formStock.capacity, 
+        currentstock: editingProduct ? editingProduct.stock.currentstock : (formStock.currentstock || 0)
       },
-      status: editingProduct ? editingProduct.status : "OUT OF STOCK",
+      status: editingProduct ? editingProduct.status : "IN STOCK",
       image: editingProduct?.image || "default.jpg"
     };
+
+    if (payload.category === "CAKE" && !editingProduct) {
+      payload.createdAt = new Date().toISOString().split('T')[0];
+    }
 
     if (editingProduct) {
       await updateProductApi(editingProduct.id, payload);
       setData(prev => prev.map(item => 
-        item.id === editingProduct.id ? { ...item, ...payload } : item
+        item.id === editingProduct.id ? { ...item, ...payload, id: item.id } : item
       ));
       message.success("Cập nhật sản phẩm thành công!");
     } else {
@@ -502,22 +576,27 @@ console.log("DỮ LIỆU TRONG STATE:", data);
                 <div style={{padding:"20px", display:"flex", flexDirection:"column", gap:"10px", backgroundColor:"#fff", borderRadius:"10px", boxShadow:"5px 5px 4px 0px #999"}}>
                     <p style={{color:"#999"}}>BAKERY FRESHNESS</p>
                     <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", gap:"10px"}}>
-                        <h2 style={{color:"#6dee89"}}>{avgFreshness}%</h2>
+                        <h2 style={{ color: getFreshnessColor(avgFreshness) }}>{avgFreshness}%</h2>
                         <div style={{ width: "200px" }}>
                             <Progress percent={avgFreshness} strokeColor={getFreshnessColor(avgFreshness)} showInfo={false}/>
                         </div>
                         
-                        <span style={{ color: "#6dee89", fontSize: '18px' }}>{avgFreshness > 30 ? "✔" : "⚠"}</span>
+                        <span style={{ color: getFreshnessColor(avgFreshness), fontSize: '18px' }}>{avgFreshness > 30 ? "✔" : "⚠"}</span>
                     </div>
                 </div>
                  
-                 {/* Phần này cần xử lý sau - xử lý thời gian từ lúc nhận đơn đến khi hoàn thành đơn  */}
+                 
                 <div style={{padding:"20px", display:"flex", flexDirection:"column", gap:"10px",backgroundColor:"#fff", borderRadius:"10px", boxShadow:"5px 5px 4px 0px #999"}}>
-                    <p style={{color:"#999"}}>AVG. PREP TIME</p>
-                    <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
-                        <h2>14 min</h2>
+                    <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", backgroundColor:"#FFF7E6", borderRadius:"10px", padding:"0px 8px"}}>
+                        <h2 style={{color:"orange"}}>CAKE</h2>
                         <div>
-                            <WalletOutlined style={{color:"#999", fontSize:"2rem"}}/>
+                            {countCake()}
+                        </div>
+                    </div>
+                    <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", backgroundColor:"#E4F6FF", borderRadius:"10px", padding:"0px 8px"}}>
+                        <h2 style={{color:"blue"}}>DRINK</h2>
+                        <div>
+                            {countDrink()}
                         </div>
                     </div>
                 </div>
@@ -538,37 +617,52 @@ console.log("DỮ LIỆU TRONG STATE:", data);
                         }}
                     />
                     <Modal
-                    title={editingProduct ? `Chỉnh sửa: ${editingProduct.name}` : "Thêm sản phẩm mới"}
+                    title={editingProduct ? `Edit Product: ${editingProduct.name}` : "Add New Product"}
                     open={isEditModalOpen}
                     onCancel={() => {
                       setIsEditModalOpen(false); 
                     }}
                     onOk={handleSaveEdit}
                     confirmLoading={loading}
-                    okText="Lưu thay đổi"
-                    cancelText="Hủy"
+                    okText="Save Changes"
+                    cancelText="Cancel"
                     >
                     <Form form={form} layout="vertical">
                         <Form.Item 
                           name="id" 
-                          label="Mã sản phẩm (SKU)" 
+                          label="Stock Keeping Unit (SKU)" 
                           rules={[{ required: !editingProduct, message: 'Vui lòng nhập mã!' }]}
-                        ><Input placeholder="Ví dụ: BC-011" disabled={!!editingProduct} /></Form.Item>
-                        <Form.Item name="name" label="Tên sản phẩm" rules={[{ required: true }]}>
+                        ><Input placeholder="e.g. BC-011" disabled={!!editingProduct} /></Form.Item>
+                        <Form.Item name="name" label="Product Name" rules={[{ required: true }]}>
                         <Input />
                         </Form.Item>
-                        <Form.Item name="price" label="Giá bán ($)" rules={[{ required: true }]}>
+                        <Form.Item name="price" label="Price ($)" rules={[{ required: true }]}>
                         <InputNumber min={0} style={{ width: '100%' }} />
                         </Form.Item>
-                        <Form.Item name={['stock', 'allstock']} label="Tổng sức chứa kho">
-                            <InputNumber min={1} style={{ width: '100%' }} />
-                        </Form.Item>
-                        <Form.Item name="category" label="Danh mục">
+                        <Form.Item name="category" label="Category">
                         <Select>
                             <Select.Option value="DRINK">DRINK</Select.Option>
                             <Select.Option value="CAKE">CAKE</Select.Option>
                         </Select>
                         </Form.Item>
+
+                        <Form.Item name={['stock', 'capacity']} label="Max Capacity" style={{ flex: 1 }}>
+                          <InputNumber min={1} defaultValue={100} style={{ width: '100%' }} />
+                        </Form.Item>
+                        
+                        <Form.Item name={['stock', 'currentstock']} label="Initial Stock" style={{ flex: 1 }}>
+                          <InputNumber min={0} defaultValue={0} style={{ width: '100%' }} />
+                        </Form.Item>
+
+                        {category === 'CAKE' && (
+                          <Form.Item 
+                            name="expiryDate" 
+                            label="Expiry Date" 
+                            rules={[{ required: true, message: 'Expiry date is required for cakes!' }]}
+                          >
+                            <DatePicker style={{ width: '100%' }} placeholder="Select expiry date" />
+                          </Form.Item>
+                        )}
                     </Form>
                     </Modal>
                 </Spin>
