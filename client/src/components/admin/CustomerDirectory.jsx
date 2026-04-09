@@ -1,5 +1,5 @@
 import React, {useState, useEffect}from 'react'
-import {DownloadOutlined, UserAddOutlined, TeamOutlined, TagOutlined, DollarOutlined, FireOutlined, FunnelPlotOutlined, MoreOutlined, ProfileOutlined, DeleteOutlined} from '@ant-design/icons'
+import {DownloadOutlined, UserAddOutlined, TeamOutlined, TagOutlined, DollarOutlined, FireOutlined, FunnelPlotOutlined, MoreOutlined, ProfileOutlined, DeleteOutlined, AuditOutlined} from '@ant-design/icons'
 import {Modal, Table, Tag, Avatar, Space, Button, Dropdown, Spin, message} from 'antd'
 import {fetchUsers} from '../../services/api'
 // import {customerSource} from './data'
@@ -28,7 +28,7 @@ const Customers = () => {
 
     const handleViewProfile = (user) => {
     Modal.info({
-        title: `Thông tin chi tiết: ${user.full_name}`,
+        title: `Detailed information: ${user.full_name}`,
         width: 500,
         content: (
         <div style={{ marginTop: 20 }}>
@@ -38,10 +38,9 @@ const Customers = () => {
             <Tag color={user.role === 'admin' ? 'gold' : 'blue'}>{user.role.toUpperCase()}</Tag>
             </div>
             <p><b>📧 Email:</b> {user.email}</p>
-            <p><b>📞 Phone:</b> {user.phone}</p>
-            <p><b>⚽ Tổng đơn hàng:</b> {user.order} đơn</p>
-            <p><b>🕒 Hoạt động cuối:</b> {user.last_active}</p>
-            <p><b>📅 Ngày tham gia:</b> {new Date(user.created_at).toLocaleDateString()}</p>
+            <p><b>⚽ Total orders:</b> {user.order} <AuditOutlined /> </p>
+            <p><b>🕒 Last activity:</b> {user.last_active}</p>
+            <p><b>📅 Date of participation:</b> {new Date(user.created_at).toLocaleDateString()}</p>
         </div>
         ),
         okText: 'Đóng',
@@ -99,21 +98,21 @@ const Customers = () => {
     },
     {
       title: 'TOTAL ORDERS',
-      dataIndex: 'order',
-      key: 'order',
+      dataIndex: 'history_orders',
+      key: 'history_orders',
       render: (_, record) => {
-            const toptier = record.order <= 10 ? "New Member" : record.order <=30 ? "Occasional" : record.order <=60 ? "High Frequency" : "Top Tier"
+            const toptier = record.history_orders.length <= 10 ? "New Member" : record.history_orders.length <=30 ? "Occasional" : record.history_orders.length <=60 ? "High Frequency" : "Top Tier"
             
             const colorMap = {
-            "New Member": "orange",
-            "Occasional": "gray",
+            "New Member": "gray",
+            "Occasional": "orange",
             "High Frequency": "green",
             "Top Tier": "red"
             };
 
             return (
                 <div style={{ display: "flex", alignItems: 'center', gap: "8px" }}>
-                    <h3 style={{ margin: 0 }}>{record.order}</h3>
+                    <h3 style={{ margin: 0 }}>{record.history_orders.length}</h3>
                     <span style={{ color: colorMap[toptier], fontSize: '12px', fontWeight: 'bold' }}>{toptier}</span>
                 </div>
             )
@@ -123,7 +122,7 @@ const Customers = () => {
       title: 'LOYALTY POINTS',
       key: 'points',
       render: (_, record) => {
-        const point = record.order * 10; 
+        const point = record.history_orders.length * 10; 
 
         return (
                  <span style={{ fontWeight: 'bold' }}>⭐ {point}</span>
@@ -186,12 +185,11 @@ const Customers = () => {
             <div style={{display:"flex", justifyContent:"space-between", alignItems:"flex-end"}}>
                     <div>
                         <h1>Customer Directory</h1>
-                        <p style={{color: "#999"}}>Managing 1,248 active members of Velvet Crumb Rewards</p>
+                        <p style={{color: "#999"}}>Managing {data.length} members of Crumb & Bean Rewards</p>
                     </div>
 
                     <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", gap:"10px"}}>
                         <Button style={{cursor:"pointer",display:"flex", justifyContent:"space-between", gap:"10px", padding:"10px 12px", alignItems:"center", backgroundColor:"#fff", border:"1px solid rgb(239, 61, 120)", borderRadius:"5px", color:"rgb(239, 61, 120)"}}><DownloadOutlined /> <h4>Export List</h4></Button>
-                        <Button style={{cursor:"pointer",display:"flex", justifyContent:"space-between", gap:"10px", padding:"10px 12px", alignItems:"center", backgroundColor:"rgb(239, 61, 120)", border:"1px solid rgb(239, 61, 120)", borderRadius:"5px", color:"#fff"}}><UserAddOutlined /> <h4>New Customer</h4></Button>
                     </div>
             </div>
 

@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useMemo} from 'react'
-import {RiseOutlined, WalletOutlined, MoreOutlined, EditOutlined, DeleteOutlined, PlusCircleOutlined, AlertOutlined, PlusOutlined} from "@ant-design/icons"
+import {RiseOutlined, WalletOutlined, MoreOutlined, EditOutlined, DeleteOutlined, PlusCircleOutlined, AlertOutlined, PlusOutlined, PictureOutlined} from "@ant-design/icons"
 import { fetchProducts, restockProductApi, updateProductApi,deleteProductApi, createProductApi } from '../../services/api';
-import { Table, Tag, Avatar, Space, Button, Progress, Spin, Modal, Badge, message, InputNumber, Dropdown, Form, Input, Select} from 'antd';
+import { Table, Tag, Avatar, Space, Button, Progress, Spin, Modal, Badge, message, InputNumber, Dropdown, Form, Input, Select, DatePicker} from 'antd';
 // import {inventorySource} from './data'
 
 const Inventory = () =>{
@@ -12,8 +12,12 @@ const Inventory = () =>{
     const [editingProduct, setEditingProduct] = useState(null);
     const [form] = Form.useForm();
 
-    const category = Form.useWatch('category', form);
+
     
+    const category = Form.useWatch('category', form);
+
+    const [update, setUpdate] = useState(false);
+
     useEffect(() => {
       const loadData = async () => {
         setLoading(true);
@@ -455,15 +459,17 @@ const handleAddNew = () => {
 };
 
 // Action - Edit
-const handleEdit = (product) => {
-  setEditingProduct(product);
+const handleEdit = (record) => {
+  setEditingProduct(record);
   form.setFieldsValue({
-    id: product.id,       
-    name: product.name,
-    price: product.price,
-    category: product.category,
+    ...record,
+    id: record.id,       
+    name: record.name,
+    price: record.price,
+    category: record.category,
     stock: {
-      allstock: product.stock.allstock 
+      capacity: record.stock.capacity,
+      currentstock: record.stock.currentstock
     }
   });
  setIsEditModalOpen(true);
@@ -474,16 +480,20 @@ const handleSaveEdit = async () => {
     const values = await form.validateFields();
     setLoading(true);
 
+    const { stock: formStock, image, ...otherValues } = values;
 
-    const { stock: formStock, ...otherValues } = values;
+    const initialStatus = !editingProduct 
+      ? getStatusByStock(formStock.currentstock || 0, formStock.capacity || 100)
+      : editingProduct.status;
+
     const payload = {
       ...otherValues, 
+      image: image || (editingProduct?.image || "default.jpg"),
       stock: {
         capacity: formStock.capacity, 
         currentstock: editingProduct ? editingProduct.stock.currentstock : (formStock.currentstock || 0)
       },
-      status: editingProduct ? editingProduct.status : "IN STOCK",
-      image: editingProduct?.image || "default.jpg"
+      status: editingProduct ? editingProduct.status : initialStatus,
     };
 
     if (payload.category === "CAKE" && !editingProduct) {
@@ -495,14 +505,15 @@ const handleSaveEdit = async () => {
       setData(prev => prev.map(item => 
         item.id === editingProduct.id ? { ...item, ...payload, id: item.id } : item
       ));
-      message.success("Cập nhật sản phẩm thành công!");
+      message.success("Product updated successfully!");
     } else {
       const newProd = await createProductApi(payload);
       setData(prev => [newProd, ...prev]);
-      message.success("Đã thêm sản phẩm mới!");
+      message.success("New product added successfully!");
     }
     setIsEditModalOpen(false);
     form.resetFields();
+    setEditingProduct(null);
   } catch (error) {
     console.error("Lỗi thực sự đây Hòa ơi:", error);
     message.error("Vui lòng kiểm tra lại các trường nhập liệu!");
@@ -515,25 +526,23 @@ const handleSaveEdit = async () => {
 // Action - Delete
 const handleDelete = async (id) => {
   Modal.confirm({
-    title: 'Bạn có chắc chắn muốn xóa sản phẩm này?',
-    content: 'Hành động này không thể hoàn tác.',
-    okText: 'Xóa',
+    title: 'Are you sure you want to delete this product?',
+    content: 'This action cannot be completed',
+    okText: 'Disable',
     okType: 'danger',
-    cancelText: 'Hủy',
+    cancelText: 'Cancel',
     onOk: async () => {
       try {
         await deleteProductApi(id);
         setData(prev => prev.filter(item => item.id !== id));
-        message.success("Đã xóa sản phẩm!");
+        message.success("Product disable!");
       } catch (error) {
-        message.error("Không thể xóa sản phẩm!");
+        message.error("Cannot disable product!");
       }
     },
   });
 };
 
-
-console.log("DỮ LIỆU TRONG STATE:", data);
 
     return (
         <div style={{padding:"24px 36px", display:"flex", flexDirection:"column", gap:"32px", height:"100vh"}}>
@@ -558,10 +567,6 @@ console.log("DỮ LIỆU TRONG STATE:", data);
                     <p style={{color:"#999"}}>TOTAL SKU</p>
                     <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
                         <h2>{data.length}</h2>
-                        <div style={{display:"flex", color:"orange"}}>
-                            <RiseOutlined />
-                            <p>+0%</p>
-                        </div>
                     </div>
                 </div>
 
@@ -628,6 +633,27 @@ console.log("DỮ LIỆU TRONG STATE:", data);
                     cancelText="Cancel"
                     >
                     <Form form={form} layout="vertical">
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '20px', gap: '8px' }}>
+                            <Avatar 
+                                size={100} 
+                                shape="square" 
+                                src={`/product/${(form.getFieldValue('category') || 'drink').toLowerCase()}/${form.getFieldValue('image')}`} 
+                                icon={<PictureOutlined />}
+                                style={{ border: '1px dashed #d9d9d9', backgroundColor: '#fafafa' }}
+                            />
+                            <span style={{ fontSize: '12px', color: '#8c8c8c' }}>Image Preview</span>
+                        </div>
+                        <Form.Item 
+                            name="image" 
+                            label="Image Filename" 
+                            tooltip="Enter the filename in public/product folder (e.g., cake_1.png)"
+                            rules={[{ required: true, message: 'Please enter the image filename!' }]}
+                        >
+                            <Input 
+                                placeholder="e.g., drink_5.png" 
+                                onChange={() => setUpdate(!update)} 
+                            />
+                        </Form.Item>
                         <Form.Item 
                           name="id" 
                           label="Stock Keeping Unit (SKU)" 
