@@ -1,48 +1,16 @@
 import React, { useState } from 'react'
 import {PoundCircleOutlined, ShoppingCartOutlined, UserAddOutlined, ThunderboltOutlined, ArrowRightOutlined} from '@ant-design/icons'
-import {Cascader, Row, Col, Progress} from 'antd'
+import {Cascader, Row, Col, Progress, Space, DatePicker} from 'antd'
 
-const classNames = {
-  root: 'demo-progress-root',
-  rail: 'demo-progress-rail',
-  track: 'demo-progress-track',
+const twoColors = {
+  '0%': '#108ee9',
+  '100%': '#87d068',
 };
-
-const stylesFn = info => {
-  const percent = info?.props?.percent ?? 0;
-  const hue = 200 - (200 * percent) / 100;
-  return {
-    track: {
-      backgroundImage: `
-        linear-gradient(
-          to right,
-          hsla(${hue}, 85%, 65%, 1),
-          hsla(${hue + 30}, 90%, 55%, 0.95)
-        )`,
-      borderRadius: 8,
-      transition: 'all 0.3s ease',
-    },
-    rail: {
-      backgroundColor: 'rgba(0, 0, 0, 0.1)',
-      borderRadius: 8,
-    },
-  };
+const conicColors = {
+  '0%': '#87d068',
+  '50%': '#ffe58f',
+  '100%': '#ffccc7',
 };
-
-const options = [
-  {
-    value: 'last 2 Weeks',
-    label: 'last 2 Weeks',
-    'aria-label': 'last 2 Weeks',
-    'data-title': 'last 2 Weeks',
-  },
-  {
-    value: 'last 7 Days',
-    label: 'last 7 Days',
-    'aria-label': 'last 7 Days',
-    'data-title': 'last 7 Days',
-  },
-];
 
 const Dashboard = ({name}) => {
 
@@ -100,34 +68,55 @@ const Dashboard = ({name}) => {
         <div style={{display:"grid", gridTemplateColumns:"2fr 1fr", gridGap:"10px", height: "80vh"}}>
             <div style={{display:"grid", gridTemplateRows:"1fr 4fr", backgroundColor:"#fff",padding:"20px", borderRadius: "10px", gridGap:"10px"}}>
                 <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
-                     <div>
+                     <div style={{display:"flex", flexDirection:"column", gap:"10px"}}>
                         <h2>Weekly Sales Performance</h2>
-                        <p>0ct 21 - 0ct 27, 2026</p>
-                     </div>         
+                     </div>      
 
-                     <Cascader options={options} placeholder="Last 7 Days" />
+                     <Space align="center">
+                        <DatePicker 
+                        picker="week" 
+                        placeholder="Chọn tuần"
+                        onChange={(date, dateString) => {
+                            console.log("Tuần đã chọn:", dateString);
+                        }}
+                        />
+                        </Space>
                 </div>
 
 
-                <div style={{display:"grid", gridTemplateColumns:"1fr 6fr"}}>
-                    <div style={{display:"grid", gridTemplateRows:"repeat(7, 1fr)", gridGap:"20px", textAlign:"center"}}>
-                        <p style={{color:"#999"}}>Mon</p>
-                        <p style={{color:"#999"}}>Tue</p>
-                        <p style={{color:"#999"}}>Web</p>
-                        <p style={{color:"#999"}}>Thu</p>
-                        <p style={{color:"#999"}}>Fri</p>
-                        <p style={{color:"#999"}}>Sat</p>
-                        <p style={{color:"#999"}}>Sun</p>
+                <div style={{ display: "grid", gridTemplateRows: "1fr 1fr", rowGap: "40px" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gridGap: "20px", textAlign: "center" }}>
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                            <Progress type="circle" percent={90} strokeColor={twoColors} />
+                            <span style={{ marginTop: "10px", fontWeight: "bold" }}>Monday</span>
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                            <Progress type="circle" percent={100} strokeColor={twoColors} />
+                            <span style={{ marginTop: "10px", fontWeight: "bold" }}>Tuesday</span>
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                            <Progress type="circle" percent={93} strokeColor={conicColors} />
+                            <span style={{ marginTop: "10px", fontWeight: "bold" }}>Wednesday</span>
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                            <Progress type="circle" percent={93} strokeColor={conicColors} />
+                            <span style={{ marginTop: "10px", fontWeight: "bold" }}>Thursday</span>
+                        </div>
                     </div>
 
-                    <div style={{display:"grid", gridTemplateRows:"repeat(7, 1fr)", gridGap:"20px", textAlign:"center"}} >
-                         <Progress classNames={classNames} styles={stylesFn} percent={10} />
-                         <Progress classNames={classNames} styles={stylesFn} percent={20} />
-                         <Progress classNames={classNames} styles={stylesFn} percent={40} />
-                         <Progress classNames={classNames} styles={stylesFn} percent={60} />
-                         <Progress classNames={classNames} styles={stylesFn} percent={80} />
-                         <Progress classNames={classNames} styles={stylesFn} percent={90} />
-                         <Progress classNames={classNames} styles={stylesFn} percent={99} />
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gridGap: "20px", textAlign: "center" }}>
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                            <Progress type="circle" percent={93} strokeColor={conicColors} />
+                            <span style={{ marginTop: "10px", fontWeight: "bold" }}>Friday</span>
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                            <Progress type="circle" percent={90} strokeColor={twoColors} />
+                            <span style={{ marginTop: "10px", fontWeight: "bold" }}>Saturday</span>
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                            <Progress type="circle" percent={100} strokeColor={twoColors} />
+                            <span style={{ marginTop: "10px", fontWeight: "bold" }}>Sunday</span>
+                        </div>
                     </div>
                 </div>
             </div> 
