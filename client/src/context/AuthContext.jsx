@@ -7,15 +7,15 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const login = async (username, password) => {
+  const login = async (email, password) => {
     setLoading(true);
     try {
       const res = await fetch("https://69cfba0fa4647a9fc675e215.mockapi.io/users");
       const users = await res.json();
 
-      // Tìm user theo username và password_display
+      // Tìm user theo email và password_display
       const foundUser = users.find(u =>
-        u.username === username && u.password_display === password
+        u.email === email && u.password_display === password
       );
 
       if (foundUser) {
@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem("user", JSON.stringify(foundUser));
         return { success: true, user: foundUser };
       } else {
-        throw new Error("Tên đăng nhập hoặc mật khẩu không đúng");
+        throw new Error("Email hoặc mật khẩu không đúng");
       }
     } catch (error) {
       throw new Error(error.message || "Đăng nhập thất bại");

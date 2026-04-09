@@ -8,51 +8,56 @@ const Header = () => {
   const { cart } = useCart();
 
   return (
-    <header className="sticky top-0 z-50 border-b bg-zinc-950 border-zinc-800">
-      <div className="flex items-center justify-between px-6 py-4 mx-auto max-w-7xl">
-        <Link to="/" className="text-3xl font-bold tracking-tight text-white">
-          Shop<span className="text-emerald-500">.</span>
+    <header className="bg-[#2a0614] border-b border-white/10 sticky top-0 z-50">
+      <div className="flex items-center justify-between px-6 py-5 mx-auto max-w-7xl">
+        {/* Logo */}
+        <Link to="/" className="flex items-center gap-2">
+          <span className="text-3xl font-bold tracking-wider text-white">THE CRUMB</span>
+          <span className="font-light text-pink-500">&</span>
+          <span className="text-3xl font-bold tracking-wider text-white">BEAN</span>
         </Link>
 
-        <nav className="flex items-center gap-8 text-sm font-medium">
-          <Link to="/" className="transition-colors hover:text-emerald-500">Trang chủ</Link>
-          <Link to="/products" className="transition-colors hover:text-emerald-500">Sản phẩm</Link>
-          <Link to="/cart" className="flex items-center gap-1 transition-colors hover:text-emerald-500">
-            Giỏ hàng
+        {/* Navigation */}
+        <nav className="items-center hidden gap-10 text-sm font-medium md:flex text-white/90">
+          <Link to="/" className="transition-colors hover:text-white">HOME</Link>
+          <Link to="/products" className="transition-colors hover:text-white">SHOP</Link>
+          <Link to="/cart" className="flex items-center gap-1 transition-colors hover:text-white">
+            CART
             {cart.length > 0 && (
-              <span className="ml-1 bg-emerald-500 text-white text-xs px-2 py-0.5 rounded-full min-w-[18px] h-[18px] flex items-center justify-center">
+              <span className="ml-1 bg-pink-600 text-white text-xs px-2 py-0.5 rounded-full min-w-4.5 h-4.5 flex items-center justify-center">
                 {cart.length}
               </span>
             )}
           </Link>
         </nav>
 
+        {/* Auth & Cart */}
         <div className="flex items-center gap-4">
           {user ? (
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-zinc-400">
-                Xin chào, {user.username || user.full_name || 'User'}
+            <div className="flex items-center gap-6">
+              <span className="hidden text-sm text-white/80 md:block">
+                Hi, {user.full_name?.split(' ')[0] || user.username}
               </span>
               <button
                 onClick={logout}
-                className="px-5 py-2 text-sm transition-colors border rounded-lg border-zinc-700 hover:border-red-500 hover:text-red-400"
+                className="px-5 py-2 text-sm transition-colors border rounded-full border-white/30 hover:border-white/60"
               >
-                Đăng xuất
+                Logout
               </button>
             </div>
           ) : (
             <div className="flex items-center gap-3">
               <Link
                 to="/login"
-                className="px-5 py-2 text-sm transition-colors border rounded-lg border-zinc-700 hover:border-white"
+                className="px-6 py-2.5 text-sm border border-white/30 hover:border-white/60 rounded-full transition-colors"
               >
-                Đăng nhập
+                Sign In
               </Link>
               <Link
                 to="/register"
-                className="px-5 py-2 text-sm font-medium text-black transition-colors bg-white rounded-lg hover:bg-zinc-200"
+                className="px-6 py-2.5 text-sm bg-white text-[#3f0a1c] font-semibold rounded-full hover:bg-white/90 transition-colors"
               >
-                Đăng ký
+                Join Now
               </Link>
             </div>
           )}

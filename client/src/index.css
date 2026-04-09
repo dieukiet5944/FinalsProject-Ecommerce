@@ -1,1 +1,69 @@
+/* src/index.css */
+
 @import "tailwindcss";
+
+@theme {
+    --color-primary-500: #FF2D95;
+    /* Hot pink từ button EXPLORE MENU */
+    --color-primary-600: #E0207E;
+
+    --color-warm-50: #F5E8D8;
+    --color-warm-400: #D97757;
+    /* Cam nâu bánh mì */
+    --color-warm-600: #8B5A2B;
+
+    --color-dark-bg: #0F0F0F;
+    --color-dark-surface: #1A1A1A;
+    --color-dark-card: #252525;
+    --color-dark-text: #F1F1F1;
+    --color-dark-text-secondary: #A3A3A3;
+
+    --font-family-heading: "Playfair Display", serif;
+    --font-family-body: "Inter", system-ui, sans-serif;
+}
+
+/* Font Google */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@400;500;600&display=swap');
+
+body {
+    font-family: var(--font-family-body);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: var(--font-family-heading);
+}
+
+/* Tùy chỉnh thêm cho phong cách ấm áp, sang trọng */
+.hero-bg {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65)),
+        url('https://picsum.photos/id/1015/2000/1200');
+    /* tạm dùng ảnh demo */
+    background-size: cover;
+    background-position: center;
+}
+
+.scroll-indicator {
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+
+    0%,
+    20% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(10px);
+    }
+
+    80%,
+    100% {
+        transform: translateY(0);
+    }
+}
