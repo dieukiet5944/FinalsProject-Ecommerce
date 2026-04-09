@@ -70,14 +70,14 @@ const HomePage = () => {
     
 
     return (
-        <div style={{display: "grid", gridTemplateColumns:"20% 80%", width: "100%", height:"100vh", overflow: "hidden"}}>
+        <div style={{display: "grid", gridTemplateColumns:"22% 80%", width: "100%", height:"100vh", overflow: "hidden"}}>
             <div className='menu-Nav' style={{ display: "grid", gridTemplateRows: "1fr 3fr 0fr", overflowY:"auto"}}>
                 <div className='logo-brand' style={{display: "flex",alignItems: "center", gap: "10px", padding: "12px 18px", flex:"1"}}>
                     <img src="../src/assets/logo.png" alt="" style={{width: "120px", height: "120px"}} />
 
                     <div>
                         <h3 style={{fontWeight: "bold"}}>Crumb & Bean</h3>
-                        <p style={{color: "rgb(238, 44, 109)", fontSize:"0,5rem"}}>ADMIN CONSOLE</p>
+                        <h2 style={{color: "rgb(238, 44, 109)"}}>ADMIN DASHBOARD</h2>
                     </div>
                 </div>
 
