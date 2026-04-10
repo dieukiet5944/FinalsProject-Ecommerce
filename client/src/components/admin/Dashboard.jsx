@@ -20,7 +20,7 @@ const Dashboard = ({name}) => {
 
     <div style={{padding:"24px 36px", display:"flex", flexDirection:"column", gap:"25px", height:"100vh"}}>
         <div>
-            <h1>Dashboard Overview</h1>
+            <h1 style={{fontSize:"1.5rem", fontWeight:"bold", color:"#EE2B6C"}}>Dashboard Overview</h1>
             <p style={{color: "#999"}}>Welcome back, {name}! Here's the buzz from your store today</p>
         </div>
 
@@ -32,7 +32,7 @@ const Dashboard = ({name}) => {
                       <PoundCircleOutlined style={{fontSize: "20px",padding:"10px", borderRadius:"8px" , backgroundColor:"rgb(220, 252, 231)", color:"rgb(42, 146, 80)"}} />
                       <p style={{padding:"10px", borderRadius:"13px" , backgroundColor:"rgb(220, 252, 231)", color:"rgb(75, 209, 124)"}}>+12,5%</p>
                  </div>
-                 <p>Total Revenue</p>
+                 <p style={{fontWeight:"bold"}}>Total Revenue</p>
                  <h2>$12,840.50</h2>
             </div>
 
@@ -41,7 +41,7 @@ const Dashboard = ({name}) => {
                       <ShoppingCartOutlined style={{fontSize: "20px",padding:"10px", borderRadius:"8px" , backgroundColor:"rgb(219, 234, 254)", color:"rgb(73, 113, 191)"}} />
                       <p style={{padding:"10px", borderRadius:"13px" , backgroundColor:"rgb(219, 234, 254)", color:"rgb(128, 166, 244)"}}>+8,2%</p>
                  </div>
-                 <p>New Orders</p>
+                 <p style={{fontWeight:"bold"}}>New Orders</p>
                  <h2>142</h2>
             </div>
 
@@ -50,7 +50,7 @@ const Dashboard = ({name}) => {
                       <UserAddOutlined style={{fontSize: "20px",padding:"10px", borderRadius:"8px" , backgroundColor:"rgb(254, 234, 241)", color:"rgb(239, 61, 120)"}} />
                       <p style={{padding:"10px", borderRadius:"13px" , backgroundColor:"rgb(254, 234, 241)", color:"rgb(239, 61, 120)"}}>+5,4%</p>
                  </div>
-                 <p>Active Customers</p>
+                 <p style={{fontWeight:"bold"}}>Active Customers</p>
                  <h2>892</h2>
             </div>
 
@@ -59,7 +59,7 @@ const Dashboard = ({name}) => {
                       <ThunderboltOutlined style={{fontSize: "20px",padding:"10px", borderRadius:"8px" , backgroundColor:"rgb(244, 219, 183)", color:"rgb(255, 152, 0)"}} />
                       <p style={{padding:"10px", borderRadius:"13px" , backgroundColor:"rgb(244, 219, 183)", color:"rgb(255, 152, 0)"}}>4.9</p>
                  </div>
-                 <p>Average Rating</p>
+                 <p style={{fontWeight:"bold"}}>Average Rating</p>
                  <h2>98% Positive</h2>
             </div>
         </div>
@@ -69,7 +69,7 @@ const Dashboard = ({name}) => {
             <div style={{display:"grid", gridTemplateRows:"1fr 4fr", backgroundColor:"#fff",padding:"20px", borderRadius: "10px", gridGap:"10px"}}>
                 <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
                      <div style={{display:"flex", flexDirection:"column", gap:"10px"}}>
-                        <h2>Weekly Sales Performance</h2>
+                        <h2 style={{fontWeight:"bold"}}>Weekly Sales Performance</h2>
                      </div>      
 
                      <Space align="center">
@@ -123,7 +123,7 @@ const Dashboard = ({name}) => {
 
 
             <div className="right-column-scroll" style={{backgroundColor:"#fff",padding:"20px", borderRadius: "10px", position:"relative",overflowY:"auto",display:"flex", flexDirection:"column", gap:"10px", height: "80vh",}}>
-                 <h2 style={{backgroundColor: "#fff",top: "-20px",zIndex:"1050",position:"sticky",paddingBottom: "10px", margin: "0"}}>Top Selling Items</h2>
+                 <h2 style={{backgroundColor: "#fff",top: "-20px",zIndex:"1050",position:"sticky",paddingBottom: "10px", margin: "0", fontWeight:"bold"}}>Top Selling Items</h2>
 
                  <div style={{display: "flex", justifyContent:"space-between", alignItems:"center", gap:"10px"}}>
                     <img src="../src/assets/logo.png" alt="" style={{width:"100px", height:"100px"}}/>

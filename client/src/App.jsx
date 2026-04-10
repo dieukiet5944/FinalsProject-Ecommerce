@@ -20,6 +20,7 @@ import Dashboard from '../src/components/admin/Dashboard';
 import Orders from '../src/components/admin/OrderManagement';
 import Inventory from '../src/components/admin/Inventory';
 import Customers from '../src/components/admin/CustomerDirectory';
+import Setting from '../src/components/admin/Setting';
 import './App.css';
 
 function App() {
@@ -48,6 +49,7 @@ function App() {
       {/* {route admin } */}
 
       <Route path="/admin-login" element={<AdminLogin />} />
+      <Route path="/homepage" element={<HomePage />} />
 
       <Route path="/admin">
         <Route index element={<HomePage />} />
@@ -55,6 +57,7 @@ function App() {
         <Route path="order" element={<Orders />} />
         <Route path="inventory" element={<Inventory />} />
         <Route path="customer" element={<Customers />} />
+        <Route path="setting" element={<Setting/>} />
       </Route>
     </Routes>
   );
