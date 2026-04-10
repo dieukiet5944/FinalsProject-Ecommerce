@@ -549,7 +549,7 @@ const handleDelete = async (id) => {
 
             <div style={{display:"flex", justifyContent:"space-between", alignItems:"flex-end"}}>
                     <div>
-                        <h1>Inventory Management</h1>
+                        <h1 style={{fontSize:"1.5rem", fontWeight:"bold", color:"#EE2B6C"}}>Inventory Management</h1>
                         <p style={{color: "#999"}}>Real-time stock tracking for Drink & Cake la</p>
                     </div>
 
@@ -564,14 +564,14 @@ const handleDelete = async (id) => {
 
             <div style={{display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gridGap:"20px"}}>
                 <div style={{padding:"20px", display:"flex", flexDirection:"column", gap:"10px", backgroundColor:"#fff", borderRadius:"10px", boxShadow:"5px 5px 4px 0px #999"}}>
-                    <p style={{color:"#999"}}>TOTAL SKU</p>
+                    <p style={{color:"#999", fontWeight:"bold"}}>TOTAL SKU</p>
                     <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
                         <h2>{data.length}</h2>
                     </div>
                 </div>
 
                 <div style={{padding:"20px", display:"flex", flexDirection:"column", gap:"10px", backgroundColor:"#fff", borderRadius:"10px", boxShadow:"5px 5px 4px 0px #999"}}>
-                    <p style={{color:"#999"}}>LOW STOCK ALERTS</p>
+                    <p style={{color:"#999", fontWeight:"bold"}}>LOW STOCK ALERTS</p>
                     <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
                         <h2 style={{color:"#ff8e04"}}>{lowStockCount}</h2>
                         <Button onClick={handleActionRequest} type="text" icon={<AlertOutlined />} style={{display:"flex", color:"orange", padding:"5px 15px", backgroundColor:"#fadcb7"}}>Action Request</Button>
@@ -579,7 +579,7 @@ const handleDelete = async (id) => {
                 </div>
 
                 <div style={{padding:"20px", display:"flex", flexDirection:"column", gap:"10px", backgroundColor:"#fff", borderRadius:"10px", boxShadow:"5px 5px 4px 0px #999"}}>
-                    <p style={{color:"#999"}}>BAKERY FRESHNESS</p>
+                    <p style={{color:"#999", fontWeight:"bold"}}>BAKERY FRESHNESS</p>
                     <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", gap:"10px"}}>
                         <h2 style={{ color: getFreshnessColor(avgFreshness) }}>{avgFreshness}%</h2>
                         <div style={{ width: "200px" }}>
@@ -611,6 +611,7 @@ const handleDelete = async (id) => {
             <div style={{ padding: '20px', background: '#fff', borderRadius: '8px' }}>
                 <Spin spinning={loading} >
                     <Table 
+                        rowKey="id"
                         rowClassName={(record) => record.disabled ? 'row-disabled' : ''}
                         columns={columns} 
                         dataSource={data} 

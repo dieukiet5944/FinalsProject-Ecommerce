@@ -245,7 +245,7 @@ const Orders = () => {
             
             <div style={{display:"flex", justifyContent:"space-between", alignItems:"flex-end"}}>
                     <div>
-                        <h1>Order Management</h1>
+                        <h1 style={{fontSize:"1.5rem", fontWeight:"bold", color:"#EE2B6C"}}>Order Management</h1>
                         <p style={{color: "#999"}}>Efficiently process and track your bakery's daily flow</p>
                     </div>
             </div>

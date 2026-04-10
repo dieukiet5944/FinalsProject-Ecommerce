@@ -281,3 +281,39 @@
     pointer-events: none; 
     filter: grayscale(100%);
 }
+
+.sunLight{
+   transition: all 0.3s ease-in-out;
+}
+
+.sunLight:hover{
+    background-color:rgb(255, 231, 240);
+    border: 3px solid rgb(238, 43, 108);
+    h2{
+        color:rgb(238, 43, 108) !important; 
+
+    }
+
+    p{ color: #fc9cbc !important;}
+
+}
+
+.moonLight{
+    transition: all 0.3s ease-in-out;
+    
+}
+
+.moonLight:hover{
+    background-color:rgb(255, 231, 240);
+    border: 3px solid rgb(238, 43, 108);
+
+    
+
+   h2{
+        color:rgb(238, 43, 108) !important; 
+
+    }
+
+    p{ color: #fc9cbc !important;}
+
+}

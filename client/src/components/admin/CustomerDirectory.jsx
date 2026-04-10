@@ -8,6 +8,8 @@ const Customers = () => {
 
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true)
+    const [filterStatus, setFilterStatus] = useState('ALL');
+    
 
     useEffect(() => {
       const loadDataUsers = async () => {
@@ -26,7 +28,17 @@ const Customers = () => {
       loadDataUsers();
     }, []);
 
+    const handleFilter = (status) => {
+        setFilterStatus(status);
+    };
+
+    const filteredData = filterStatus === 'ALL' 
+    ? data
+    : data.filter(item => item.status === filterStatus);
+
+
     const handleViewProfile = (user) => {
+        const bgStatus = user.status === "online" ? "rgb(237, 255, 241)" : "rgb(255, 237, 237)"
     Modal.info({
         title: `Detailed information: ${user.full_name}`,
         width: 500,
@@ -38,9 +50,10 @@ const Customers = () => {
             <Tag color={user.role === 'admin' ? 'gold' : 'blue'}>{user.role.toUpperCase()}</Tag>
             </div>
             <p><b>📧 Email:</b> {user.email}</p>
-            <p><b>⚽ Total orders:</b> {user.order} <AuditOutlined /> </p>
+            <p><b>⚽ Total orders:</b> {user.history_orders.length} <AuditOutlined /> </p>
             <p><b>🕒 Last activity:</b> {user.last_active}</p>
             <p><b>📅 Date of participation:</b> {new Date(user.created_at).toLocaleDateString()}</p>
+            <p style={{backgroundColor: bgStatus, width:"70px", borderRadius:"10px"}}><b>{user.status === "online" ? "🟢" : "🔴"} {user.status}</b></p>
         </div>
         ),
         okText: 'Đóng',
@@ -180,11 +193,11 @@ const Customers = () => {
 
     return (
 
-        <div style={{padding:"24px 36px", display:"flex", flexDirection:"column", gap:"32px", height:"100vh"}}>
+        <div style={{padding:"24px 36px", display:"flex", flexDirection:"column", gap:"20px", height:"100vh"}}>
 
             <div style={{display:"flex", justifyContent:"space-between", alignItems:"flex-end"}}>
                     <div>
-                        <h1>Customer Directory</h1>
+                        <h1 style={{fontSize:"1.5rem", fontWeight:"bold", color:"#EE2B6C"}}>Customer Directory</h1>
                         <p style={{color: "#999"}}>Managing {data.length} members of Crumb & Bean Rewards</p>
                     </div>
 
@@ -227,28 +240,23 @@ const Customers = () => {
                 </div>
             </div>
 
+            <div style={{display:"flex", justifyContent:"center", alignItems:"center", padding:"14p 24px"}}>
+                <div style={{display:"grid", gridTemplateColumns:"repeat(3, 1fr)", borderRadius:"5px",backgroundColor:"#edf4fdce", padding:"5px 10px", textAlign:"center"}}>
+                        <button className='btn-orders' onClick={() => handleFilter('ALL')}>ALL</button>
+                        <button className='btn-orders' onClick={() => handleFilter('online')}>ONLINE</button>
+                        <button className='btn-orders' onClick={() => handleFilter('offline')}>OFFLINE</button>
+                </div>
+            </div>
+
  
             {/* Table lisst customers 👨‍💼  */}
             <div style={{display:"flex", flexDirection:"column", gap:"20px", backgroundColor:"#fff", borderRadius:"8px", padding:"14px 24px"}}>
-                <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
-                        
-                        <div style={{display:"flex", alignItems:"center", gap:"10px"}}>
-                            <h3>Member List</h3>
-                            <button className='btn-customer'>ALL</button>
-                            <button className='btn-customer'>VIP</button>
-                            <button className='btn-customer'>INACTIVE</button>
-                        </div>
-
-                        <div><FunnelPlotOutlined /></div>
-
-
-                </div>
                 <Spin spinning={loading}>
                     <Table 
                         rowClassName={(record) => record.disabled ? 'row-disabled' : ''}
                         columns={columns} 
                         rowKey="id"
-                        dataSource={data} 
+                        dataSource={filteredData} 
                         pagination={{
                         total: data.length,
                         pageSize: 5,

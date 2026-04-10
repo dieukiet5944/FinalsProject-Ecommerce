@@ -8,6 +8,7 @@ import Dashboard from '../../components/admin/Dashboard'
 import Orders from '../../components/admin/OrderManagement'
 import Inventory from '../../components/admin/Inventory'
 import Customers from '../../components/admin/CustomerDirectory'
+import Setting from '../../components/admin/Setting'
 
 
 
@@ -33,6 +34,7 @@ const HomePage = () => {
         case 'orders': return <Orders />;
         case 'inventory': return <Inventory />;
         case 'customers': return <Customers />;
+        case 'setting': return <Setting />;
         case 'welcome': 
             return (
             <div className='welcome' style={{padding: "14px 24px", display:"flex", justifyContent:"center", alignItems:"center", height:"100vh", gap:"20px"}}>
@@ -196,6 +198,7 @@ const HomePage = () => {
                     >
                         <SettingOutlined style={{ fontSize: '20px' }}/> <span style={{ margin: 0, lineHeight: 1 }}>Setting</span>
                     </Button>
+                    
                     
                 </div>
 
