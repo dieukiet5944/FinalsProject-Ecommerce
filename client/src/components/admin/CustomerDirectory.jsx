@@ -19,8 +19,8 @@ const Customers = () => {
           const data = await fetchUsers(); 
           setData(data);
         } catch (error) {
-          console.error("Lỗi rồi Hòa ơi:", error);
-          message.error("Không thể kết nối đến server MockAPI (Lỗi 503)");
+          console.error("Error!!!:", error);
+          message.error("Unable to connect to MockAPI server!");
         } finally {
           setLoading(false);
         }
@@ -63,11 +63,11 @@ const Customers = () => {
 
     const handleDeleteUser = (id) => {
     Modal.confirm({
-        title: 'Xác nhận xóa người dùng?',
-        content: 'Dữ liệu của cầu thủ này sẽ bị xóa vĩnh viễn khỏi hệ thống MU 2008.',
-        okText: 'Xóa ngay',
-        okType: 'danger',
-        cancelText: 'Hủy',
+        title: 'Confirm user deletion?',
+        content: 'This users data will be permanently deleted from the system.',
+        okText: 'Delete immediately',
+        okType: 'dangerous',
+        cancelText: 'Cancle',
         onOk: async () => {
         try {
             setLoading(true);
@@ -76,9 +76,9 @@ const Customers = () => {
 
             setData(prev => prev.filter(item => item.id !== id));
             
-            message.success("Đã xóa người dùng thành công!");
+            message.success("User successfully deleted!");
         } catch (error) {
-            message.error("Không thể xóa người dùng này!");
+            message.error("Cannot delete this user!");
         } finally {
             setLoading(false);
         }
