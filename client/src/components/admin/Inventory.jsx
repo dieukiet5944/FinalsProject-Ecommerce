@@ -26,11 +26,11 @@ const Inventory = () =>{
           if (Array.isArray(response) && response.length > 0) {
             setData(response);
           } else {
-            message.warning("Hiện tại không có dữ liệu sản phẩm.");
+            message.warning("Currently, there is no product data available.");
             setData([]);
           }
         } catch (error) {
-          message.error("Kết nối Server thất bại!");
+          message.error("Server connection failed!");
         } finally {
           setLoading(false);
         }
@@ -265,7 +265,7 @@ const handleActionRequest = () => {
       const itemsToUpdate = lowStockItems.filter(item => tempAmounts[item.id] > 0);
 
       if (itemsToUpdate.length === 0) {
-        message.info("Chưa có số lượng nào được nhập thêm.");
+        message.info("No additional quantities have been imported yet");
         return;
       }
 
@@ -314,7 +314,7 @@ const handleActionRequest = () => {
 
         message.success(`Successfully restocked ${itemsToUpdate.length} products!`);
       } catch (error) {
-        console.error("Lỗi đây Hòa ơi:", error);
+        console.error("Error : ", error);
         message.error("Batch restock failed!");
       } finally {
         setLoading(false);
@@ -391,11 +391,11 @@ const handleRestock = async (record) => {
   const current = record.stock?.currentstock || 0;
 
   Modal.confirm({
-    title: `Nhập hàng cho: ${record.name}`,
+    title: `Import goods for: ${record.name}`,
     content: (
       <div>
-        <p>Số lượng hiện tại: <b>{record.stock.currentstock}</b></p>
-        <span>Nhập thêm số lượng: </span>
+        <p>Current quantity: <b>{record.stock.currentstock}</b></p>
+        <span>Enter additional quantity: </span>
         <InputNumber 
           min={1} 
           max={maxCapacity - current}
@@ -515,8 +515,8 @@ const handleSaveEdit = async () => {
     form.resetFields();
     setEditingProduct(null);
   } catch (error) {
-    console.error("Lỗi thực sự đây Hòa ơi:", error);
-    message.error("Vui lòng kiểm tra lại các trường nhập liệu!");
+    console.error("Error", error);
+    message.error("Please double-check the input fields!");
   } finally {
     setLoading(false);
   }
@@ -658,7 +658,7 @@ const handleDelete = async (id) => {
                         <Form.Item 
                           name="id" 
                           label="Stock Keeping Unit (SKU)" 
-                          rules={[{ required: !editingProduct, message: 'Vui lòng nhập mã!' }]}
+                          rules={[{ required: !editingProduct, message: 'Please enter the code!' }]}
                         ><Input placeholder="e.g. BC-011" disabled={!!editingProduct} /></Form.Item>
                         <Form.Item name="name" label="Product Name" rules={[{ required: true }]}>
                         <Input />

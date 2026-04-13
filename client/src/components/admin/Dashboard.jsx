@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import {PoundCircleOutlined, ShoppingCartOutlined, UserAddOutlined, ThunderboltOutlined, ArrowRightOutlined, ExceptionOutlined, DollarOutlined, UserOutlined} from '@ant-design/icons'
-import {Cascader, Row, Col, Progress, Space, DatePicker, Spin, message} from 'antd'
-import { fetchUsers } from '../../services/api';
+import {Cascader, Row, Col, Progress, Space, DatePicker, Spin, message, Avatar, Typography, Card, Flex} from 'antd'
+import { fetchUsers, fetchProducts } from '../../services/api';
+
+
 
 const twoColors = {
   '0%': '#108ee9',
@@ -15,9 +17,12 @@ const conicColors = {
 
 const Dashboard = ({name}) => {
 
-    const [dataUser, setDataUser] = useState([]);
+    const [dataUser, setDataUser] = useState([])
+    const [dataProduct, setDataProduct]= useState([])
     const [historyOrders, setHistoryOrders] = useState([])
     const [loading, setLoading] = useState(false)
+
+    const { Text: AntText } = Typography;
 
     useEffect(() => {
         
@@ -27,6 +32,8 @@ const Dashboard = ({name}) => {
             try {
 
                 const users = await fetchUsers();
+
+                const products = await fetchProducts()
 
                 const allOrders = users.flatMap(user => 
                     user.history_orders.map(order => {
@@ -45,6 +52,8 @@ const Dashboard = ({name}) => {
 
                 setHistoryOrders(allOrders);
                 setDataUser(users)
+
+                setDataProduct(products);
 
                 console.log("Success to get data from server")
                 
@@ -90,6 +99,40 @@ const Dashboard = ({name}) => {
         return (calculateTotalRevenue() / aovOrders.length).toFixed(2);
 
     }, [historyOrders]);
+
+    const topSellingItem = useMemo(() => {
+        const imageLookup = {};
+        if (dataProduct && dataProduct.length > 0) {
+            dataProduct.forEach(p => {
+                const folder = p.category.toLowerCase(); 
+                const key = p.name.toLowerCase().trim();
+
+                imageLookup[key] = `/product/${folder}/${p.image}`;
+            });
+        }
+
+        const itemCounts = {};
+
+    
+        historyOrders
+            .filter(order => order.status === 'Completed')
+            .forEach(order => {
+            order.items?.forEach(item => {
+                if (!itemCounts[item.name]) {
+                    itemCounts[item.name] = { 
+                    name: item.name, 
+                    qty: 0, 
+                    price: item.price, 
+                    image: imageLookup[item.name.toLowerCase().trim()] 
+                    };
+                }
+                itemCounts[item.name].qty += Number(item.qty || 0);
+            });
+            });
+        return Object.values(itemCounts)
+            .sort((a, b) => b.qty - a.qty)
+            .slice(0, 5); 
+    }, [historyOrders, dataProduct]);
 
     return(
 
@@ -144,15 +187,15 @@ const Dashboard = ({name}) => {
             <div style={{display:"grid", gridTemplateRows:"1fr 4fr", backgroundColor:"#fff",padding:"20px", borderRadius: "10px", gridGap:"10px"}}>
                 <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
                      <div style={{display:"flex", flexDirection:"column", gap:"10px"}}>
-                        <h2 style={{fontWeight:"bold"}}>Weekly Sales Performance</h2>
+                        <h2 style={{ fontSize: '20px', fontWeight: 'bold' }}>Weekly Sales Performance</h2>
                      </div>      
 
                      <Space align="center">
                         <DatePicker 
                         picker="week" 
-                        placeholder="Chọn tuần"
+                        placeholder="Select week"
                         onChange={(date, dateString) => {
-                            console.log("Tuần đã chọn:", dateString);
+                            console.log("Selected week:", dateString);
                         }}
                         />
                         </Space>
@@ -197,93 +240,36 @@ const Dashboard = ({name}) => {
             </div> 
 
 
-            <div className="right-column-scroll" style={{backgroundColor:"#fff",padding:"20px", borderRadius: "10px", position:"relative",overflowY:"auto",display:"flex", flexDirection:"column", gap:"10px", height: "80vh",}}>
-                 <h2 style={{backgroundColor: "#fff",top: "-20px",zIndex:"1050",position:"sticky",paddingBottom: "10px", margin: "0", fontWeight:"bold"}}>Top Selling Items</h2>
+            <div className="right-column-scroll" style={{backgroundColor:"#fff",padding:"20px", borderRadius: "10px"}}>
+                 <Card 
+                    title={<span style={{ fontSize: '20px', fontWeight: 'bold' }}>Top Selling Items</span>} 
+                    variant="borderless" 
+                    style={{ borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}
+                    >
+                    <Flex vertical gap="large"> 
+                        {topSellingItem.map((item, index) => (
+                        <Flex key={index} justify="space-between" align="center" style={{ paddingBottom: '16px', borderBottom: '1px solid #f0f0f0' }}>
+                            <Flex gap="middle" align="center">
+                            <Avatar 
+                                src={item.image} 
+                                shape="square" 
+                                size={40} 
+                                style={{ borderRadius: '8px', border: '1px solid #f0f0f0' }} 
+                            />
+                            <Flex vertical>
+                                <AntText style={{ fontSize: '17px', fontWeight: '600' }}>{item.name}</AntText>
+                                <AntText type="secondary" style={{ fontSize: '14px' }}>{item.qty} sales</AntText>
+                            </Flex>
+                            </Flex>
+                            
+                            <AntText style={{ color: '#ff4d4f', fontSize: '20px', fontWeight: '500' }}>
+                            ${item.price}
+                            </AntText>
+                        </Flex>
+                        ))}
+                    </Flex>
+                </Card>
 
-                 <div style={{display: "flex", justifyContent:"space-between", alignItems:"center", gap:"10px"}}>
-                    <img src="../src/assets/logo.png" alt="" style={{width:"100px", height:"100px"}}/>
-
-                    <div>
-                        <h3>Midnight Chocolate Cake</h3>
-                        <p style={{color:"#999"}}>24 sales to day</p>
-                    </div>
-
-                    <h3 style={{color:"rgb(239, 61, 120)"}}>$285</h3>
-                 </div>
-
-                 <div style={{display: "flex", justifyContent:"space-between", alignItems:"center", gap:"10px"}}>
-                    <img src="../src/assets/logo.png" alt="" style={{width:"100px", height:"100px"}}/>
-
-                    <div>
-                        <h3>Midnight Chocolate Cake</h3>
-                        <p style={{color:"#999"}}>24 sales to day</p>
-                    </div>
-
-                    <h3 style={{color:"rgb(239, 61, 120)"}}>$285</h3>
-                 </div>
-
-                 <div style={{display: "flex", justifyContent:"space-between", alignItems:"center", gap:"10px"}}>
-                    <img src="../src/assets/logo.png" alt="" style={{width:"100px", height:"100px"}}/>
-
-                    <div>
-                        <h3>Midnight Chocolate Cake</h3>
-                        <p style={{color:"#999"}}>24 sales to day</p>
-                    </div>
-
-                    <h3 style={{color:"rgb(239, 61, 120)"}}>$285</h3>
-                 </div>
-
-                 <div style={{display: "flex", justifyContent:"space-between", alignItems:"center", gap:"10px"}}>
-                    <img src="../src/assets/logo.png" alt="" style={{width:"100px", height:"100px"}}/>
-
-                    <div>
-                        <h3>Midnight Chocolate Cake</h3>
-                        <p style={{color:"#999"}}>24 sales to day</p>
-                    </div>
-
-                    <h3 style={{color:"rgb(239, 61, 120)"}}>$285</h3>
-                 </div>
-
-                 <div style={{display: "flex", justifyContent:"space-between", alignItems:"center", gap:"10px"}}>
-                    <img src="../src/assets/logo.png" alt="" style={{width:"100px", height:"100px"}}/>
-
-                    <div>
-                        <h3>Midnight Chocolate Cake</h3>
-                        <p style={{color:"#999"}}>24 sales to day</p>
-                    </div>
-
-                    <h3 style={{color:"rgb(239, 61, 120)"}}>$285</h3>
-                 </div>
-                 <div style={{display: "flex", justifyContent:"space-between", alignItems:"center", gap:"10px"}}>
-                    <img src="../src/assets/logo.png" alt="" style={{width:"100px", height:"100px"}}/>
-
-                    <div>
-                        <h3>Midnight Chocolate Cake</h3>
-                        <p style={{color:"#999"}}>24 sales to day</p>
-                    </div>
-
-                    <h3 style={{color:"rgb(239, 61, 120)"}}>$285</h3>
-                 </div>
-                 <div style={{display: "flex", justifyContent:"space-between", alignItems:"center", gap:"10px"}}>
-                    <img src="../src/assets/logo.png" alt="" style={{width:"100px", height:"100px"}}/>
-
-                    <div>
-                        <h3>Midnight Chocolate Cake</h3>
-                        <p style={{color:"#999"}}>24 sales to day</p>
-                    </div>
-
-                    <h3 style={{color:"rgb(239, 61, 120)"}}>$285</h3>
-                 </div>
-                 <div style={{display: "flex", justifyContent:"space-between", alignItems:"center", gap:"10px"}}>
-                    <img src="../src/assets/logo.png" alt="" style={{width:"100px", height:"100px"}}/>
-
-                    <div>
-                        <h3>Midnight Chocolate Cake</h3>
-                        <p style={{color:"#999"}}>24 sales to day</p>
-                    </div>
-
-                    <h3 style={{color:"rgb(239, 61, 120)"}}>$285</h3>
-                 </div>
             </div>
         </div>
 

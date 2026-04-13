@@ -45,7 +45,7 @@ const Orders = () => {
           );
 
           if (!userOwner) {
-              message.error("Không tìm thấy chủ nhân của đơn hàng này!");
+              message.error("No owner of this order can be found!");
               return;
           }
 
@@ -75,7 +75,7 @@ const Orders = () => {
           }
       } catch (error) {
           console.error("Update Error:", error);
-          message.error("Cập nhật trạng thái thất bại!");
+          message.error("Update the failure status!");
       }
   };
 
@@ -158,7 +158,7 @@ const Orders = () => {
         setDataUsers(users);
         setDataSource(allOrders); 
        }catch (error) {
-        console.error("Lỗi khi load đơn hàng:", error);
+        console.error("Error loading order:", error);
       }finally {
       setLoading(false);
     }
@@ -297,7 +297,7 @@ const Orders = () => {
 
                 <div style={{padding:"20px", display:"flex", flexDirection:"column", gap:"10px", backgroundColor: "#fffbe6", border: "1px solid #ffe58f", borderRadius:"10px", boxShadow:"5px 5px 4px 0px #999"}}>
                     <p style={{ color: "#874d00", fontWeight: "bold" }}>ITEM SOLD</p>
-                    <div style={{display:"flex", justifyContent:"space-between"}}>
+                    <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
                       <span style={{color:"#874d00"}}>Cakes: <b>{totalCakes}</b> dishes</span>
                       <span style={{color:"#874d00"}}>Drinks: <b>{totalDrinks}</b> dishes</span>
                     </div>

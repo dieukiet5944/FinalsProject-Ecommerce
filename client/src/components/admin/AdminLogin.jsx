@@ -16,19 +16,19 @@ const AdminLogin = () => {
             const response = await fetch(URL_DATA);
             const result = await response.json();
             
-            console.log("Dữ liệu thô từ API:", result);
+            console.log("Raw data from the API:", result);
 
             const adminList = result?.data?.data?.[0]?.admin;
 
             if (Array.isArray(adminList)) {
                 setData(adminList); 
-                console.log("Đã lấy được mảng admin:", adminList);
+                console.log("The admin array has been retrieved:", adminList);
             } else {
-                console.error("Cấu trúc API thay đổi, không tìm thấy mảng admin!");
+                console.error("The API structure has changed; the admin array is not found!");
                 setData([]); 
             }
         } catch (error) {
-            console.error("Lỗi fetch:", error);
+            console.error("Loading error:", error);
             setData([]); 
         } finally {
             setLoading(false);
@@ -38,7 +38,7 @@ const AdminLogin = () => {
 }, []);
 
     if (loading) return <Spin size="large" />;
-    console.log("Dữ liệu đang dùng để so sánh:", data);
+    console.log("Data being used for comparison:", data);
     const onFinish = (values) => {
     const { username, password } = values;
 
@@ -47,10 +47,10 @@ const AdminLogin = () => {
     );
 
     if (userExists) {
-        message.success('Đăng nhập thành công!');
+        message.success('Login successful!');
         navigate('/admin');
     } else {
-        message.error('Sai tài khoản hoặc mật khẩu!');
+        message.error('Incorrect account or password!');
     }
 };
 
@@ -72,9 +72,9 @@ const AdminLogin = () => {
                         <Form.Item 
                             name="username"
                             label="Admin username"
-                            rules={[{ required: true, message: 'Vui lòng nhập username!' }]}
+                            rules={[{ required: true, message: 'Please enter your username!' }]}
                         >
-                            <Input placeholder="Nhập tên quản trị"/>
+                            <Input placeholder="Enter administrator name"/>
                         </Form.Item>
 
 
@@ -86,14 +86,14 @@ const AdminLogin = () => {
                                         Forgot password?
                                     </a>
                                     </div>}
-                            rules={[{ required: true, message: 'Vui lòng nhập mật khẩu!' }]}
+                            rules={[{ required: true, message: 'Please enter the password!' }]}
                         >
-                            <Input.Password placeholder="Nhập mật khẩu" />
+                            <Input.Password placeholder="Enter password" />
                         </Form.Item>
 
                         <Form.Item>
                             <Button type="primary" htmlType="submit" block loading={loading} color="pink" variant="solid">
-                            Xác nhận
+                            Confirm
                             </Button>
                         </Form.Item>
                     </Form>
