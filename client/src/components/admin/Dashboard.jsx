@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
-import {PoundCircleOutlined, ShoppingCartOutlined, UserAddOutlined, ThunderboltOutlined, ArrowRightOutlined} from '@ant-design/icons'
-import {Cascader, Row, Col, Progress, Space, DatePicker} from 'antd'
+import React, { useState, useEffect, useMemo } from 'react'
+import {PoundCircleOutlined, ShoppingCartOutlined, UserAddOutlined, ThunderboltOutlined, ArrowRightOutlined, ExceptionOutlined, DollarOutlined, UserOutlined} from '@ant-design/icons'
+import {Cascader, Row, Col, Progress, Space, DatePicker, Spin, message} from 'antd'
+import { fetchUsers } from '../../services/api';
 
 const twoColors = {
   '0%': '#108ee9',
@@ -14,7 +15,81 @@ const conicColors = {
 
 const Dashboard = ({name}) => {
 
-    
+    const [dataUser, setDataUser] = useState([]);
+    const [historyOrders, setHistoryOrders] = useState([])
+    const [loading, setLoading] = useState(false)
+
+    useEffect(() => {
+        
+        const getAlldata = async () => {
+            setLoading(true)
+
+            try {
+
+                const users = await fetchUsers();
+
+                const allOrders = users.flatMap(user => 
+                    user.history_orders.map(order => {
+
+                        
+                        const calculatedTotal = order.items?.reduce((sum, item) => sum + (item.qty * item.price), 0) || 0;
+
+                        return {
+                        
+                            ...order,
+                            key: order.orderId,
+                            sumOrders: calculatedTotal,
+                        }
+                    })
+                );
+
+                setHistoryOrders(allOrders);
+                setDataUser(users)
+
+                console.log("Success to get data from server")
+                
+            } catch (error) {
+             message.error("Error Server 500 !!")
+                
+            } finally {
+              setLoading(false)
+            }
+        }
+
+        getAlldata()
+    }, [])
+
+    const calculateTotalRevenue = () => {
+      const completedOrders = historyOrders.filter(order => order.status === 'Completed');
+
+      const total = completedOrders.reduce((sum, order) => {
+          return sum + (Number(order.sumOrders) || 0);
+      }, 0);
+
+      return total.toLocaleString('en-US', { minimumFractionDigits: 2 });
+  };
+
+    const calculatePendingOrders = () => {
+        const pendingOrders = historyOrders.filter(order => order.status === 'Processing');
+        
+        return pendingOrders.length;
+    };
+
+    const calculateActiveCus = () => {
+        const activeCus = dataUser.filter(order => order.status === 'online');
+        
+        return activeCus.length;
+    };
+
+    const calculateAOV = useMemo(() => {
+     
+        const aovOrders = historyOrders.filter(order => order.status === 'Completed');
+
+        if (aovOrders.length === 0) return 0;
+
+        return (calculateTotalRevenue() / aovOrders.length).toFixed(2);
+
+    }, [historyOrders]);
 
     return(
 
@@ -29,38 +104,38 @@ const Dashboard = ({name}) => {
         <div style={{display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gridGap:"20px"}}>
             <div style={{padding:"20px", display:"flex", flexDirection:"column", gap:"10px", backgroundColor:"#fff", borderRadius:"10px", boxShadow:"5px 5px 4px 0px #999"}}>
                  <div style={{display:"flex", justifyContent:"space-between", textAlign:"center"}}>
-                      <PoundCircleOutlined style={{fontSize: "20px",padding:"10px", borderRadius:"8px" , backgroundColor:"rgb(220, 252, 231)", color:"rgb(42, 146, 80)"}} />
-                      <p style={{padding:"10px", borderRadius:"13px" , backgroundColor:"rgb(220, 252, 231)", color:"rgb(75, 209, 124)"}}>+12,5%</p>
+                      <DollarOutlined style={{fontSize: "20px",padding:"10px", borderRadius:"8px" , backgroundColor:"rgb(220, 252, 231)", color:"rgb(42, 146, 80)"}} />
+                      {/* <p style={{padding:"10px", borderRadius:"13px" , backgroundColor:"rgb(220, 252, 231)", color:"rgb(75, 209, 124)"}}>+12,5%</p> */}
                  </div>
-                 <p style={{fontWeight:"bold"}}>Total Revenue</p>
-                 <h2>$12,840.50</h2>
+                 <p style={{fontWeight:"bold"}}>TOTAL REVENUE</p>
+                 <h2 style={{color:"rgb(42, 146, 80)", backgroundColor:"rgb(220, 252, 231)", padding:"5px 12px", borderRadius:"8px"}}>$ {calculateTotalRevenue()}</h2>
             </div>
 
             <div style={{padding:"20px", display:"flex", flexDirection:"column", gap:"10px", backgroundColor:"#fff", borderRadius:"10px", boxShadow:"5px 5px 4px 0px #999"}}>
                  <div style={{display:"flex", justifyContent:"space-between", textAlign:"center"}}>
                       <ShoppingCartOutlined style={{fontSize: "20px",padding:"10px", borderRadius:"8px" , backgroundColor:"rgb(219, 234, 254)", color:"rgb(73, 113, 191)"}} />
-                      <p style={{padding:"10px", borderRadius:"13px" , backgroundColor:"rgb(219, 234, 254)", color:"rgb(128, 166, 244)"}}>+8,2%</p>
+                      {/* <p style={{padding:"10px", borderRadius:"13px" , backgroundColor:"rgb(219, 234, 254)", color:"rgb(128, 166, 244)"}}>+8,2%</p> */}
                  </div>
-                 <p style={{fontWeight:"bold"}}>New Orders</p>
-                 <h2>142</h2>
+                 <p style={{fontWeight:"bold"}}>PENDING ORDERS</p>
+                 <h2 style={{color:"rgb(73, 113, 191)", backgroundColor:"rgb(219, 234, 254)", padding:"5px 12px", borderRadius:"8px"}}>{calculatePendingOrders()} <ExceptionOutlined /></h2>
             </div>
 
             <div style={{padding:"20px", display:"flex", flexDirection:"column", gap:"10px", backgroundColor:"#fff", borderRadius:"10px", boxShadow:"5px 5px 4px 0px #999"}}>
                  <div style={{display:"flex", justifyContent:"space-between", textAlign:"center"}}>
                       <UserAddOutlined style={{fontSize: "20px",padding:"10px", borderRadius:"8px" , backgroundColor:"rgb(254, 234, 241)", color:"rgb(239, 61, 120)"}} />
-                      <p style={{padding:"10px", borderRadius:"13px" , backgroundColor:"rgb(254, 234, 241)", color:"rgb(239, 61, 120)"}}>+5,4%</p>
+                      {/* <p style={{padding:"10px", borderRadius:"13px" , backgroundColor:"rgb(254, 234, 241)", color:"rgb(239, 61, 120)"}}>+5,4%</p> */}
                  </div>
-                 <p style={{fontWeight:"bold"}}>Active Customers</p>
-                 <h2>892</h2>
+                 <p style={{fontWeight:"bold"}}>ACTIVE CUSTOMERS</p>
+                 <h2 style={{color:"rgb(239, 61, 120)", backgroundColor:"rgb(254, 234, 241)", padding:"5px 12px", borderRadius:"8px"}}>{calculateActiveCus()} <UserOutlined /></h2>
             </div>
 
             <div style={{padding:"20px", display:"flex", flexDirection:"column", gap:"10px", backgroundColor:"#fff", borderRadius:"10px", boxShadow:"5px 5px 4px 0px #999"}}>
                  <div style={{display:"flex", justifyContent:"space-between", textAlign:"center"}}>
                       <ThunderboltOutlined style={{fontSize: "20px",padding:"10px", borderRadius:"8px" , backgroundColor:"rgb(244, 219, 183)", color:"rgb(255, 152, 0)"}} />
-                      <p style={{padding:"10px", borderRadius:"13px" , backgroundColor:"rgb(244, 219, 183)", color:"rgb(255, 152, 0)"}}>4.9</p>
+                      {/* <p style={{padding:"10px", borderRadius:"13px" , backgroundColor:"rgb(244, 219, 183)", color:"rgb(255, 152, 0)"}}>4.9</p> */}
                  </div>
-                 <p style={{fontWeight:"bold"}}>Average Rating</p>
-                 <h2>98% Positive</h2>
+                 <p style={{fontWeight:"bold"}}>AOV</p>
+                 <h2 style={{color:"rgb(255, 152, 0)", backgroundColor:"rgb(244, 219, 183)", padding:"5px 12px", borderRadius:"8px"}}>$ {calculateAOV}</h2>
             </div>
         </div>
 
