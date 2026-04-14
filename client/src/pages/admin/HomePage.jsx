@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react'
 import {useNavigate} from 'react-router-dom'
 import {MenuUnfoldOutlined, ShoppingOutlined, InboxOutlined, TeamOutlined, StockOutlined, SettingOutlined, SearchOutlined, BellOutlined, LogoutOutlined} from '@ant-design/icons'
-import { Input,Button, Modal } from 'antd'
+import { Input,Button, Modal, message } from 'antd'
 
 import Dashboard from '../../components/admin/Dashboard'
 import Orders from '../../components/admin/OrderManagement'
@@ -20,8 +20,13 @@ const HomePage = () => {
         setIsModalOpen(true);
     };
     const handleOk = () => {
-        navigate('/')
+        localStorage.removeItem("isAdminAuthenticated");
+        
+        message.info("Logout successful!");
+    
+        navigate("/admin-login");
     };
+
     const handleCancel = () => {
         setIsModalOpen(false);
     };
@@ -63,7 +68,7 @@ const HomePage = () => {
                 setAdminName(name);
                 setAdminRole(role)
             } catch (error) {
-                console.error("Lỗi lấy data:", error);
+                console.error("Data retrieval error:", error);
             }
         };
 
