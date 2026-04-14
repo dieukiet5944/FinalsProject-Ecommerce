@@ -33,12 +33,12 @@ const Register = () => {
     setError('');
 
     if (formData.password !== formData.confirmPassword) {
-      setError("Mật khẩu xác nhận không khớp!");
+      setError("Passwords do not match!");
       return;
     }
 
     if (formData.password.length < 6) {
-      setError("Mật khẩu phải có ít nhất 6 ký tự");
+      setError("Password must be at least 6 characters");
       return;
     }
 
@@ -55,7 +55,7 @@ const Register = () => {
         status: "online",
         avatar: "default-avatar.jpg",
         created_at: new Date().toISOString(),
-        last_active: "Vừa xong",
+        last_active: "Just now",
         order: 0,
         cart: [],
         history_orders: []
@@ -67,102 +67,114 @@ const Register = () => {
         body: JSON.stringify(newUser),
       });
 
-      if (!res.ok) throw new Error("Đăng ký thất bại");
+      if (!res.ok) throw new Error("Registration failed");
 
       const createdUser = await res.json();
 
-      alert("Đăng ký thành công! Đang tự động đăng nhập...");
+      alert("Account created successfully! Logging you in...");
 
-      // Tự động đăng nhập bằng email + password
+      // Auto login after registration
       await login(createdUser.email, createdUser.password_display);
 
       navigate('/');
 
     } catch (err) {
       console.error(err);
-      setError(err.message || "Đăng ký thất bại. Email hoặc username có thể đã tồn tại.");
+      setError(err.message || "Registration failed. Email or username may already exist.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen">
-      {/* Left Side */}
-      <div className="hidden lg:flex w-1/2 bg-[#3f0a1c] relative overflow-hidden flex-col justify-center items-center text-white p-12">
-        <div className="absolute top-8 left-8">
-          <h1 className="text-3xl font-bold tracking-wider">THE CRUMB & BEAN</h1>
-        </div>
+    <div className="flex min-h-[90vh]">
+      {/* Left Side - Visual */}
+      <div className="hidden lg:flex w-1/2 bg-[#3f0a1c] relative overflow-hidden flex-col justify-center items-center text-white p-8">
 
         <div className="relative z-10 max-w-md text-center">
+          <div className="inline-block px-4 py-1 mb-6 text-sm rounded-full bg-white/10 backdrop-blur-md">
+            JOIN OUR COMMUNITY
+          </div>
+
           <h2 className="mb-6 text-6xl font-bold leading-tight">
             BECOME A<br />MEMBER
           </h2>
           <p className="text-lg text-white/80">
-            Join our exclusive club and enjoy special perks, early access, and more.
+            Join The Crumb Club and enjoy exclusive rewards, early access to new menus,
+            and special offers crafted just for you.
           </p>
         </div>
       </div>
 
       {/* Right Side - Register Form */}
-      <div className="flex items-center justify-center flex-1 p-6 bg-white lg:p-12">
+      <div className="flex justify-center flex-1 pt-8 pb-4 px-6 bg-white lg:px-8 lg:pt-10 lg:pb-6">
         <div className="w-full max-w-md">
           <h2 className="mb-2 text-4xl font-bold text-gray-900">Create Account</h2>
-          <p className="mb-8 text-gray-600">Join the Crumb Club today</p>
+          <p className="mb-6 text-gray-600">Join The Crumb & Bean today</p>
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            {error && <div className="p-4 text-red-600 bg-red-50 rounded-2xl">{error}</div>}
+            {error && (
+              <div className="p-3 text-red-600 bg-red-50 rounded-2xl">
+                {error}
+              </div>
+            )}
 
             <div>
-              <label className="block mb-2 text-xs font-semibold text-gray-500">USERNAME</label>
+              <label className="block mb-1 text-xs font-semibold tracking-widest text-gray-500">USERNAME</label>
               <input
                 type="text"
                 name="username"
                 value={formData.username}
                 onChange={handleChange}
                 required
-                className="w-full px-5 py-4 text-gray-900 bg-gray-100 border border-gray-200 rounded-2xl focus:border-pink-500"
+                className="w-full px-4 py-3 text-gray-900 bg-gray-100 border border-gray-200 rounded-2xl focus:border-primary-500"
+                placeholder="Choose a username"
               />
             </div>
 
             <div>
-              <label className="block mb-2 text-xs font-semibold text-gray-500">FULL NAME</label>
+              <label className="block mb-1 text-xs font-semibold text-gray-500">FULL NAME</label>
               <input
                 type="text"
                 name="full_name"
                 value={formData.full_name}
                 onChange={handleChange}
                 required
-                className="w-full px-5 py-4 text-gray-900 bg-gray-100 border border-gray-200 rounded-2xl focus:border-pink-500"
-              />
-            </div>
-
-            <div>
-              <label className="block mb-2 text-xs font-semibold text-gray-500">EMAIL ADDRESS</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                className="w-full px-5 py-4 text-gray-900 bg-gray-100 border border-gray-200 rounded-2xl focus:border-pink-500"
-              />
-            </div>
-
-            <div>
-              <label className="block mb-2 text-xs font-semibold text-gray-500">PHONE NUMBER</label>
-              <input
-                type="tel"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                className="w-full px-5 py-4 text-gray-900 bg-gray-100 border border-gray-200 rounded-2xl focus:border-pink-500"
+                className="w-full px-4 py-3 text-gray-900 bg-gray-100 border border-gray-200 rounded-2xl focus:border-primary-500"
+                placeholder="Your full name"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block mb-2 text-xs font-semibold text-gray-500">PASSWORD</label>
+                <label className="block mb-1 text-xs font-semibold text-gray-500">EMAIL ADDRESS</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 text-gray-900 bg-gray-100 border border-gray-200 rounded-2xl focus:border-primary-500"
+                  placeholder="hello@thecrumbandbean.com"
+                />
+              </div>
+
+              <div>
+                <label className="block mb-1 text-xs font-semibold text-gray-500">PHONE NUMBER</label>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 text-gray-900 bg-gray-100 border border-gray-200 rounded-2xl focus:border-primary-500"
+                  placeholder="Your phone number"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block mb-1 text-xs font-semibold text-gray-500">PASSWORD</label>
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
@@ -170,12 +182,13 @@ const Register = () => {
                     value={formData.password}
                     onChange={handleChange}
                     required
-                    className="w-full px-5 py-4 text-gray-900 bg-gray-100 border border-gray-200 rounded-2xl focus:border-pink-500"
+                    className="w-full px-4 py-3 text-gray-900 bg-gray-100 border border-gray-200 rounded-2xl focus:border-primary-500"
+                    placeholder="Create a password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute text-gray-500 -translate-y-1/2 right-5 top-1/2 hover:text-gray-700"
+                    className="absolute text-gray-500 -translate-y-1/2 right-3 top-1/2 hover:text-gray-700 text-sm"
                   >
                     {showPassword ? "Hide" : "Show"}
                   </button>
@@ -183,7 +196,7 @@ const Register = () => {
               </div>
 
               <div>
-                <label className="block mb-2 text-xs font-semibold text-gray-500">CONFIRM PASSWORD</label>
+                <label className="block mb-1 text-xs font-semibold text-gray-500">CONFIRM PASSWORD</label>
                 <div className="relative">
                   <input
                     type={showConfirmPassword ? "text" : "password"}
@@ -191,12 +204,13 @@ const Register = () => {
                     value={formData.confirmPassword}
                     onChange={handleChange}
                     required
-                    className="w-full px-5 py-4 text-gray-900 bg-gray-100 border border-gray-200 rounded-2xl focus:border-pink-500"
+                    className="w-full px-4 py-3 text-gray-900 bg-gray-100 border border-gray-200 rounded-2xl focus:border-primary-500"
+                    placeholder="Confirm password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute text-gray-500 -translate-y-1/2 right-5 top-1/2 hover:text-gray-700"
+                    className="absolute text-gray-500 -translate-y-1/2 right-3 top-1/2 hover:text-gray-700 text-sm"
                   >
                     {showConfirmPassword ? "Hide" : "Show"}
                   </button>
@@ -207,15 +221,17 @@ const Register = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 mt-6 text-lg font-semibold text-white bg-pink-600 hover:bg-pink-700 disabled:bg-pink-400 rounded-2xl"
+              className="w-full py-3 mt-4 text-lg font-semibold text-white bg-primary-500 hover:bg-primary-600 disabled:bg-primary-400 rounded-2xl transition-all"
             >
               {loading ? "CREATING ACCOUNT..." : "CREATE ACCOUNT"}
             </button>
           </form>
 
-          <p className="mt-8 text-center text-gray-600">
+          <p className="mt-6 text-center text-gray-600">
             Already have an account?{' '}
-            <Link to="/login" className="font-medium text-pink-600 hover:underline">Sign in</Link>
+            <Link to="/login" className="font-medium text-primary-500 hover:underline">
+              Sign in here
+            </Link>
           </p>
         </div>
       </div>
