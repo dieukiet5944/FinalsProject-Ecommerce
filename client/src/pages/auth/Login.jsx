@@ -19,22 +19,19 @@ const Login = () => {
     setLoading(true);
 
     try {
-      await login(email, password);   // Bây giờ dùng email + password
+      await login(email, password);
       navigate('/');
     } catch (err) {
-      setError(err.message || "Email hoặc mật khẩu không đúng");
+      setError(err.message || "Invalid email or password");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-[90vh]">
       {/* Left Side - Visual */}
       <div className="hidden lg:flex w-1/2 bg-[#3f0a1c] relative overflow-hidden flex-col justify-center items-center text-white p-12">
-        <div className="absolute top-8 left-8">
-          <h1 className="text-3xl font-bold tracking-wider">THE CRUMB & BEAN</h1>
-        </div>
 
         <div className="relative z-10 max-w-md text-center">
           <div className="inline-block px-4 py-1 mb-6 text-sm rounded-full bg-white/10 backdrop-blur-md">
@@ -42,12 +39,12 @@ const Login = () => {
           </div>
 
           <h2 className="mb-6 text-6xl font-bold leading-tight">
-            JOIN THE<br />CRUMB CLUB
+            WELCOME BACK
           </h2>
 
           <p className="mb-8 text-lg text-white/80">
-            Unlock artisanal rewards, early access to seasonal blends,
-            and a complimentary treat on your birthday.
+            Sign in to access your account, track your orders, and enjoy
+            exclusive rewards from The Crumb & Bean.
           </p>
 
           <div className="flex items-center justify-center gap-2 text-sm">
@@ -59,12 +56,14 @@ const Login = () => {
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1600585154340-be6161a56a9c')] bg-cover bg-center opacity-20" />
       </div>
 
-      {/* Right Side - Form */}
+      {/* Right Side - Login Form */}
       <div className="flex items-center justify-center flex-1 p-6 bg-white lg:p-12">
         <div className="w-full max-w-md">
           <div className="mb-10">
             <h2 className="text-4xl font-bold text-gray-900">Welcome Back</h2>
-            <p className="mt-2 text-gray-600">Please enter your credentials to access your account.</p>
+            <p className="mt-2 text-gray-600">
+              Please enter your credentials to access your account.
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -75,28 +74,34 @@ const Login = () => {
             )}
 
             <div>
-              <label className="block mb-2 text-xs font-semibold tracking-widest text-gray-500">EMAIL ADDRESS</label>
+              <label className="block mb-2 text-xs font-semibold tracking-widest text-gray-500">
+                EMAIL ADDRESS
+              </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-5 py-4 text-gray-900 bg-gray-100 border border-gray-200 rounded-2xl focus:outline-none focus:border-pink-500"
-                placeholder="hello@velvetcrumb.com"
+                className="w-full px-5 py-4 text-gray-900 bg-gray-100 border border-gray-200 rounded-2xl focus:outline-none focus:border-primary-500"
+                placeholder="hello@thecrumbandbean.com"
                 required
               />
             </div>
 
             <div>
               <div className="flex justify-between mb-2">
-                <label className="block text-xs font-semibold tracking-widest text-gray-500">PASSWORD</label>
-                <span className="text-sm text-pink-600 cursor-pointer hover:underline">Forgot?</span>
+                <label className="block text-xs font-semibold tracking-widest text-gray-500">
+                  PASSWORD
+                </label>
+                <Link to="/forgot-password" className="text-sm text-primary-500 hover:underline">
+                  Forgot Password?
+                </Link>
               </div>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-5 py-4 text-gray-900 bg-gray-100 border border-gray-200 rounded-2xl focus:outline-none focus:border-pink-500"
+                  className="w-full px-5 py-4 text-gray-900 bg-gray-100 border border-gray-200 rounded-2xl focus:outline-none focus:border-primary-500"
                   placeholder="••••••••"
                   required
                 />
@@ -111,30 +116,30 @@ const Login = () => {
             </div>
 
             <div className="flex items-center">
-              <input type="checkbox" className="w-4 h-4 accent-pink-600" />
+              <input type="checkbox" className="w-4 h-4 accent-primary-500" />
               <label className="ml-2 text-sm text-gray-600">Keep me signed in</label>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 text-lg font-semibold tracking-widest text-white transition-all bg-pink-600 hover:bg-pink-700 disabled:bg-pink-400 rounded-2xl"
+              className="w-full py-4 text-lg font-semibold tracking-widest text-white transition-all bg-primary-500 hover:bg-primary-600 disabled:bg-primary-400 rounded-2xl"
             >
-              {loading ? "SIGNING IN..." : "SIGN IN →"}
+              {loading ? "SIGNING IN..." : "SIGN IN"}
             </button>
           </form>
 
           <div className="mt-8 text-center space-y-3">
             <p className="text-gray-600">
               Don't have an account?{' '}
-              <Link to="/register" className="font-medium text-pink-600 hover:underline">
+              <Link to="/register" className="font-medium text-primary-500 hover:underline">
                 Create an account
               </Link>
             </p>
 
             <p className="text-sm text-gray-400">
               Are you an administrator?{' '}
-              <Link to="/admin-login" className="text-gray-500 hover:text-pink-600 transition-colors font-medium">
+              <Link to="/admin-login" className="text-gray-500 hover:text-primary-500 transition-colors font-medium">
                 Access Admin Console
               </Link>
             </p>
