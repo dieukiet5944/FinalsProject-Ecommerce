@@ -1,5 +1,6 @@
 // src/App.jsx
 import { Routes, Route } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 
 import UserLayout from './components/layout/UserLayout';   // hoặc './layout/UserLayout' tùy cấu trúc của bạn
 
@@ -21,6 +22,7 @@ import Orders from '../src/components/admin/OrderManagement';
 import Inventory from '../src/components/admin/Inventory';
 import Customers from '../src/components/admin/CustomerDirectory';
 import Setting from '../src/components/admin/Setting';
+import AdminProtectedRoute from './router/AdminProtectedRoute';
 import './App.css';
 
 function App() {
@@ -51,7 +53,14 @@ function App() {
       <Route path="/admin-login" element={<AdminLogin />} />
       <Route path="/homepage" element={<HomePage />} />
 
-      <Route path="/admin">
+      <Route path="/admin" element={
+        <AdminProtectedRoute>
+          <div className="admin-wrapper">
+              <Outlet /> 
+          </div>
+        </AdminProtectedRoute>
+      }
+    >
         <Route index element={<HomePage />} />
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="order" element={<Orders />} />

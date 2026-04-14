@@ -124,12 +124,21 @@ const Login = () => {
             </button>
           </form>
 
-          <p className="mt-10 text-center text-gray-600">
-            Don't have an account?{' '}
-            <Link to="/register" className="font-medium text-pink-600 hover:underline">
-              Create an account
-            </Link>
-          </p>
+          <div className="mt-8 text-center space-y-3">
+            <p className="text-gray-600">
+              Don't have an account?{' '}
+              <Link to="/register" className="font-medium text-pink-600 hover:underline">
+                Create an account
+              </Link>
+            </p>
+
+            <p className="text-sm text-gray-400">
+              Are you an administrator?{' '}
+              <Link to="/admin-login" className="text-gray-500 hover:text-pink-600 transition-colors font-medium">
+                Access Admin Console
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>

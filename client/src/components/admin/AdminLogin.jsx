@@ -47,8 +47,15 @@ const AdminLogin = () => {
     );
 
     if (userExists) {
-        message.success('Login successful!');
-        navigate('/admin');
+        localStorage.setItem("isAdminAuthenticated", "true");
+
+        localStorage.setItem("adminInfo", JSON.stringify({
+            id: userExists.id,
+            username: userExists.username
+        }));
+
+        message.success('Login successful! Welcome back, ' + userExists.username);
+        navigate('/homepage');
     } else {
         message.error('Incorrect account or password!');
     }
