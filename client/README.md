@@ -1,18 +1,28 @@
-# React + Vite
+🔐 Tài khoản Demo (Demo Credentials)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+🕸️ Lưu ý: Đây là tài khoản giả lập phục vụ mục đích demo. Trong thực tế, mật khẩu được mã hóa và quản lý theo tiêu chuẩn an toàn thông tin.
 
-Currently, two official plugins are available:
+Để thuận tiện cho việc kiểm tra các tính năng phân quyền (Role-based Access Control), quý nhà tuyển dụng có thể sử dụng các tài khoản sau:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+👤 User Side (Customer)
+Giao diện dành cho khách hàng đặt bánh và cà phê.
 
-## React Compiler
+URL: https://finals-project-ecommerce.vercel.app/login
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+Email: cr7@mu.edu.vn
 
-Note: This will impact Vite dev & build performances.
+Password: ronaldo123
 
-## Expanding the ESLint configuration
+Tính năng: Xem sản phẩm, gửi liên hệ, giỏ hàng.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+🛡️ Admin Side (Management)
+Giao diện quản trị hệ thống .
+
+Email: admin@123
+
+Password: 123456789
+
+Tính năng: Quản lý kho, duyệt đơn hàng, quản lý khách hàng, kiểm kê doanh thu .
+
+
+
