@@ -1,5 +1,5 @@
 // src/services/api.js
-const MOCKAPI_BASE = "https://69cfba0fa4647a9fc675e215.mockapi.io";
+const MOCKAPI_BASE = "http://localhost:8080";
 
 // ==================== PRODUCTS ====================
 export const getProducts = async () => {
