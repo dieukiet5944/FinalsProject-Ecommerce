@@ -12,7 +12,7 @@ app.use(cors());
 
 app.use(express.json());
 
-app.use("/", router);
+app.use("/api", router);
 
 app.listen(PORT, () => {
     console.log(`[0] Server is running on http://localhost:${PORT}`);

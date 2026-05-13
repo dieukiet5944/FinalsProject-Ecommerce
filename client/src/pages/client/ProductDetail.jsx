@@ -22,7 +22,7 @@ const ProductDetail = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/products/${id}`);
+        const response = await axios.get(`http://localhost:8080/api/products/${id}`);
 
         const result = response.data
 
