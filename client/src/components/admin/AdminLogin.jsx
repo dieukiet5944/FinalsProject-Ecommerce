@@ -13,7 +13,7 @@ const AdminLogin = () => {
     useEffect(() => {
     const fetchData = async () => {
         try {
-            const response = await axios.get("http://localhost:8080/serect-key/admin");
+            const response = await axios.get("http://localhost:8080/api/serect-key/admin");
             const result = response.data
             
             if (result.ok && Array.isArray(result.data)) {
