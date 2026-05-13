@@ -30,10 +30,13 @@ const ProductList = () => {
     const fetchProducts = async () => {
       try {
         const response = await axios.get('http://localhost:8080/products');
-        setProducts(response.data.data);
-        setFilteredProducts(response.data.data);
-      } catch (err) {
-        console.error(err);
+
+        const result = response.data;
+
+        setProducts(result.data);
+        setFilteredProducts(result.data);
+      } catch (error) {
+        console.error(error);
       } finally {
         setLoading(false);
       }

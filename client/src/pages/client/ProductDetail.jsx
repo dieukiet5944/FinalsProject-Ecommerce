@@ -23,7 +23,10 @@ const ProductDetail = () => {
     const fetchProduct = async () => {
       try {
         const response = await axios.get(`http://localhost:8080/products/${id}`);
-        setProduct(response.data.data);
+
+        const result = response.data
+
+        setProduct(result.data);
 
         // Mock related products
         const mockRelated = [
@@ -31,8 +34,8 @@ const ProductDetail = () => {
           { id: "BC-002", name: "Cheesecake", price: 12, image: "cheesecake.jpg", category: "CAKE" },
         ];
         setRelatedProducts(mockRelated);
-      } catch (err) {
-        console.error(err);
+      } catch (error) {
+        console.error(error);
       } finally {
         setLoading(false);
       }

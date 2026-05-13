@@ -2,11 +2,52 @@ import express from 'express'
 
 const router = express.Router();
 
+// ==================== ADMIN =======================
+
+router.get("/serect-key/admin", async ( req, res ) => {
+    try{
+
+        const response = await fetch("https://mindx-mockup-server.vercel.app/api/resources/APT-Project-Ecomerce?apiKey=69bc8f883d77cdfa59f97d31")
+
+        if(!response.ok) throw new Error(" Can't get data from database");
+
+        const data = await response.json();
+
+        const datalayer2 = data?.data;
+
+        const datalayer3 = datalayer2?.data;
+
+        const result = datalayer3?.[0]?.admin
+
+        if(!result){
+            return res.status(404).send({
+                ok: false,
+                message: "Not found this data admin"
+            })
+        }
+
+        return res.status(200).send({
+            ok : true,
+            message: "Successful catch this data admin",
+            data: result
+        })
+
+    }
+    catch(error){
+        console.log("Error", error.message)
+        res.status(500).send({
+            ok: false,
+            message: "Internal Server Error",
+            error: error.message
+        })
+    }
+})
+
 
 // ==================== PRODUCTS ====================
 router.get("/products", async (req, res) => {
     try{
-         const response = await fetch("http://localhost:3000/products");
+         const response = await fetch("https://69cfba0fa4647a9fc675e215.mockapi.io/products");
 
          if(!response.ok) throw new Error(" Can't get data from database");
 
@@ -40,7 +81,7 @@ router.get("/products/:id", async (req,res) => {
     try{
         const { id } = req.params
 
-        const response = await fetch("http://localhost:3000/products")
+        const response = await fetch(`https://69cfba0fa4647a9fc675e215.mockapi.io/products/${id}`)
 
         if(!response.ok) throw new Error("Can't get data products from database")
 
@@ -67,11 +108,43 @@ router.get("/products/:id", async (req,res) => {
 })
 
 // ==================== USERS & ORDERS ====================
-export const getUserById = async (userId) => {
-    const res = await fetch(`${MOCKAPI_BASE}/users/${userId}`);
-    if (!res.ok) throw new Error("Không tìm thấy người dùng");
-    return res.json();
-};
+
+router.get("/users/:userId", async (req, res) => {
+    try{
+
+        const { userId } = req.params
+
+        const response = await fetch("https://69cfba0fa4647a9fc675e215.mockapi.io/products")
+
+        if(!response.ok) throw new Error("Can't get data from database")
+
+        const data = await response.json();
+
+        const isUserId = data.find( item => item.id === userId)
+        
+        if(!isUserId){
+           res.status(404).send({
+            ok: false,
+            message: "Not found"
+           })
+        }
+
+        res.status(200).send({
+                ok: true,
+                message: "Successful get data",
+                data: isUserId
+        })
+
+    }
+    catch(error){
+        console.log("Loi server", error.message)
+        res.status(500).send({
+            ok: false, 
+            message: "Internal Server Error",
+            error: error.message
+        })
+    }
+})
 
 export const updateUser = async (userId, updatedData) => {
     const res = await fetch(`${MOCKAPI_BASE}/users/${userId}`, {
@@ -82,6 +155,8 @@ export const updateUser = async (userId, updatedData) => {
     if (!res.ok) throw new Error("Cập nhật user thất bại");
     return res.json();
 };
+
+
 
 // Hàm đặt hàng chính - lưu vào history_orders
 export const placeOrder = async (userId, cartItems) => {

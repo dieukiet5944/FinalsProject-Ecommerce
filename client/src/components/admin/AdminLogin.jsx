@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import axios from 'axios'
 import {Input, Form, Card, Button, message, Spin    } from 'antd';
 import {useNavigate} from 'react-router-dom';
 
@@ -8,21 +9,16 @@ const AdminLogin = () => {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true)
     const navigate = useNavigate();
-    const URL_DATA = "https://mindx-mockup-server.vercel.app/api/resources/APT-Project-Ecomerce?apiKey=69bc8f883d77cdfa59f97d31";
     
     useEffect(() => {
     const fetchData = async () => {
         try {
-            const response = await fetch(URL_DATA);
-            const result = await response.json();
+            const response = await axios.get("http://localhost:8080/serect-key/admin");
+            const result = response.data
             
-            console.log("Raw data from the API:", result);
-
-            const adminList = result?.data?.data?.[0]?.admin;
-
-            if (Array.isArray(adminList)) {
-                setData(adminList); 
-                console.log("The admin array has been retrieved:", adminList);
+            if (result.ok && Array.isArray(result.data)) {
+                setData(result); 
+                console.log("The admin array has been retrieved:", result);
             } else {
                 console.error("The API structure has changed; the admin array is not found!");
                 setData([]); 
