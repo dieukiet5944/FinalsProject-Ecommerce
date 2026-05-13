@@ -1,0 +1,532 @@
+{
+    "products": [
+        {
+            "id": "BC-001",
+            "name": "Caramel Macchiato",
+            "price": 8.5,
+            "category": "DRINK",
+            "image": "caramel-macchiato.jpg",
+            "stock": {
+                "capacity": 100,
+                "currentstock": 70
+            },
+            "status": "IN STOCK"
+        },
+        {
+            "id": "BC-002",
+            "name": "Cheesecake",
+            "price": 12,
+            "category": "CAKE",
+            "image": "cheesecake.jpg",
+            "stock": {
+                "capacity": 30,
+                "currentstock": 23
+            },
+            "createdAt": "2026-04-01",
+            "expiryDate": "2026-04-12",
+            "status": "LOW STOCK"
+        },
+        {
+            "id": "BC-003",
+            "name": "Iced Americano",
+            "price": 5,
+            "category": "DRINK",
+            "image": "cold-brew.jpg",
+            "stock": {
+                "capacity": 150,
+                "currentstock": 69
+            },
+            "status": "IN STOCK"
+        },
+        {
+            "id": "BC-004",
+            "name": "Chocolate Lava Cake",
+            "price": 10.5,
+            "category": "CAKE",
+            "image": "lava-cake.jpg",
+            "stock": {
+                "capacity": 30,
+                "currentstock": 15
+            },
+            "createdAt": "2026-04-05",
+            "expiryDate": "2026-04-10",
+            "status": "IN STOCK"
+        },
+        {
+            "id": "BC-005",
+            "name": "Matcha Latte",
+            "price": 7.5,
+            "category": "DRINK",
+            "image": "matcha-latte.jpg",
+            "stock": {
+                "capacity": 80,
+                "currentstock": 50
+            },
+            "status": "IN STOCK"
+        },
+        {
+            "id": "BC-006",
+            "name": "Tiramisu Classic",
+            "price": 14,
+            "category": "CAKE",
+            "image": "tiramisu.jpg",
+            "stock": {
+                "capacity": 25,
+                "currentstock": 12
+            },
+            "createdAt": "2026-04-07",
+            "expiryDate": "2026-04-11",
+            "status": "IN STOCK"
+        },
+        {
+            "id": "BC-007",
+            "name": "Vietnamese Iced Coffee",
+            "price": 6.5,
+            "category": "DRINK",
+            "image": "vn-coffee.jpg",
+            "stock": {
+                "capacity": 150,
+                "currentstock": 60
+            },
+            "status": "IN STOCK"
+        },
+        {
+            "id": "BC-008",
+            "name": "Red Velvet Cupcake",
+            "price": 4.5,
+            "category": "CAKE",
+            "image": "red-velvet.jpg",
+            "stock": {
+                "capacity": 60,
+                "currentstock": 13
+            },
+            "createdAt": "2026-04-08",
+            "expiryDate": "2026-04-13",
+            "status": "IN STOCK"
+        },
+        {
+            "id": "BC-009",
+            "name": "Peach Fruit Tea",
+            "price": 6,
+            "category": "DRINK",
+            "image": "peach-tea.jpg",
+            "stock": {
+                "capacity": 120,
+                "currentstock": 28
+            },
+            "status": "OUT OF STOCK"
+        },
+        {
+            "id": "BC-010",
+            "name": "Croissant Butter",
+            "price": 3.5,
+            "category": "CAKE",
+            "image": "croissant.jpg",
+            "stock": {
+                "capacity": 100,
+                "currentstock": 85
+            },
+            "createdAt": "2026-04-09",
+            "expiryDate": "2026-04-15",
+            "status": "IN STOCK"
+        },
+        {
+            "name": "Bean",
+            "avatar": "avatar 1",
+            "price": 22,
+            "category": "CAKE",
+            "image": "default.jpg",
+            "description": "description 1",
+            "stock": {
+                "capacity": 100,
+                "currentstock": 14
+            },
+            "status": "LOW STOCK",
+            "id": "1",
+            "expiryDate": "2026-04-16T17:00:00.000Z",
+            "createdAt": "2026-04-09"
+        },
+        {
+            "name": "Capuchino",
+            "avatar": "avatar 2",
+            "price": 15,
+            "category": "DRINK",
+            "image": "capuchino.jpg ",
+            "description": "description 2",
+            "stock": {
+                "capacity": 100,
+                "currentstock": 23
+            },
+            "status": "IN STOCK",
+            "id": "2"
+        }
+    ],
+    "users": [
+        {
+            "id": "u001",
+            "username": "CR7",
+            "password_display": "ronaldo123",
+            "full_name": "Cristiano Ronaldo",
+            "email": "cr7@mu.edu.vn",
+            "phone": "007007007",
+            "role": "customer",
+            "status": "online",
+            "avatar": "ronaldo.jpg",
+            "created_at": "2026-01-01T08:00:00Z",
+            "last_active": "Vừa xong",
+            "cart": [],
+            "history_orders": [
+                {
+                    "orderId": "ORD-001",
+                    "date": "2026-03-30",
+                    "items": [
+                        {
+                            "name": "Caramel Macchiato",
+                            "qty": 2,
+                            "price": 8.5
+                        },
+                        {
+                            "name": "Tiramisu Classic",
+                            "qty": 1,
+                            "price": 10
+                        }
+                    ],
+                    "total": 27,
+                    "status": "Cancel"
+                }
+            ]
+        },
+        {
+            "id": "u002",
+            "username": "Wazza",
+            "password_display": "rooney10",
+            "full_name": "Wayne Rooney",
+            "email": "rooney@mu.edu.vn",
+            "phone": "010010010",
+            "role": "customer",
+            "status": "online",
+            "avatar": "rooney.jpg",
+            "created_at": "2026-03-20T10:30:00Z",
+            "last_active": "5 phút trước",
+            "cart": [
+                {
+                    "productId": "BC-005",
+                    "qty": 2
+                }
+            ],
+            "history_orders": [
+                {
+                    "orderId": "ORD-002",
+                    "date": "2026-04-01",
+                    "items": [
+                        {
+                            "name": "Cheesecake",
+                            "qty": 1,
+                            "price": 12
+                        }
+                    ],
+                    "total": 12,
+                    "status": "Completed"
+                }
+            ]
+        },
+        {
+            "id": "u003",
+            "username": "Scholesy",
+            "password_display": "paulscholes",
+            "full_name": "Paul Scholes",
+            "email": "scholes@mu.edu.vn",
+            "phone": "018018018",
+            "role": "customer",
+            "status": "offline",
+            "avatar": "schole.jpg",
+            "created_at": "2026-03-21T14:20:00Z",
+            "last_active": "2 giờ trước",
+            "cart": [],
+            "history_orders": [
+                {
+                    "orderId": "ORD-701991",
+                    "date": "2026-04-08",
+                    "items": [
+                        {
+                            "name": "Iced Americano",
+                            "qty": 1,
+                            "price": 5
+                        }
+                    ],
+                    "total": 1,
+                    "status": "Completed"
+                }
+            ]
+        },
+        {
+            "id": "u004",
+            "username": "CaptainRio",
+            "password_display": "ferdinand5",
+            "full_name": "Rio Ferdinand",
+            "email": "rio@mu.edu.vn",
+            "phone": "005005005",
+            "role": "customer",
+            "status": "online",
+            "avatar": "rio.jpg",
+            "created_at": "2026-03-22T09:15:00Z",
+            "last_active": "10 phút trước",
+            "cart": [],
+            "history_orders": [
+                {
+                    "orderId": "ORD-003",
+                    "date": "2026-04-02",
+                    "items": [
+                        {
+                            "name": "Vietnamese Iced Coffee",
+                            "qty": 2,
+                            "price": 6.5
+                        }
+                    ],
+                    "total": 13,
+                    "status": "Completed"
+                }
+            ]
+        },
+        {
+            "id": "u005",
+            "username": "VDS",
+            "password_display": "vandersar1",
+            "full_name": "Edwin van der Sar",
+            "email": "vds@mu.edu.vn",
+            "phone": "001001001",
+            "role": "customer",
+            "status": "online",
+            "avatar": "edwin.jpg",
+            "created_at": "2026-03-23T15:00:00Z",
+            "last_active": "Vừa xong",
+            "cart": [],
+            "history_orders": []
+        },
+        {
+            "id": "u006",
+            "username": "Vidic15",
+            "password_display": "nemanja",
+            "full_name": "Nemanja Vidic",
+            "email": "vidic@mu.edu.vn",
+            "phone": "015015015",
+            "role": "customer",
+            "status": "online",
+            "avatar": "vidic.jpg",
+            "created_at": "2026-03-24T08:00:00Z",
+            "last_active": "1 giờ trước",
+            "cart": [],
+            "history_orders": []
+        },
+        {
+            "id": "u007",
+            "username": "Patrice",
+            "password_display": "evra3",
+            "full_name": "Patrice Evra",
+            "email": "evra@mu.edu.vn",
+            "phone": "003003003",
+            "role": "customer",
+            "status": "online",
+            "avatar": "evra.jpg",
+            "created_at": "2026-03-25T10:00:00Z",
+            "last_active": "30 phút trước",
+            "cart": [],
+            "history_orders": [
+                {
+                    "orderId": "ORD-004",
+                    "date": "2026-04-03",
+                    "items": [
+                        {
+                            "name": "Chocolate Lava Cake",
+                            "qty": 3,
+                            "price": 10.5
+                        }
+                    ],
+                    "total": 31.5,
+                    "status": "Completed"
+                }
+            ]
+        },
+        {
+            "id": "u008",
+            "username": "WesBrown",
+            "password_display": "brown6",
+            "full_name": "Wes Brown",
+            "email": "brown@mu.edu.vn",
+            "phone": "006006006",
+            "role": "customer",
+            "status": "offline",
+            "avatar": "wesbrown.jpg",
+            "created_at": "2026-03-26T12:00:00Z",
+            "last_active": "1 ngày trước",
+            "cart": [],
+            "history_orders": []
+        },
+        {
+            "id": "u009",
+            "username": "Carrick16",
+            "password_display": "michael",
+            "full_name": "Michael Carrick",
+            "email": "carrick@mu.edu.vn",
+            "phone": "016016016",
+            "role": "customer",
+            "status": "online",
+            "avatar": "carrick.jpg",
+            "created_at": "2026-03-27T09:00:00Z",
+            "last_active": "Vừa xong",
+            "cart": [],
+            "history_orders": []
+        },
+        {
+            "id": "u010",
+            "username": "Hargo",
+            "password_display": "owen4",
+            "full_name": "Owen Hargreaves",
+            "email": "hargo@mu.edu.vn",
+            "phone": "004004004",
+            "role": "customer",
+            "status": "offline",
+            "avatar": "hargo.jpg",
+            "created_at": "2026-03-28T14:00:00Z",
+            "last_active": "5 giờ trước",
+            "cart": [],
+            "history_orders": []
+        },
+        {
+            "id": "u011",
+            "username": "Tevez32",
+            "password_display": "carlitos",
+            "full_name": "Carlos Tevez",
+            "email": "tevez@mu.edu.vn",
+            "phone": "032032032",
+            "role": "customer",
+            "status": "online",
+            "avatar": "tevez.jpg",
+            "created_at": "2026-03-29T11:00:00Z",
+            "last_active": "15 phút trước",
+            "cart": [],
+            "history_orders": [
+                {
+                    "orderId": "ORD-005",
+                    "date": "2026-04-04",
+                    "items": [
+                        {
+                            "name": "Croissant Butter",
+                            "qty": 5,
+                            "price": 3.5
+                        }
+                    ],
+                    "total": 22.5,
+                    "status": "Completed"
+                }
+            ]
+        },
+        {
+            "id": "1",
+            "username": "ldk001",
+            "full_name": "Lương Diệu Kiệt",
+            "email": "dieukiet1479@gmail.com",
+            "password_display": "123456",
+            "phone": "0123456789",
+            "role": "customer",
+            "status": "online",
+            "avatar": "default-avatar.jpg",
+            "created_at": "2026-04-09T07:03:19.872Z",
+            "last_active": "Vừa xong",
+            "cart": [],
+            "history_orders": [
+                {
+                    "orderId": "ORD-221237",
+                    "date": "2026-04-09",
+                    "items": [
+                        {
+                            "name": "Caramel Macchiato",
+                            "qty": 1,
+                            "price": 8.5
+                        },
+                        {
+                            "name": "Cheesecake",
+                            "qty": 1,
+                            "price": 12
+                        }
+                    ]
+                },
+                {
+                    "orderId": "ORD-967090",
+                    "date": "2026-04-14",
+                    "items": [
+                        {
+                            "name": "Caramel Macchiato",
+                            "qty": 1,
+                            "price": 8.5
+                        },
+                        {
+                            "name": "Cheesecake",
+                            "qty": 1,
+                            "price": 12
+                        },
+                        {
+                            "name": "Iced Americano",
+                            "qty": 1,
+                            "price": 5
+                        }
+                    ]
+                },
+                {
+                    "orderId": "ORD-221706",
+                    "date": "2026-04-17",
+                    "items": [
+                        {
+                            "name": "Caramel Macchiato",
+                            "qty": 2,
+                            "price": 8.5
+                        },
+                        {
+                            "name": "Matcha Latte",
+                            "qty": 2,
+                            "price": 7.5
+                        },
+                        {
+                            "name": "Vietnamese Iced Coffee",
+                            "qty": 2,
+                            "price": 6.5
+                        },
+                        {
+                            "name": "Peach Fruit Tea",
+                            "qty": 1,
+                            "price": 6
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "2",
+            "username": "sondeptrai",
+            "full_name": "sơn dương",
+            "email": "nikeflex01@gmail.com",
+            "password_display": "123456",
+            "phone": "3132132123",
+            "role": "customer",
+            "status": "online",
+            "avatar": "default-avatar.jpg",
+            "created_at": "2026-04-17T01:47:53.196Z",
+            "last_active": "Just now",
+            "order": 0,
+            "cart": [],
+            "history_orders": [
+                {
+                    "orderId": "ORD-498530",
+                    "date": "2026-04-17",
+                    "items": [
+                        {
+                            "name": "Caramel Macchiato",
+                            "qty": 1,
+                            "price": 8.5
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,6 +1,6 @@
 import React, {useState, useEffect, useMemo} from 'react'
+import axios from 'axios';
 import {RiseOutlined, WalletOutlined, MoreOutlined, EditOutlined, DeleteOutlined, PlusCircleOutlined, AlertOutlined, PlusOutlined, PictureOutlined} from "@ant-design/icons"
-import { fetchProducts, restockProductApi, updateProductApi,deleteProductApi, createProductApi } from '../../services/api';
 import { Table, Tag, Avatar, Space, Button, Progress, Spin, Modal, Badge, message, InputNumber, Dropdown, Form, Input, Select, DatePicker} from 'antd';
 // import {inventorySource} from './data'
 
@@ -22,9 +22,12 @@ const Inventory = () =>{
       const loadData = async () => {
         setLoading(true);
         try {
-          const response = await fetchProducts(); 
-          if (Array.isArray(response) && response.length > 0) {
-            setData(response);
+          const response = await axios.get('http://localhost:8080/products'); 
+
+          const result = response.data;
+
+          if (result.ok && Array.isArray(result.data) && result.data.length > 0) {
+            setData(result.data);
           } else {
             message.warning("Currently, there is no product data available.");
             setData([]);

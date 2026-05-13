@@ -1,18 +1,70 @@
-// src/services/api.js
-const MOCKAPI_BASE = "http://localhost:8080";
+import express from 'express'
+
+const router = express.Router();
+
 
 // ==================== PRODUCTS ====================
-export const getProducts = async () => {
-    const res = await fetch(`${MOCKAPI_BASE}/products`);
-    if (!res.ok) throw new Error("Không thể lấy danh sách sản phẩm");
-    return res.json();
-};
+router.get("/products", async (req, res) => {
+    try{
+         const response = await fetch("http://localhost:3000/products");
 
-export const getProduct = async (id) => {
-    const res = await fetch(`${MOCKAPI_BASE}/products/${id}`);
-    if (!res.ok) throw new Error("Không tìm thấy sản phẩm");
-    return res.json();
-};
+         if(!response.ok) throw new Error(" Can't get data from database");
+
+         const data = await response.json();
+
+         if(data && data.length > 0){
+            return res.status(200).json({
+                ok: true,
+                message: "Successful get Data Products",
+                data: data
+            })
+         }
+         else{
+            return res.status(404).json({
+                ok:false,
+                message: "Products list is empty"
+            })
+         }
+    }
+    catch(error){
+        console.log("Error fetching products", error.message)
+        res.status(500).json({
+            ok: false,
+            message: "Internal Server Error",
+            error: error.message
+        })
+    }
+})
+// FETCH Pro's ID
+router.get("/products/:id", async (req,res) => {
+    try{
+        const { id } = req.params
+
+        const response = await fetch("http://localhost:3000/products")
+
+        if(!response.ok) throw new Error("Can't get data products from database")
+
+        const data = await response.json();
+
+        const proId = data.find(item => item.id === id)
+
+        if(proId){
+            res.status(200).send({
+                ok: true,
+                message: "Successful get data Pro'id",
+                data: proId
+            })
+        }
+    }
+    catch(error){
+        console.log("Error fetching products'Id", error.message)
+        res.status(500).json({
+            ok: false,
+            message: "Internal Server Error",
+            error: error.message
+        })
+    }
+})
 
 // ==================== USERS & ORDERS ====================
 export const getUserById = async (userId) => {
@@ -123,3 +175,6 @@ export const fetchUsers = async () => {
     }
     return await res.json();
 };
+
+
+export default router;

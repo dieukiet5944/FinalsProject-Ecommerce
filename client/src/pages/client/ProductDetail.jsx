@@ -1,11 +1,11 @@
 // src/pages/client/ProductDetail.jsx
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getProduct } from '../../services/api';
 import { useCart } from '../../context/CartContext';
 import LoadingSpinner from '../../components/client/LoadingSpinner';
 import ProductCard from '../../components/client/ProductCard';
 import SuccessToast from '../../components/client/SuccessToast';
+import axios from 'axios';
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -22,8 +22,8 @@ const ProductDetail = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const data = await getProduct(id);
-        setProduct(data);
+        const response = await axios.get(`http://localhost:8080/products/${id}`);
+        setProduct(response.data.data);
 
         // Mock related products
         const mockRelated = [
