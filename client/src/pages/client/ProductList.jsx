@@ -1,10 +1,10 @@
 // src/pages/client/ProductList.jsx
 import { useEffect, useState } from 'react';
-import { getProducts } from '../../services/api';
 import { useCart } from '../../context/CartContext';
 import ProductCard from '../../components/client/ProductCard';
 import LoadingSpinner from '../../components/client/LoadingSpinner';
 import SuccessToast from '../../components/client/SuccessToast';
+import axios from 'axios';
 
 const ProductList = () => {
   const [products, setProducts] = useState([]);
@@ -29,9 +29,9 @@ const ProductList = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const data = await getProducts();
-        setProducts(data);
-        setFilteredProducts(data);
+        const response = await axios.get('http://localhost:8080/products');
+        setProducts(response.data.data);
+        setFilteredProducts(response.data.data);
       } catch (err) {
         console.error(err);
       } finally {
@@ -87,7 +87,7 @@ const ProductList = () => {
 
         <div className="flex flex-col lg:flex-row gap-10">
           {/* Sidebar - Categories */}
-          <div className="lg:w-64 flex-shrink-0">
+          <div className="lg:w-64 shrink-0">
             <div className="sticky top-24">
               <h3 className="font-medium text-lg mb-5 tracking-wider">CATEGORIES</h3>
 

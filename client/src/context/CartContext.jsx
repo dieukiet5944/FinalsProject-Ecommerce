@@ -1,6 +1,6 @@
 // src/context/CartContext.jsx
 import { createContext, useContext, useState } from "react";
-import { placeOrder as placeOrderApi } from "../services/api";
+import { placeOrder as placeOrderApi } from "../../server/api";
 import { useAuth } from "./AuthContext";
 
 const CartContext = createContext();
