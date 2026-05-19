@@ -1,6 +1,6 @@
 // src/context/CartContext.jsx
 import { createContext, useContext, useState } from "react";
-import { placeOrder as placeOrderApi } from "../../server/api";
+import axios from "axios";
 import { useAuth } from "./AuthContext";
 
 const CartContext = createContext();
@@ -47,7 +47,13 @@ export const CartProvider = ({ children }) => {
 
     setLoading(true);
     try {
-      const result = await placeOrderApi(user.id, cart);
+      const response = await axios.post("http://localhost:8080/api/users/history-order", {
+        userId: user.id,
+        cartItems: cart,
+      });
+
+      const result = response.data; 
+
       clearCart();
       return {
         success: true,
@@ -55,7 +61,8 @@ export const CartProvider = ({ children }) => {
       };
     } catch (error) {
       console.error(error);
-      throw new Error(error.message || "Đặt hàng thất bại");
+      const errorMsg = error.response?.data?.message || "Đặt hàng thất bại";
+      throw new Error(errorMsg);
     } finally {
       setLoading(false);
     }
