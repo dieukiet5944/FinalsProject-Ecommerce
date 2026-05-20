@@ -1,4 +1,4 @@
-import UserModel from "../model/users";
+import UserModel from "../model/users.js";
 
 const userControllers = {
     getUsers: async (req, res) => {
@@ -12,7 +12,7 @@ const userControllers = {
                 })
             }
 
-            return res.status(200).find({
+            return res.status(200).send({
                 success: true,
                 message: "GET list of user successful",
                 data: response
