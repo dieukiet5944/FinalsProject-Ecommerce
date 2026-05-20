@@ -17,9 +17,8 @@ const adminSchema = new mongoose.Schema({
         unique: true
     },
     password: {
-        type: Number,
+        type: String,
         required: true,
-        unique: true
     },
     role:{
         type: String,
@@ -27,11 +26,21 @@ const adminSchema = new mongoose.Schema({
     },
     phoneNumber:{
         type: String,
-        require: true,
+        required: true,
         unique: true
+    },
+    avatar: {
+        type: String,
+        default: ""
+    },
+    status: {
+        type: String,
+        default: "active"
     }
-})
+},{ 
+    timestamps: true 
+});
 
-const AdminModel = mongoose.model("admin", adminSchema);
+const AdminModel = mongoose.model("admin", adminSchema, "admin");
 
 export default AdminModel;

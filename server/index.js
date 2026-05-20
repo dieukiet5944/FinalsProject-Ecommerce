@@ -1,12 +1,13 @@
+import 'dotenv/config';
+
 import express from 'express'
 import cors from 'cors'
-import mongoose from 'mongodb';
+import mongoose from 'mongoose';
 
-import usersRouter from './routers/usersRouter';
-import productRouter from './routers/productsRouter';
-import adminRouter from './routers/adminRouter';
-import orderController from './controller/orderController';
-import ordersRouter from './routers/ordersRouter';
+import usersRouter from './routers/usersRouter.js';
+import productRouter from './routers/productsRouter.js';
+import adminRouter from './routers/adminRouter.js';
+import ordersRouter from './routers/ordersRouter.js';
 
 const PORT = process.env.PORT || 8080;
 
@@ -43,7 +44,7 @@ app.use("/secret-key/admin", adminRouter);
 const connectDatabase = async () => {
     try {
        
-        await mongoose.connect(url_db);
+        await mongoose.connect(db_url);
         console.log("=== Kết nối thành công tới MongoDB Atlas! ===");
 
         app.listen(PORT, () => {

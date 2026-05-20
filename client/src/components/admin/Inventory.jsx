@@ -22,12 +22,12 @@ const Inventory = () =>{
       const loadData = async () => {
         setLoading(true);
         try {
-          const response = await axios.get('http://localhost:8080/api/products'); 
+          const response = await axios.get('http://localhost:8080/products'); 
 
-          const result = response.data;
+          const result = response.data?.data ;
 
-          if (result.ok && Array.isArray(result.data) && result.data.length > 0) {
-            setData(result.data);
+          if (result && Array.isArray(result) && result.length > 0) {
+            setData(result);
           } else {
             message.warning("Currently, there is no product data available.");
             setData([]);

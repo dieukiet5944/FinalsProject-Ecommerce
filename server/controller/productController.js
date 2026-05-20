@@ -1,7 +1,6 @@
-import ProductModel from "../model/products";
-import OrderModel from "../model/order";
-
-const crypto = require("crypto");
+import ProductModel from "../model/products.js";
+import OrderModel from "../model/order.js";
+import crypto from 'crypto'
 
 const productController = {
     getProducts: async (req, res) => {
