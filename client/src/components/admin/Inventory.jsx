@@ -1,707 +1,723 @@
-import React, {useState, useEffect, useMemo} from 'react'
+import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
-import {RiseOutlined, WalletOutlined, MoreOutlined, EditOutlined, DeleteOutlined, PlusCircleOutlined, AlertOutlined, PlusOutlined, PictureOutlined} from "@ant-design/icons"
-import { Table, Tag, Avatar, Space, Button, Progress, Spin, Modal, Badge, message, InputNumber, Dropdown, Form, Input, Select, DatePicker} from 'antd';
-// import {inventorySource} from './data'
+import {
+  MoreOutlined, EditOutlined, DeleteOutlined, PlusCircleOutlined, AlertOutlined, PlusOutlined, PictureOutlined, ExceptionOutlined, UserOutlined
+} from "@ant-design/icons";
+import {
+  Table,
+  Tag,
+  Avatar,
+  Button,
+  Progress,
+  Spin,
+  Modal,
+  Badge,
+  message,
+  InputNumber,
+  Dropdown,
+  Form,
+  Input,
+  Select,
+  DatePicker
+} from 'antd';
 
-const Inventory = () =>{
+const Inventory = () => {
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null);
 
-    const [data, setData] = useState([]);
-    const [loading, setLoading] = useState(true)
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [editingProduct, setEditingProduct] = useState(null);
-    const [form] = Form.useForm();
+  const [form] = Form.useForm();
+  const category = Form.useWatch('category', form);
+  const [update, setUpdate] = useState(false);
 
+  const API_BASE_URL = 'http://localhost:8080/products';
 
-    
-    const category = Form.useWatch('category', form);
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(API_BASE_URL);
+      const result = response.data?.data;
 
-    const [update, setUpdate] = useState(false);
+      if (result && Array.isArray(result) && result.length > 0) {
+        setData(result);
+      } else {
+        message.warning("Currently, there is no product data available.");
+        setData([]);
+      }
+    } catch (error) {
+      console.error(error);
+      message.error("Server connection failed!");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    useEffect(() => {
-      const loadData = async () => {
-        setLoading(true);
-        try {
-          const response = await axios.get('http://localhost:8080/products'); 
+  useEffect(() => {
+    loadData();
+  }, []);
 
-          const result = response.data?.data ;
+  const calculateStatus = (current, total) => {
+    const percentage = (current / total) * 100;
+    if (current <= 0) return "OUT OF STOCK";
+    if (percentage <= 20) return "LOW STOCK";
+    return "IN STOCK";
+  };
 
-          if (result && Array.isArray(result) && result.length > 0) {
-            setData(result);
-          } else {
-            message.warning("Currently, there is no product data available.");
-            setData([]);
-          }
-        } catch (error) {
-          message.error("Server connection failed!");
-        } finally {
-          setLoading(false);
-        }
-      };
-      loadData();
-    }, []);
-
-   const columns = [
-  {
-    title: 'PRODUCT NAME',
-    key: 'product',
-    render: (_, record) => (
-      <Space>
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <Avatar 
-            src={`/product/${record.category?.toLowerCase()}/${record.image}`} 
-            size={45} 
-            shape="square" 
+  const columns = [
+    {
+      title: 'PRODUCT NAME',
+      key: 'product',
+      width: 220,
+      render: (_, record) => (
+        <div className="flex items-center gap-3">
+          <Avatar
+            src={`/product/${record.category?.toLowerCase()}/${record.image}`}
+            size={44}
+            shape="square"
+            className="rounded-lg border border-gray-100 shrink-0 object-cover"
           />
-          <div>
-            <p style={{ fontWeight: 'bold', color: '#2d2424', margin: 0, lineHeight: '1.2' }}>
+          <div className="min-w-0">
+            <p className="font-bold text-gray-800 m-0 truncate text-sm sm:text-base leading-snug">
               {record.name}
             </p>
-            <p style={{ fontSize: '12px', color: '#8c8c8c', margin: 0 }}>
+            <p className="text-xs text-gray-400 m-0 mt-0.5 font-medium">
               SKU: {record.id}
             </p>
           </div>
         </div>
-      </Space>
-    ),
-  },
-  {
-    title: 'CATEGORY',
-    dataIndex: 'category',
-    key: 'category',
-    render: (category) => (
-      <Tag color={category === 'DRINK' ? 'blue' : 'orange'} style={{ borderRadius: '6px' }}>
-        {category}
-      </Tag>
-    )
-  },
-  {
-    title: 'STOCK LEVEL',
-    dataIndex: 'stock',
-    key: 'stock',
-    render: (stock) => {
-      if (!stock) return "N/A";
-      
-      const percentage = Math.round((stock.currentstock / stock.capacity) * 100);
-      const strokecolor = percentage <= 20 ? '#ff4d4f' : percentage <= 60 ? '#faad14' : '#52c41a';
-
-      return (
-        <div style={{ width: 140 }}>
-          <div style={{ 
-            display: "flex", 
-            justifyContent: "space-between", 
-            alignItems: "flex-end", 
-            marginBottom: 4 
-          }}>
-            <span style={{ fontSize: '12px', fontWeight: '500' }}>
-              {stock.currentstock}/{stock.capacity} <span style={{ color: '#8c8c8c' }}>Units</span>
-            </span>
-            <span style={{ fontSize: '12px', color: '#6F4E37', fontWeight: 'bold' }}>
-              {percentage}%
-            </span>
-          </div>
-          <Progress 
-            percent={percentage} 
-            size="small" 
-            showInfo={false} 
-            strokeColor={strokecolor} 
-          />
-        </div>
-      );
-    }
-  },
-  {
-    title: 'PRICE',
-    dataIndex: 'price',
-    key: 'price',
-    render: (price) => <span style={{ fontWeight: 'bold' }}>${Number(price).toFixed(2)}</span>,
-  },
-  {
-    title: 'STATUS',
-    dataIndex: 'status',
-    key: 'status',
-    render: (_, record) => {
-
-      const currentStatus = calculateStatus(record.stock.currentstock, record.stock.capacity);
-      let color = 'green';
-      if (currentStatus === 'OUT OF STOCK') color = 'default';
-      if (currentStatus === 'LOW STOCK') color = 'error';
-      
-      return (
-        <Tag color={color} style={{ borderRadius: '12px', fontWeight: 'bold', padding: '0 10px' }}>
-          {currentStatus}
-        </Tag>
-      );
+      ),
     },
-  },
-  {
-    title: 'ACTIONS',
-    key: 'action',
-    width: 60,
-    align: 'center',
-    render: (_, record) => {
+    {
+      title: 'CATEGORY',
+      dataIndex: 'category',
+      key: 'category',
+      width: 130,
+      render: (cat) => (
+        <Tag
+          color={cat === 'DRINK' ? 'blue' : 'orange'}
+          className="rounded-md px-2.5 py-0.5 font-medium tracking-wide uppercase text-[11px]"
+        >
+          {cat}
+        </Tag>
+      )
+    },
+    {
+      title: 'STOCK LEVEL',
+      dataIndex: 'stock',
+      key: 'stock',
+      width: 180,
+      render: (stock) => {
+        if (!stock) return <span className="text-gray-400 text-sm italic">N/A</span>;
 
-      const actionItems = [
-      { 
-        key: 'restock', 
-        label: 'Restock', 
-        icon: <PlusCircleOutlined />,
-        onClick: () => handleRestock(record) 
-      },
-      { 
-        key: 'edit', 
-        label: 'Edit', 
-        icon: <EditOutlined />,
-        onClick: () => handleEdit(record) 
-      },
-      { type: 'divider' }, 
-      { 
-        key: 'delete', 
-        label: 'Disable', 
-        icon: <DeleteOutlined />, 
-        danger: true,
-        onClick: () => handleDelete(record)
-      },
-    ];
+        const percentage = Math.round((stock.currentstock / stock.capacity) * 100);
 
-    return (
+        let strokeColor = '#52c41a';
+        let textColorClass = 'text-green-600';
 
-          <Dropdown 
-            menu={{ items: actionItems  }} 
+        if (percentage <= 20) {
+          strokeColor = '#ff4d4f';
+          textColorClass = 'text-red-500 font-bold animate-pulse';
+        } else if (percentage <= 60) {
+          strokeColor = '#faad14';
+          textColorClass = 'text-amber-500';
+        }
+
+        return (
+          <div className="w-full max-w-35">
+            <div className="flex justify-between items-end mb-1">
+              <span className="text-xs font-medium text-gray-600">
+                {stock.currentstock}/{stock.capacity} <span className="text-gray-400 font-normal">Units</span>
+              </span>
+              <span className={`text-xs font-bold ${percentage <= 60 ? textColorClass : 'text-[#6F4E37]'}`}>
+                {percentage}%
+              </span>
+            </div>
+            <Progress
+              percent={percentage}
+              size="small"
+              showInfo={false}
+              strokeColor={strokeColor}
+              strokeWidth={6}
+              className="m-0"
+            />
+          </div>
+        );
+      }
+    },
+    {
+      title: 'PRICE',
+      dataIndex: 'price',
+      key: 'price',
+      width: 110,
+      render: (price) => (
+        <span className="font-bold text-gray-800 text-sm sm:text-base">
+          ${Number(price).toFixed(2)}
+        </span>
+      ),
+    },
+    {
+      title: 'STATUS',
+      dataIndex: 'status',
+      key: 'status',
+      width: 140,
+      render: (_, record) => {
+        const currentStatus = calculateStatus(record.stock?.currentstock, record.stock?.capacity);
+
+        let color = 'success';
+        if (currentStatus === 'OUT OF STOCK') color = 'default';
+        if (currentStatus === 'LOW STOCK') color = 'error';
+
+        return (
+          <Tag
+            color={color}
+            className="rounded-full font-bold px-3 py-0.5 text-[11px] tracking-wider uppercase"
+          >
+            {currentStatus}
+          </Tag>
+        );
+      },
+    },
+    {
+      title: 'ACTIONS',
+      key: 'action',
+      width: 80,
+      align: 'center',
+      render: (_, record) => {
+        const actionItems = [
+          {
+            key: 'restock',
+            label: <span className="font-medium text-gray-700">Restock</span>,
+            icon: <PlusCircleOutlined className="text-green-500" />,
+            onClick: () => handleRestock(record)
+          },
+          {
+            key: 'edit',
+            label: <span className="font-medium text-gray-700">Edit Product</span>,
+            icon: <EditOutlined className="text-blue-500" />,
+            onClick: () => handleEdit(record)
+          },
+          { type: 'divider' },
+          {
+            key: 'delete',
+            label: <span className="font-medium">Disable</span>,
+            icon: <DeleteOutlined />,
+            danger: true,
+            onClick: () => handleDelete(record.id)
+          },
+        ];
+
+        return (
+          <Dropdown
+            menu={{ items: actionItems }}
             trigger={['click']}
             placement="bottomRight"
+            classNames={{ root: "shadow-md rounded-lg" }}
           >
-          <Button type="text" icon={<MoreOutlined style={{ fontSize: '20px' }}/>} />
+            <Button
+              type="text"
+              shape="circle"
+              className="hover:bg-gray-100! flex items-center justify-center m-auto"
+              icon={<MoreOutlined className="text-gray-500 text-xl!" />}
+            />
           </Dropdown>
-    )
-        },
-  },
-];
+        );
+      },
+    },
+  ];
 
-// TOTAL SKU 
-const lowStockCount = (
-  Array.isArray(data) ? data : []).filter(item => {
-    const current = item.stock?.currentstock || 0;
-    const all = item.stock?.capacity || 1; 
-    const percent = (current / all) * 100;
-    return percent <= 20; 
-}).length;
+  const lowStockCount = useMemo(() => {
+    return (data || []).filter(item => {
+      const current = item.stock?.currentstock || 0;
+      const capacity = item.stock?.capacity || 1;
+      return (current / capacity) * 100 <= 20;
+    }).length;
+  }, [data]);
 
-//  Status for all product 
-const getStatusByStock = (current, all) => {
-  const curr = Number(current) || 0;
-  const total = Number(all) || 1; 
+  const getStatusByStock = (current, all) => {
+    const curr = Number(current) || 0;
+    const total = Number(all) || 1;
+    const percent = (curr / total) * 100;
 
-  const percent = (curr / total) * 100;
+    if (curr <= 0) return "OUT OF STOCK";
+    if (percent <= 20) return "LOW STOCK";
+    return "IN STOCK";
+  };
 
-  if (curr <= 0) return "OUT OF STOCK";
-  if (percent <= 20) return "LOW STOCK"; 
-  return "IN STOCK";
-};
+  const handleActionRequest = () => {
+    const lowStockItems = data.filter(item => {
+      const current = item.stock?.currentstock ?? 0;
+      const capacity = item.stock?.capacity || 100;
+      return (current / capacity) * 100 <= 20;
+    });
 
+    if (lowStockItems.length === 0) {
+      message.success("All items are in stock, Admin, please rest assured.");
+      return;
+    }
 
-// LOW STOCK ALERTS
-const handleActionRequest = () => {
-  const lowStockItems = data.filter(item => {
-    const current = item.stock?.currentstock ?? 0; 
-    const capacity = item.stock?.capacity || 100;
-    const percentage = (current / capacity) * 100;
-    return percentage <= 20;
-  });
-  if (lowStockItems.length === 0) {
-    message.success("All items are in stock, Admin, please rest assured.");
-    return;
-  }
+    let tempAmounts = {};
 
-  let tempAmounts = {};
-
-  Modal.confirm({
-    title: '🚨 LIST OF ITEMS NEEDING URGENT SHIPPING',
-    width: 700,
-    okText: 'Complete',
-    cancelText: 'Close',
-   content: (
-      <div style={{ maxHeight: '400px', overflowY: 'auto', paddingRight: '10px' }}>
-        {lowStockItems.map((item) => (
-          <div 
-            key={item.id} 
-            style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'space-between', 
-              padding: '12px 0', 
-              borderBottom: '1px solid #f0f0f0' 
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
-              <Avatar 
-                src={`/product/${item.category.toLowerCase()}/${item.image}`} 
-                shape="square" 
-                size={48} 
-              />
-              <div>
-                <b style={{ color: '#2d2424', display: 'block' }}>{item.name}</b>
-                <span style={{ fontSize: '12px', color: '#8c8c8c' }}>
-                  Still available: <b style={{ color: '#ff4d4f' }}>{item.stock?.currentstock ?? 0}</b> / {item.stock?.capacity || 100} Units
-                </span>
-                <div style={{ marginTop: '4px' }}>
-                  <Badge status="error" text="Alert!" style={{ fontSize: '11px' }} />
+    Modal.confirm({
+      title: <span className="text-base sm:text-lg font-bold text-gray-800 tracking-wide">🚨 LIST OF ITEMS NEEDING URGENT SHIPPING</span>,
+      width: 700,
+      okText: 'Complete',
+      cancelText: 'Close',
+      className: "max-w-[calc(100vw-32px)] sm:max-w-[700px]",
+      content: (
+        <div className="max-h-80 sm:max-h-100 overflow-y-auto pr-2 mt-4 space-y-1 scrollbar-thin scrollbar-thumb-gray-200">
+          {lowStockItems.map((item) => (
+            <div key={item.id} className="flex items-center justify-between py-3.5 border-b border-gray-100 last:border-0 gap-4">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <Avatar
+                  src={`/product/${item.category.toLowerCase()}/${item.image}`}
+                  shape="square"
+                  size={48}
+                  className="rounded-lg border border-gray-100 shrink-0 object-cover"
+                />
+                <div className="min-w-0">
+                  <b className="text-sm sm:text-base text-gray-800 block truncate leading-tight">{item.name}</b>
+                  <span className="text-xs text-gray-400 block mt-1 font-medium">
+                    Still available: <b className="text-red-500 font-bold">{item.stock?.currentstock ?? 0}</b> / {item.stock?.capacity || 100} Units
+                  </span>
+                  <div className="mt-1 flex items-center">
+                    <Badge status="error" text={<span className="text-[11px] font-bold text-red-400 uppercase tracking-wider">Alert!</span>} />
+                  </div>
                 </div>
               </div>
+              <div className="shrink-0 pl-1">
+                <InputNumber
+                  min={0}
+                  placeholder="SL"
+                  className="w-20 rounded-md font-medium"
+                  onChange={(val) => { tempAmounts[item.id] = val; }}
+                />
+              </div>
             </div>
-            
-            <div style={{ marginLeft: '10px' }}>
-              <InputNumber 
-                min={0} 
-                placeholder="SL" 
-                style={{ width: 80 }} 
-                onChange={(val) => { tempAmounts[item.id] = val }} 
-              />
-            </div>
-          </div>
-        ))}
-      </div>
-    ),
+          ))}
+        </div>
+      ),
+      onOk: async () => {
+        const itemsToUpdate = lowStockItems.filter(item => tempAmounts[item.id] > 0);
+        if (itemsToUpdate.length === 0) {
+          message.info("No additional quantities have been imported yet");
+          return;
+        }
 
-     onOk: async () => {
-
-      const itemsToUpdate = lowStockItems.filter(item => tempAmounts[item.id] > 0);
-
-      if (itemsToUpdate.length === 0) {
-        message.info("No additional quantities have been imported yet");
-        return;
-      }
-
-      try {
-        setLoading(true);
-        
-        await Promise.all(itemsToUpdate.map(async (item) => {
-          const addedAmount = tempAmounts[item.id];
-
-          const current = item.stock?.currentstock || 0;
-
-          const capacity = item.stock?.capacity || 100;
-
-          const newCurrentStock = current+ addedAmount;
-
-          const newStatus = getStatusByStock(newCurrentStock, capacity);
-          
-          const payload = { 
-            stock: { 
-              capacity: capacity, 
-              currentstock: newCurrentStock 
-            }, 
-            status: newStatus 
-          };
-
-          return restockProductApi(item.id, payload);
-        }));
-
-        setData((prev) =>
-          prev.map((item) => {
+        try {
+          setLoading(true);
+          await Promise.all(itemsToUpdate.map(async (item) => {
             const addedAmount = tempAmounts[item.id];
-            if (addedAmount > 0) {
-              const current = item.stock?.currentstock || 0;
-              const capacity = item.stock?.capacity || 100;
-              const newCurrentStock = current + addedAmount;
-              const newStatus = getStatusByStock(newCurrentStock, capacity);
-              return { 
-                ...item, 
-                stock: { ...item.stock, currentstock: newCurrentStock, capacity: capacity },
-                status: newStatus
-              };
-            }
-            return item;
-          })
-        );
+            const current = item.stock?.currentstock || 0;
+            const capacity = item.stock?.capacity || 100;
+            const newCurrentStock = current + addedAmount;
+            const newStatus = getStatusByStock(newCurrentStock, capacity);
 
-        message.success(`Successfully restocked ${itemsToUpdate.length} products!`);
-      } catch (error) {
-        console.error("Error : ", error);
-        message.error("Batch restock failed!");
-      } finally {
-        setLoading(false);
-      }
-    },
-  });
-};
+            const payload = {
+              stock: { capacity, currentstock: newCurrentStock },
+              status: newStatus
+            };
+            await axios.put(`${API_BASE_URL}/${item.id}`, payload);
+          }));
 
-const countCake = () => {
-    return data.reduce((sum, index) => {
-       if(index.category === "CAKE"){
-           sum += 1
-       }
-       return sum
-    }, 0)
-}
+          setData((prev) =>
+            prev.map((item) => {
+              const addedAmount = tempAmounts[item.id];
+              if (addedAmount > 0) {
+                const current = item.stock?.currentstock || 0;
+                const capacity = item.stock?.capacity || 100;
+                const newCurrentStock = current + addedAmount;
+                return {
+                  ...item,
+                  stock: { ...item.stock, currentstock: newCurrentStock },
+                  status: getStatusByStock(newCurrentStock, capacity)
+                };
+              }
+              return item;
+            })
+          );
+          message.success(`Successfully restocked ${itemsToUpdate.length} products!`);
+        } catch (error) {
+          console.error(error);
+          message.error("Batch restock failed!");
+        } finally {
+          setLoading(false);
+        }
+      },
+    });
+  };
 
-const countDrink = () => {
-    return data.reduce((sum, index) => {
-       if(index.category === "DRINK"){
-           sum += 1
-       }
+  const countCake = () => data.filter(item => item.category === "CAKE").length;
 
-       return sum
-    }, 0)
-}
+  const countDrink = () => data.filter(item => item.category === "DRINK").length;
 
-//Use the results for comparison to establish the state. [useMemo]
-
-const avgFreshness = useMemo(() => {
+  const avgFreshness = useMemo(() => {
     if (!Array.isArray(data) || data.length === 0) return 100;
-
     const cakes = data.filter(item => item.category === 'CAKE' && item.createdAt && item.expiryDate);
     if (cakes.length === 0) return 100;
 
     const now = new Date();
     const totalFreshness = cakes.reduce((sum, item) => {
-        const start = new Date(item.createdAt);
-        const end = new Date(item.expiryDate);
-        const totalLifeSpan = end - start;
-        const timePassed = now - start;
-        let itemFreshness = ((totalLifeSpan - timePassed) / totalLifeSpan) * 100;
+      const start = new Date(item.createdAt);
+      const end = new Date(item.expiryDate);
+      const totalLifeSpan = end - start;
+      const timePassed = now - start;
+      let itemFreshness = ((totalLifeSpan - timePassed) / totalLifeSpan) * 100;
 
-        return sum + Math.max(0, Math.min(100, itemFreshness));
+      return sum + Math.max(0, Math.min(100, itemFreshness));
     }, 0);
 
     return Math.round(totalFreshness / cakes.length);
-}, [data]);
+  }, [data]);
 
-const getFreshnessColor = (percent) => {
-    if (percent > 70) return "#6dee89"; 
-    if (percent > 30) return "#faad14"; 
-    return "#ff4d4f"; 
-};
+  const getFreshnessColor = (percent) => {
+    if (percent > 70) return "#6dee89";
+    if (percent > 30) return "#faad14";
+    return "#ff4d4f";
+  };
 
-const calculateStatus = (current, total) => {
-    const percentage = (current / total) * 100;
+  const handleRestock = async (record) => {
+    let inputAmount = 0;
+    const maxCapacity = record.stock?.capacity || 100;
+    const current = record.stock?.currentstock || 0;
 
-    if (current <= 0) {
-        return "OUT OF STOCK";
-    } else if (percentage <= 20) {
-        return "LOW STOCK";
-    } else {
-        return "IN STOCK";
-    }
-};
+    Modal.confirm({
+      title: <span className="font-bold text-gray-800">Import goods for: {record.name}</span>,
+      content: (
+        <div className="mt-2 space-y-2 text-sm text-gray-600">
+          <p>Current quantity: <span className="font-bold text-gray-800">{current}</span></p>
+          <div className="flex flex-col gap-1">
+            <span>Enter additional quantity:</span>
+            <InputNumber
+              min={1}
+              max={maxCapacity - current}
+              defaultValue={0}
+              onChange={(val) => { inputAmount = val; }}
+              className="w-full"
+            />
+          </div>
+        </div>
+      ),
+      onOk: async () => {
+        if (inputAmount <= 0) {
+          message.warning("Please enter a quantity greater than 0.");
+          return Promise.reject();
+        }
+        if (current + inputAmount > maxCapacity) {
+          message.error(`Exceeds capacity!`);
+          return Promise.reject();
+        }
 
-// Action - Restock
-const handleRestock = async (record) => {
+        try {
+          setLoading(true);
+          const newCurrentStock = current + inputAmount;
+          const newStatus = calculateStatus(newCurrentStock, maxCapacity);
+          const cleanStock = { capacity: maxCapacity, currentstock: newCurrentStock };
 
-  let inputAmount = 0;
+          const payload = { stock: cleanStock, status: newStatus };
+          await axios.put(`${API_BASE_URL}/${record.id}`, payload);
 
-  const maxCapacity = record.stock?.capacity || 100; 
-  const current = record.stock?.currentstock || 0;
-
-  Modal.confirm({
-    title: `Import goods for: ${record.name}`,
-    content: (
-      <div>
-        <p>Current quantity: <b>{record.stock.currentstock}</b></p>
-        <span>Enter additional quantity: </span>
-        <InputNumber 
-          min={1} 
-          max={maxCapacity - current}
-          defaultValue={0} 
-          onChange={(val) => (inputAmount = val)} 
-          style={{ width: '100%' }}
-        />
-      </div>
-    ),
-    onOk: async () => {
-      if (inputAmount <= 0) {
-        message.warning("Please enter a quantity greater than 0.");
-        return Promise.reject();
-      }
-
-      if (current + inputAmount > maxCapacity) {
-        message.error(`Exceeds capacity!`);
-        return Promise.reject(); 
-      }
-
-      try {
-        setLoading(true);
-        const newCurrentStock = current + inputAmount;
-        const newStatus = calculateStatus(newCurrentStock, maxCapacity  );
-
-        const cleanStock = { 
-          capacity: maxCapacity, 
-          currentstock: newCurrentStock 
-        };
-
-        const payload = {
-          stock: cleanStock, 
-          status: newStatus
-        };
-
-
-        await restockProductApi(record.id, payload);
-
-        setData((prev) =>
-          prev.map((item) =>
-            item.id === record.id 
-              ? { ...item, stock: cleanStock, status: newStatus } 
-              : item
-          )
-        );
-
-        message.success(`Goods received successfully! Main warehouse: ${newCurrentStock}`)
-      } catch (error) {
-        message.error("Error during goods receiving!");
-      } finally {
-        setLoading(false);
-      }
-    },
-  });
-};
-
-const handleAddNew = () => {
-  setEditingProduct(null); 
-  form.resetFields();      
-  setIsEditModalOpen(true);
-};
-
-// Action - Edit
-const handleEdit = (record) => {
-  setEditingProduct(record);
-  form.setFieldsValue({
-    ...record,
-    id: record.id,       
-    name: record.name,
-    price: record.price,
-    category: record.category,
-    stock: {
-      capacity: record.stock.capacity,
-      currentstock: record.stock.currentstock
-    }
-  });
- setIsEditModalOpen(true);
-};
-
-const handleSaveEdit = async () => {
-  try {
-    const values = await form.validateFields();
-    setLoading(true);
-
-    const { stock: formStock, image, ...otherValues } = values;
-
-    const initialStatus = !editingProduct 
-      ? getStatusByStock(formStock.currentstock || 0, formStock.capacity || 100)
-      : editingProduct.status;
-
-    const payload = {
-      ...otherValues, 
-      image: image || (editingProduct?.image || "default.jpg"),
-      stock: {
-        capacity: formStock.capacity, 
-        currentstock: editingProduct ? editingProduct.stock.currentstock : (formStock.currentstock || 0)
+          setData((prev) =>
+            prev.map((item) =>
+              item.id === record.id ? { ...item, stock: cleanStock, status: newStatus } : item
+            )
+          );
+          message.success(`Goods received successfully! Main warehouse: ${newCurrentStock}`);
+        } catch (error) {
+          console.error(error);
+          message.error("Error during goods receiving!");
+        } finally {
+          setLoading(false);
+        }
       },
-      status: editingProduct ? editingProduct.status : initialStatus,
-    };
+    });
+  };
 
-    if (payload.category === "CAKE" && !editingProduct) {
-      payload.createdAt = new Date().toISOString().split('T')[0];
-    }
-
-    if (editingProduct) {
-      await updateProductApi(editingProduct.id, payload);
-      setData(prev => prev.map(item => 
-        item.id === editingProduct.id ? { ...item, ...payload, id: item.id } : item
-      ));
-      message.success("Product updated successfully!");
-    } else {
-      const newProd = await createProductApi(payload);
-      setData(prev => [newProd, ...prev]);
-      message.success("New product added successfully!");
-    }
-    setIsEditModalOpen(false);
-    form.resetFields();
+  const handleAddNew = () => {
     setEditingProduct(null);
-  } catch (error) {
-    console.error("Error", error);
-    message.error("Please double-check the input fields!");
-  } finally {
-    setLoading(false);
-  }
-};
+    form.resetFields();
+    setIsEditModalOpen(true);
+  };
 
-
-// Action - Delete
-const handleDelete = async (id) => {
-  Modal.confirm({
-    title: 'Are you sure you want to delete this product?',
-    content: 'This action cannot be completed',
-    okText: 'Disable',
-    okType: 'danger',
-    cancelText: 'Cancel',
-    onOk: async () => {
-      try {
-        await deleteProductApi(id);
-        setData(prev => prev.filter(item => item.id !== id));
-        message.success("Product disable!");
-      } catch (error) {
-        message.error("Cannot disable product!");
+  const handleEdit = (record) => {
+    setEditingProduct(record);
+    form.setFieldsValue({
+      ...record,
+      stock: {
+        capacity: record.stock?.capacity,
+        currentstock: record.stock?.currentstock
       }
-    },
-  });
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleSaveEdit = async () => {
+    try {
+      const values = await form.validateFields();
+      setLoading(true);
+
+      const { stock: formStock, image, ...otherValues } = values;
+      const initialStatus = !editingProduct
+        ? getStatusByStock(formStock.currentstock || 0, formStock.capacity || 100)
+        : editingProduct.status;
+
+      const payload = {
+        ...otherValues,
+        image: image || (editingProduct?.image || "default.jpg"),
+        stock: {
+          capacity: formStock.capacity,
+          currentstock: editingProduct ? editingProduct.stock.currentstock : (formFormStock.currentstock || 0)
+        },
+        status: editingProduct ? editingProduct.status : initialStatus,
+      };
+
+      if (payload.category === "CAKE" && !editingProduct) {
+        payload.createdAt = new Date().toISOString().split('T')[0];
+      }
+
+      if (editingProduct) {
+        await axios.put(`${API_BASE_URL}/${editingProduct.id}`, payload);
+        setData(prev => prev.map(item =>
+          item.id === editingProduct.id ? { ...item, ...payload, id: item.id } : item
+        ));
+        message.success("Product updated successfully!");
+      } else {
+        const response = await axios.post(API_BASE_URL, payload);
+        const newProd = response.data;
+        setData(prev => [newProd, ...prev]);
+        message.success("New product added successfully!");
+      }
+      setIsEditModalOpen(false);
+      form.resetFields();
+      setEditingProduct(null);
+    } catch (error) {
+      console.error("Error", error);
+      message.error("Please double-check the input fields!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    Modal.confirm({
+      title: 'Are you sure you want to delete this product?',
+      content: 'This action cannot be undone.',
+      okText: 'Disable',
+      okType: 'danger',
+      cancelText: 'Cancel',
+      onOk: async () => {
+        try {
+          await axios.delete(`${API_BASE_URL}/${id}`);
+          setData(prev => prev.filter(item => item.id !== id));
+          message.success("Product disabled successfully!");
+        } catch (error) {
+          console.error(error);
+          message.error("Cannot disable product!");
+        }
+      },
+    });
+  };
+
+  return (
+    <div className="p-4 sm:p-6 md:p-9 flex flex-col gap-6 min-h-screen bg-gray-50/50">
+
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold text-[#EE2B6C] m-0">Inventory Management</h1>
+          <p className="text-xs sm:text-sm text-gray-400 m-0 mt-1 font-medium">Real-time stock tracking for Drink & Cake</p>
+        </div>
+        <div className="w-full sm:w-auto">
+          <Button
+            color="pink"
+            variant="solid"
+            onClick={handleAddNew}
+            icon={<PlusOutlined />}
+            className="w-full sm:w-auto h-10 font-semibold shadow-sm flex items-center justify-center gap-1.5"
+          >
+            New product
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+
+        <div className="p-5 flex flex-col gap-2 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.04)] border border-gray-100">
+          <p className="text-xs font-bold tracking-wider text-gray-400 m-0">TOTAL SKU</p>
+          <div className="flex justify-between items-center mt-1">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 m-0">{data.length}</h2>
+          </div>
+        </div>
+
+        <div className="p-5 flex flex-col gap-2 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.04)] border border-gray-100">
+          <p className="text-xs font-bold tracking-wider text-gray-400 m-0">LOW STOCK ALERTS</p>
+          <div className="flex justify-between items-center gap-2 mt-1">
+            <h2 className="text-xl sm:text-2xl font-bold text-orange-500 m-0">{lowStockCount}</h2>
+            <Button
+              onClick={handleActionRequest}
+              type="text"
+              icon={<AlertOutlined className="text-orange-500!" />}
+              className="flex! items-center gap-1.5 text-xs font-bold text-orange-600 bg-orange-50 hover:bg-orange-100! border border-orange-200/60 rounded-md px-3 py-1.5 h-auto"
+            >
+              Action Request
+            </Button>
+          </div>
+        </div>
+
+        <div className="p-5 flex flex-col gap-2 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.04)] border border-gray-100">
+          <p className="text-xs font-bold tracking-wider text-gray-400 m-0">BAKERY FRESHNESS</p>
+          <div className="flex justify-between items-center gap-3 mt-1 min-w-0">
+            <h2 className="text-xl sm:text-2xl font-bold m-0 shrink-0" style={{ color: getFreshnessColor(avgFreshness) }}>
+              {avgFreshness}%
+            </h2>
+            <div className="w-full max-w-35 sm:max-w-45">
+              <Progress
+                percent={avgFreshness}
+                strokeColor={getFreshnessColor(avgFreshness)}
+                showInfo={false}
+                className="m-0"
+                size={{ strokeWidth: 6 }}
+              />
+            </div>
+            <span className="text-base sm:text-lg font-bold shrink-0" style={{ color: getFreshnessColor(avgFreshness) }}>
+              {avgFreshness > 30 ? "✔" : "⚠"}
+            </span>
+          </div>
+        </div>
+
+        <div className="p-4 flex flex-col justify-center gap-2 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.04)] border border-gray-100">
+          <div className="flex justify-between items-center bg-amber-50/70 border border-amber-100/60 rounded-lg px-3 py-1.5">
+            <h2 className="text-xs font-bold text-amber-600 m-0 tracking-wider">CAKE</h2>
+            <div className="text-sm font-bold text-amber-700">{countCake()}</div>
+          </div>
+          <div className="flex justify-between items-center bg-blue-50/70 border border-blue-100/60 rounded-lg px-3 py-1.5">
+            <h2 className="text-xs font-bold text-blue-600 m-0 tracking-wider">DRINK</h2>
+            <div className="text-sm font-bold text-blue-700">{countDrink()}</div>
+          </div>
+        </div>
+
+      </div>
+
+      <div className="bg-white rounded-xl p-4 sm:p-6 shadow-[0_4px_12px_rgba(0,0,0,0.02)] border border-gray-100 relative flex flex-col gap-5">
+        <Spin spinning={loading}>
+          <Table
+            rowKey="id"
+            rowClassName={(record) => record.disabled ? 'row-disabled' : ''}
+            columns={columns}
+            dataSource={data}
+            scroll={{ x: 800 }}
+            pagination={{
+              total: data.length,
+              pageSize: 5,
+              showSizeChanger: false,
+              placement: 'bottomRight',
+            }}
+            className="w-full"
+          />
+
+          <Modal
+            title={<span className="text-base sm:text-lg font-bold text-gray-800">{editingProduct ? `Edit Product: ${editingProduct.name}` : "Add New Product"}</span>}
+            open={isEditModalOpen}
+            onCancel={() => setIsEditModalOpen(false)}
+            onOk={handleSaveEdit}
+            confirmLoading={loading}
+            okText="Save Changes"
+            cancelText="Cancel"
+            width={650}
+            className="max-w-[calc(100vw-32px)] sm:max-w-162.5"
+          >
+            <Form form={form} layout="vertical" className="mt-5">
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 items-start mb-4">
+                <div className="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-xl border border-dashed border-gray-200 gap-2 sm:col-span-1">
+                  <Avatar
+                    size={90}
+                    shape="square"
+                    src={`/product/${(category || 'drink').toLowerCase()}/${form.getFieldValue('image')}`}
+                    icon={<PictureOutlined />}
+                    className="rounded-lg! border border-gray-100 bg-white shadow-sm object-cover"
+                  />
+                  <span className="text-[11px] font-medium text-gray-400 uppercase tracking-wider mt-1">Image Preview</span>
+                </div>
+
+                <div className="sm:col-span-2 w-full">
+                  <Form.Item
+                    name="image"
+                    label={<span className="font-semibold text-gray-600 text-sm">Image Filename</span>}
+                    tooltip="Enter the filename in public/product folder (e.g., cake_1.png)"
+                    rules={[{ required: true, message: 'Please enter the image filename!' }]}
+                    className="mb-0"
+                  >
+                    <Input
+                      placeholder="e.g., drink_5.png"
+                      onChange={() => setUpdate(!update)}
+                      className="py-2"
+                    />
+                  </Form.Item>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1">
+                <Form.Item
+                  name="id"
+                  label={<span className="font-semibold text-gray-600 text-sm">Stock Keeping Unit (SKU)</span>}
+                  rules={[{ required: !editingProduct, message: 'Please enter the code!' }]}
+                >
+                  <Input placeholder="e.g. BC-011" disabled={!!editingProduct} className="py-2" />
+                </Form.Item>
+
+                <Form.Item
+                  name="name"
+                  label={<span className="font-semibold text-gray-600 text-sm">Product Name</span>}
+                  rules={[{ required: true, message: 'Product name is required!' }]}
+                >
+                  <Input className="py-2" />
+                </Form.Item>
+
+                <Form.Item
+                  name="price"
+                  label={<span className="font-semibold text-gray-600 text-sm">Price ($)</span>}
+                  rules={[{ required: true, message: 'Price is required!' }]}
+                >
+                  <InputNumber min={0} className="w-full py-0.5 rounded-md" />
+                </Form.Item>
+
+                <Form.Item name="category" label={<span className="font-semibold text-gray-600 text-sm">Category</span>}>
+                  <Select className="h-10 rounded-md">
+                    <Select.Option value="DRINK">DRINK</Select.Option>
+                    <Select.Option value="CAKE">CAKE</Select.Option>
+                  </Select>
+                </Form.Item>
+
+                <Form.Item name={['stock', 'capacity']} label={<span className="font-semibold text-gray-600 text-sm">Max Capacity</span>}>
+                  <InputNumber min={1} className="w-full py-0.5 rounded-md" />
+                </Form.Item>
+
+                <Form.Item name={['stock', 'currentstock']} label={<span className="font-semibold text-gray-600 text-sm">Initial Stock</span>}>
+                  <InputNumber min={0} disabled={!!editingProduct} className="w-full py-0.5 rounded-md" />
+                </Form.Item>
+              </div>
+
+              {category === 'CAKE' && (
+                <Form.Item
+                  name="expiryDate"
+                  label={<span className="font-semibold text-gray-600 text-sm">Expiry Date</span>}
+                  rules={[{ required: true, message: 'Expiry date is required for cakes!' }]}
+                  className="mt-2"
+                >
+                  <DatePicker className="w-full py-2 rounded-md" placeholder="Select expiry date" />
+                </Form.Item>
+              )}
+            </Form>
+          </Modal>
+        </Spin>
+
+        <div className="sm:absolute bottom-7 left-6 text-xs sm:text-sm text-gray-400 font-medium mt-2 sm:mt-0 text-center sm:text-left">
+          Showing 1 to 5 of {data.length} records
+        </div>
+      </div>
+
+    </div>
+  );
 };
 
-
-    return (
-        <div style={{padding:"24px 36px", display:"flex", flexDirection:"column", gap:"32px", height:"100vh"}}>
-
-            <div style={{display:"flex", justifyContent:"space-between", alignItems:"flex-end"}}>
-                    <div>
-                        <h1 style={{fontSize:"1.5rem", fontWeight:"bold", color:"#EE2B6C"}}>Inventory Management</h1>
-                        <p style={{color: "#999"}}>Real-time stock tracking for Drink & Cake la</p>
-                    </div>
-
-                    <div style={{display:"flex", justifyContent:"center", alignItems:"center"}}>
-                        <Button color="pink" variant="solid" onClick={handleAddNew} icon={<PlusOutlined />} >
-                            New product
-                        </Button>
-                    </div>
-            </div>
-
-            
-
-            <div style={{display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gridGap:"20px"}}>
-                <div style={{padding:"20px", display:"flex", flexDirection:"column", gap:"10px", backgroundColor:"#fff", borderRadius:"10px", boxShadow:"5px 5px 4px 0px #999"}}>
-                    <p style={{color:"#999", fontWeight:"bold"}}>TOTAL SKU</p>
-                    <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
-                        <h2>{data.length}</h2>
-                    </div>
-                </div>
-
-                <div style={{padding:"20px", display:"flex", flexDirection:"column", gap:"10px", backgroundColor:"#fff", borderRadius:"10px", boxShadow:"5px 5px 4px 0px #999"}}>
-                    <p style={{color:"#999", fontWeight:"bold"}}>LOW STOCK ALERTS</p>
-                    <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
-                        <h2 style={{color:"#ff8e04"}}>{lowStockCount}</h2>
-                        <Button onClick={handleActionRequest} type="text" icon={<AlertOutlined />} style={{display:"flex", color:"orange", padding:"5px 15px", backgroundColor:"#fadcb7"}}>Action Request</Button>
-                    </div>
-                </div>
-
-                <div style={{padding:"20px", display:"flex", flexDirection:"column", gap:"10px", backgroundColor:"#fff", borderRadius:"10px", boxShadow:"5px 5px 4px 0px #999"}}>
-                    <p style={{color:"#999", fontWeight:"bold"}}>BAKERY FRESHNESS</p>
-                    <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", gap:"10px"}}>
-                        <h2 style={{ color: getFreshnessColor(avgFreshness) }}>{avgFreshness}%</h2>
-                        <div style={{ width: "200px" }}>
-                            <Progress percent={avgFreshness} strokeColor={getFreshnessColor(avgFreshness)} showInfo={false}/>
-                        </div>
-                        
-                        <span style={{ color: getFreshnessColor(avgFreshness), fontSize: '18px' }}>{avgFreshness > 30 ? "✔" : "⚠"}</span>
-                    </div>
-                </div>
-                 
-                 
-                <div style={{padding:"20px", display:"flex", flexDirection:"column", gap:"10px",backgroundColor:"#fff", borderRadius:"10px", boxShadow:"5px 5px 4px 0px #999"}}>
-                    <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", backgroundColor:"#FFF7E6", borderRadius:"10px", padding:"0px 8px"}}>
-                        <h2 style={{color:"orange"}}>CAKE</h2>
-                        <div>
-                            {countCake()}
-                        </div>
-                    </div>
-                    <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", backgroundColor:"#E4F6FF", borderRadius:"10px", padding:"0px 8px"}}>
-                        <h2 style={{color:"blue"}}>DRINK</h2>
-                        <div>
-                            {countDrink()}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-            <div style={{ padding: '20px', background: '#fff', borderRadius: '8px' }}>
-                <Spin spinning={loading} >
-                    <Table 
-                        rowKey="id"
-                        rowClassName={(record) => record.disabled ? 'row-disabled' : ''}
-                        columns={columns} 
-                        dataSource={data} 
-                        pagination={{
-                        total: data.length,
-                        pageSize: 5,
-                        showSizeChanger: false,
-                        placement: 'bottomRight',
-                        }}
-                    />
-                    <Modal
-                    title={editingProduct ? `Edit Product: ${editingProduct.name}` : "Add New Product"}
-                    open={isEditModalOpen}
-                    onCancel={() => {
-                      setIsEditModalOpen(false); 
-                    }}
-                    onOk={handleSaveEdit}
-                    confirmLoading={loading}
-                    okText="Save Changes"
-                    cancelText="Cancel"
-                    >
-                    <Form form={form} layout="vertical">
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '20px', gap: '8px' }}>
-                            <Avatar 
-                                size={100} 
-                                shape="square" 
-                                src={`/product/${(form.getFieldValue('category') || 'drink').toLowerCase()}/${form.getFieldValue('image')}`} 
-                                icon={<PictureOutlined />}
-                                style={{ border: '1px dashed #d9d9d9', backgroundColor: '#fafafa' }}
-                            />
-                            <span style={{ fontSize: '12px', color: '#8c8c8c' }}>Image Preview</span>
-                        </div>
-                        <Form.Item 
-                            name="image" 
-                            label="Image Filename" 
-                            tooltip="Enter the filename in public/product folder (e.g., cake_1.png)"
-                            rules={[{ required: true, message: 'Please enter the image filename!' }]}
-                        >
-                            <Input 
-                                placeholder="e.g., drink_5.png" 
-                                onChange={() => setUpdate(!update)} 
-                            />
-                        </Form.Item>
-                        <Form.Item 
-                          name="id" 
-                          label="Stock Keeping Unit (SKU)" 
-                          rules={[{ required: !editingProduct, message: 'Please enter the code!' }]}
-                        ><Input placeholder="e.g. BC-011" disabled={!!editingProduct} /></Form.Item>
-                        <Form.Item name="name" label="Product Name" rules={[{ required: true }]}>
-                        <Input />
-                        </Form.Item>
-                        <Form.Item name="price" label="Price ($)" rules={[{ required: true }]}>
-                        <InputNumber min={0} style={{ width: '100%' }} />
-                        </Form.Item>
-                        <Form.Item name="category" label="Category">
-                        <Select>
-                            <Select.Option value="DRINK">DRINK</Select.Option>
-                            <Select.Option value="CAKE">CAKE</Select.Option>
-                        </Select>
-                        </Form.Item>
-
-                        <Form.Item name={['stock', 'capacity']} label="Max Capacity" style={{ flex: 1 }}>
-                          <InputNumber min={1} defaultValue={100} style={{ width: '100%' }} />
-                        </Form.Item>
-                        
-                        <Form.Item name={['stock', 'currentstock']} label="Initial Stock" style={{ flex: 1 }}>
-                          <InputNumber min={0} defaultValue={0} style={{ width: '100%' }} />
-                        </Form.Item>
-
-                        {category === 'CAKE' && (
-                          <Form.Item 
-                            name="expiryDate" 
-                            label="Expiry Date" 
-                            rules={[{ required: true, message: 'Expiry date is required for cakes!' }]}
-                          >
-                            <DatePicker style={{ width: '100%' }} placeholder="Select expiry date" />
-                          </Form.Item>
-                        )}
-                    </Form>
-                    </Modal>
-                </Spin>
-                <div style={{ marginTop: '-45px', color: '#8c8c8c' }}>
-                    Showing 1 to 5 of 128 orders
-                </div>
-            </div>
-    </div>
-    )
-}
-
-export default Inventory
+export default Inventory;

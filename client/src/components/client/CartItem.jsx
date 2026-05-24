@@ -5,7 +5,7 @@ const CartItem = ({ item, onUpdateQuantity, onRemove }) => {
     return (
         <div className="flex gap-6 bg-white border border-gray-100 rounded-2xl p-5 hover:shadow-sm transition-all">
             {/* Product Image */}
-            <div className="w-28 h-28 flex-shrink-0 overflow-hidden rounded-xl bg-gray-100">
+            <div className="w-28 h-28 shrink-0 overflow-hidden rounded-xl bg-gray-100">
                 <img
                     src={
                         item.image
@@ -60,7 +60,7 @@ const CartItem = ({ item, onUpdateQuantity, onRemove }) => {
             </div>
 
             {/* Item Total */}
-            <div className="text-right flex-shrink-0">
+            <div className="text-right shrink-0">
                 <p className="font-semibold text-lg text-warm-400">
                     ${itemTotal}
                 </p>

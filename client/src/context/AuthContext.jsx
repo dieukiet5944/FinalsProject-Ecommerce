@@ -13,7 +13,6 @@ export const AuthProvider = ({ children }) => {
       const res = await fetch("https://69cfba0fa4647a9fc675e215.mockapi.io/users");
       const users = await res.json();
 
-      // Tìm user theo email và password_display
       const foundUser = users.find(u =>
         u.email === email && u.password_display === password
       );
@@ -37,11 +36,6 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("user");
   };
 
-  // Tự động load user khi refresh trang
-  // useEffect(() => {
-  //   const savedUser = localStorage.getItem("user");
-  //   if (savedUser) setUser(JSON.parse(savedUser));
-  // }, []);
 
   return (
     <AuthContext.Provider value={{ user, login, logout, loading }}>

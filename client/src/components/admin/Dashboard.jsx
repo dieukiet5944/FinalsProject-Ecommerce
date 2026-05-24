@@ -44,7 +44,7 @@ const Dashboard = ({ name }) => {
                 if (Array.isArray(ordersArray)) {
                     const formattedOrders = ordersArray.map((order, index) => {
 
-                        const itemsInOrder =  order.items || [];
+                        const itemsInOrder = order.items || [];
                         const calculatedTotal = itemsInOrder.reduce((sum, item) => {
                             return sum + ((item.qty || 0) * (item.price || 0));
                         }, 0);
@@ -144,148 +144,196 @@ const Dashboard = ({ name }) => {
     }, [historyOrders, dataProduct]);
 
     return (
+        <div className="p-4 sm:p-6 md:p-9 flex flex-col gap-6 min-h-screen bg-gray-50/50">
 
-        <div style={{ padding: "24px 36px", display: "flex", flexDirection: "column", gap: "25px", height: "100vh" }}>
             <div>
-                <h1 style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#EE2B6C" }}>Dashboard Overview</h1>
-                <p style={{ color: "#999" }}>Welcome back, {name}! Here's the buzz from your store today</p>
+                <h1 className="text-xl sm:text-2xl font-bold text-[#EE2B6C] m-0">Dashboard Overview</h1>
+                <p className="text-xs sm:text-sm text-gray-400 m-0 mt-1 font-medium">
+                    Welcome back, {name}! Here's the buzz from your store today
+                </p>
             </div>
 
-            {/* Certification number TOP - TIER  */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gridGap: "20px" }}>
-                <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "10px", backgroundColor: "#fff", borderRadius: "10px", boxShadow: "5px 5px 4px 0px #999" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", textAlign: "center" }}>
-                        <DollarOutlined style={{ fontSize: "20px", padding: "10px", borderRadius: "8px", backgroundColor: "rgb(220, 252, 231)", color: "rgb(42, 146, 80)" }} />
-                        {/* <p style={{padding:"10px", borderRadius:"13px" , backgroundColor:"rgb(220, 252, 231)", color:"rgb(75, 209, 124)"}}>+12,5%</p> */}
+                <div className="p-5 flex flex-col gap-3 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.04)] border border-gray-100">
+                    <div className="flex justify-between items-center">
+                        <DollarOutlined className="text-lg p-2.5 rounded-lg bg-green-50 text-green-600 border border-green-100 shrink-0" />
                     </div>
-                    <p style={{ fontWeight: "bold" }}>TOTAL REVENUE</p>
-                    <h2 style={{ color: "rgb(42, 146, 80)", backgroundColor: "rgb(220, 252, 231)", padding: "5px 12px", borderRadius: "8px" }}>$ {calculateTotalRevenue()}</h2>
+                    <p className="text-xs font-bold tracking-wider text-gray-400 m-0">TOTAL REVENUE</p>
+                    <h2 className="text-lg sm:text-xl font-bold text-green-700 bg-green-50/60 px-3 py-1 rounded-md m-0 inline-block w-fit">
+                        $ {calculateTotalRevenue()}
+                    </h2>
                 </div>
 
-                <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "10px", backgroundColor: "#fff", borderRadius: "10px", boxShadow: "5px 5px 4px 0px #999" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", textAlign: "center" }}>
-                        <ShoppingCartOutlined style={{ fontSize: "20px", padding: "10px", borderRadius: "8px", backgroundColor: "rgb(219, 234, 254)", color: "rgb(73, 113, 191)" }} />
-                        {/* <p style={{padding:"10px", borderRadius:"13px" , backgroundColor:"rgb(219, 234, 254)", color:"rgb(128, 166, 244)"}}>+8,2%</p> */}
+                <div className="p-5 flex flex-col gap-3 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.04)] border border-gray-100">
+                    <div className="flex justify-between items-center">
+                        <ShoppingCartOutlined className="text-lg p-2.5 rounded-lg bg-blue-50 text-blue-600 border border-blue-100 shrink-0" />
                     </div>
-                    <p style={{ fontWeight: "bold" }}>PENDING ORDERS</p>
-                    <h2 style={{ color: "rgb(73, 113, 191)", backgroundColor: "rgb(219, 234, 254)", padding: "5px 12px", borderRadius: "8px" }}>{calculatePendingOrders()} <ExceptionOutlined /></h2>
+                    <p className="text-xs font-bold tracking-wider text-gray-400 m-0">PENDING ORDERS</p>
+                    <h2 className="text-lg sm:text-xl font-bold text-blue-700 bg-blue-50/60 px-3 py-1 rounded-md m-0 inline-flex items-center gap-2 w-fit">
+                        {calculatePendingOrders()} <ExceptionOutlined className="text-blue-400 text-sm" />
+                    </h2>
                 </div>
 
-                <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "10px", backgroundColor: "#fff", borderRadius: "10px", boxShadow: "5px 5px 4px 0px #999" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", textAlign: "center" }}>
-                        <UserAddOutlined style={{ fontSize: "20px", padding: "10px", borderRadius: "8px", backgroundColor: "rgb(254, 234, 241)", color: "rgb(239, 61, 120)" }} />
-                        {/* <p style={{padding:"10px", borderRadius:"13px" , backgroundColor:"rgb(254, 234, 241)", color:"rgb(239, 61, 120)"}}>+5,4%</p> */}
+                <div className="p-5 flex flex-col gap-3 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.04)] border border-gray-100">
+                    <div className="flex justify-between items-center">
+                        <UserAddOutlined className="text-lg p-2.5 rounded-lg bg-pink-50 text-[#EF3D78] border border-pink-100 shrink-0" />
                     </div>
-                    <p style={{ fontWeight: "bold" }}>ACTIVE CUSTOMERS</p>
-                    <h2 style={{ color: "rgb(239, 61, 120)", backgroundColor: "rgb(254, 234, 241)", padding: "5px 12px", borderRadius: "8px" }}>{calculateActiveCus()} <UserOutlined /></h2>
+                    <p className="text-xs font-bold tracking-wider text-gray-400 m-0">ACTIVE CUSTOMERS</p>
+                    <h2 className="text-lg sm:text-xl font-bold text-[#EE2B6C] bg-pink-50/60 px-3 py-1 rounded-md m-0 inline-flex items-center gap-2 w-fit">
+                        {calculateActiveCus()} <UserOutlined className="text-pink-400 text-sm" />
+                    </h2>
                 </div>
 
-                <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "10px", backgroundColor: "#fff", borderRadius: "10px", boxShadow: "5px 5px 4px 0px #999" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", textAlign: "center" }}>
-                        <ThunderboltOutlined style={{ fontSize: "20px", padding: "10px", borderRadius: "8px", backgroundColor: "rgb(244, 219, 183)", color: "rgb(255, 152, 0)" }} />
-                        {/* <p style={{padding:"10px", borderRadius:"13px" , backgroundColor:"rgb(244, 219, 183)", color:"rgb(255, 152, 0)"}}>4.9</p> */}
+                <div className="p-5 flex flex-col gap-3 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.04)] border border-gray-100">
+                    <div className="flex justify-between items-center">
+                        <ThunderboltOutlined className="text-lg p-2.5 rounded-lg bg-orange-50 text-orange-500 border border-orange-100 shrink-0" />
                     </div>
-                    <p style={{ fontWeight: "bold" }}>AOV</p>
-                    <h2 style={{ color: "rgb(255, 152, 0)", backgroundColor: "rgb(244, 219, 183)", padding: "5px 12px", borderRadius: "8px" }}>$ {calculateAOV}</h2>
+                    <p className="text-xs font-bold tracking-wider text-gray-400 m-0">AOV</p>
+                    <h2 className="text-lg sm:text-xl font-bold text-orange-600 bg-orange-50/60 px-3 py-1 rounded-md m-0 inline-block w-fit">
+                        $ {calculateAOV}
+                    </h2>
                 </div>
+
             </div>
 
-            {/* Progress here slide-2 */}
-            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gridGap: "10px", height: "80vh" }}>
-                <div style={{ display: "grid", gridTemplateRows: "1fr 4fr", backgroundColor: "#fff", padding: "20px", borderRadius: "10px", gridGap: "10px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                            <h2 style={{ fontSize: '20px', fontWeight: 'bold' }}>Weekly Sales Performance</h2>
-                        </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                        <Space align="center">
+                <div className="lg:col-span-2 flex flex-col bg-white p-5 sm:p-6 rounded-xl border border-gray-100 shadow-[0_4px_12px_rgba(0,0,0,0.02)] gap-6">
+
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                        <h2 className="text-base sm:text-lg font-bold text-gray-800 m-0">Weekly Sales Performance</h2>
+                        <Space align="center" className="w-full sm:w-auto">
                             <DatePicker
                                 picker="week"
                                 placeholder="Select week"
                                 onChange={(date, dateString) => {
                                     console.log("Selected week:", dateString);
                                 }}
+                                className="w-full sm:w-auto"
                             />
                         </Space>
                     </div>
 
-
-                    <div style={{ display: "grid", gridTemplateRows: "1fr 1fr", rowGap: "40px" }}>
-                        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gridGap: "20px", textAlign: "center" }}>
-                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                                <Progress type="circle" percent={90} strokeColor={twoColors} />
-                                <span style={{ marginTop: "10px", fontWeight: "bold" }}>Monday</span>
+                    <div className="flex flex-col gap-8 py-2">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+                            <div className="flex flex-col items-center gap-2 bg-gray-50/50 p-3 rounded-xl border border-gray-100/50">
+                                <Progress
+                                    type="circle"
+                                    percent={90}
+                                    strokeColor={twoColors}
+                                    strokeWidth={8} // Độ dày thanh progress vừa vặn cho mọi màn hình
+                                    className="w-20 h-20 sm:w-24 sm:h-24" // Tailwind sẽ tự động điều phối kích thước SVG cực kỳ mượt mà
+                                />
+                                <span className="text-xs sm:text-sm font-semibold text-gray-600">Monday</span>
                             </div>
-                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                                <Progress type="circle" percent={100} strokeColor={twoColors} />
-                                <span style={{ marginTop: "10px", fontWeight: "bold" }}>Tuesday</span>
+                            <div className="flex flex-col items-center gap-2 bg-gray-50/50 p-3 rounded-xl border border-gray-100/50">
+                                <Progress
+                                    type="circle"
+                                    percent={93}
+                                    strokeColor={conicColors}
+                                    strokeWidth={8}
+                                    className="w-20 h-20 sm:w-24 sm:h-24"
+                                />
+                                <span className="text-xs sm:text-sm font-semibold text-gray-600">Tuesday</span>
                             </div>
-                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                                <Progress type="circle" percent={93} strokeColor={conicColors} />
-                                <span style={{ marginTop: "10px", fontWeight: "bold" }}>Wednesday</span>
+                            <div className="flex flex-col items-center gap-2 bg-gray-50/50 p-3 rounded-xl border border-gray-100/50">
+                                <Progress
+                                    type="circle"
+                                    percent={93}
+                                    strokeColor={conicColors}
+                                    strokeWidth={8}
+                                    className="w-20 h-20 sm:w-24 sm:h-24"
+                                />
+                                <span className="text-xs sm:text-sm font-semibold text-gray-600">Wednesday</span>
                             </div>
-                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                                <Progress type="circle" percent={93} strokeColor={conicColors} />
-                                <span style={{ marginTop: "10px", fontWeight: "bold" }}>Thursday</span>
+                            <div className="flex flex-col items-center gap-2 bg-gray-50/50 p-3 rounded-xl border border-gray-100/50">
+                                <Progress
+                                    type="circle"
+                                    percent={93}
+                                    strokeColor={conicColors}
+                                    strokeWidth={8}
+                                    className="w-20 h-20 sm:w-24 sm:h-24"
+                                />
+                                <span className="text-xs sm:text-sm font-semibold text-gray-600">Thursday</span>
                             </div>
                         </div>
 
-                        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gridGap: "20px", textAlign: "center" }}>
-                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                                <Progress type="circle" percent={93} strokeColor={conicColors} />
-                                <span style={{ marginTop: "10px", fontWeight: "bold" }}>Friday</span>
+                        {/* Hàng sau: Thứ 6 đến Chủ nhật */}
+                        <div className="grid grid-cols-3 gap-3 text-center">
+                            <div className="flex flex-col items-center gap-2 bg-gray-50/50 p-3 rounded-xl border border-gray-100/50">
+                                <Progress
+                                    type="circle"
+                                    percent={93}
+                                    strokeColor={conicColors}
+                                    strokeWidth={8}
+                                    className="w-20 h-20 sm:w-24 sm:h-24"
+                                />
+                                <span className="text-xs sm:text-sm font-semibold text-gray-600">Friday</span>
                             </div>
-                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                                <Progress type="circle" percent={90} strokeColor={twoColors} />
-                                <span style={{ marginTop: "10px", fontWeight: "bold" }}>Saturday</span>
+                            <div className="flex flex-col items-center gap-2 bg-gray-50/50 p-3 rounded-xl border border-gray-100/50">
+                                <Progress
+                                    type="circle"
+                                    percent={93}
+                                    strokeColor={conicColors}
+                                    strokeWidth={8}
+                                    className="w-20 h-20 sm:w-24 sm:h-24"
+                                />
+                                <span className="text-xs sm:text-sm font-semibold text-gray-600">Saturday</span>
                             </div>
-                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                                <Progress type="circle" percent={100} strokeColor={twoColors} />
-                                <span style={{ marginTop: "10px", fontWeight: "bold" }}>Sunday</span>
+                            <div className="flex flex-col items-center gap-2 bg-gray-50/50 p-3 rounded-xl border border-gray-100/50">
+                                <Progress
+                                    type="circle"
+                                    percent={93}
+                                    strokeColor={conicColors}
+                                    strokeWidth={8}
+                                    className="w-20 h-20 sm:w-24 sm:h-24"
+                                />
+                                <span className="text-xs sm:text-sm font-semibold text-gray-600">Sunday</span>
                             </div>
                         </div>
                     </div>
+
                 </div>
 
-
-                <div className="right-column-scroll" style={{ backgroundColor: "#fff", padding: "20px", borderRadius: "10px" }}>
+                <div className="right-column-scroll bg-white p-2 rounded-xl border border-gray-100 shadow-[0_4px_12px_rgba(0,0,0,0.02)] h-fit">
                     <Card
-                        title={<span style={{ fontSize: '20px', fontWeight: 'bold' }}>Top Selling Items</span>}
+                        title={<span className="text-base sm:text-lg font-bold text-gray-800">Top Selling Items</span>}
                         variant="borderless"
-                        style={{ borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}
+                        className="w-full"
                     >
-                        <Flex vertical gap="large">
+                        <div className="flex flex-col gap-4">
                             {topSellingItem.map((item, index) => (
-                                <Flex key={index} justify="space-between" align="center" style={{ paddingBottom: '16px', borderBottom: '1px solid #f0f0f0' }}>
-                                    <Flex gap="middle" align="center">
+                                <div
+                                    key={index}
+                                    className="flex justify-between items-center pb-4 border-b border-gray-100 last:border-0 last:pb-0"
+                                >
+                                    <div className="flex items-center gap-3 min-w-0">
                                         <Avatar
                                             src={item.image}
                                             shape="square"
-                                            size={40}
-                                            style={{ borderRadius: '8px', border: '1px solid #f0f0f0' }}
+                                            size={42}
+                                            className="rounded-lg border border-gray-100 shrink-0 object-cover"
                                         />
-                                        <Flex vertical>
-                                            <AntText style={{ fontSize: '17px', fontWeight: '600' }}>{item.name}</AntText>
-                                            <AntText type="secondary" style={{ fontSize: '14px' }}>{item.qty} sales</AntText>
-                                        </Flex>
-                                    </Flex>
+                                        <div className="min-w-0">
+                                            <p className="text-sm font-semibold text-gray-800 m-0 truncate">
+                                                {item.name}
+                                            </p>
+                                            <p className="text-xs text-gray-400 m-0 mt-0.5">
+                                                {item.qty} sales
+                                            </p>
+                                        </div>
+                                    </div>
 
-                                    <AntText style={{ color: '#ff4d4f', fontSize: '20px', fontWeight: '500' }}>
+                                    <span className="text-base font-bold text-red-500 shrink-0 pl-2">
                                         ${item.price}
-                                    </AntText>
-                                </Flex>
+                                    </span>
+                                </div>
                             ))}
-                        </Flex>
+                        </div>
                     </Card>
-
                 </div>
             </div>
-
-
-
-
-
         </div>
     )
 }

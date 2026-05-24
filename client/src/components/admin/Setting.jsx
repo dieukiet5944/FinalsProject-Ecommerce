@@ -1,119 +1,159 @@
 import React from "react";
-import {SignatureOutlined, ToolOutlined, FormatPainterOutlined, SunFilled, MoonFilled, InfoCircleFilled, SafetyCertificateFilled, HistoryOutlined, GlobalOutlined} from "@ant-design/icons"
+import { SignatureOutlined, ToolOutlined, FormatPainterOutlined, SunFilled, MoonFilled, InfoCircleFilled, SafetyCertificateFilled, HistoryOutlined, GlobalOutlined } from "@ant-design/icons"
 import { Input, Button, Switch, Checkbox, ConfigProvider } from "antd";
 
 const Setting = () => {
 
     const onChange = checked => {
-    console.log(`switch to ${checked}`);
+        console.log(`switch to ${checked}`);
     };
 
     return (
+        <div className="p-4 sm:p-6 md:p-9 flex flex-col gap-6 min-h-screen bg-gray-50/50">
 
-        <div style={{padding:"24px 36px", display:"flex", flexDirection:"column", gap:"25px", height:"100vh"}}>
+            {/* Title Header */}
             <div>
-                <h1 style={{fontSize:"1.5rem", fontWeight:"bold", color:"#EE2B6C"}}>Advanced Settings</h1>
-                <p style={{color: "#999"}}>Configure global platform parameters and personalize your administrative experience</p>
+                <h1 className="text-xl sm:text-2xl font-bold text-[#EE2B6C] m-0">Advanced Settings</h1>
+                <p className="text-xs sm:text-sm text-gray-400 m-0 mt-1 font-medium">Configure global platform parameters and personalize your administrative experience</p>
             </div>
 
-            <div style={{display:"grid", gridTemplateColumns:"2fr 1fr", gridGap:"20px"}}>
-                <div style={{padding:"20px", display:"grid", gridTemplateRows:"2fr 1fr", gap:"10px", gridGap:"20px"}}>
-                    <div className="profile-setting" style={{backgroundColor:"#fff", borderRadius:"10px", boxShadow:"5px 5px 4px 0px #999",padding:"12px 20px", display:"grid", gridTemplateRows:"repeat(4, 1fr)", gap: "20px"} }>
-                        <div style={{display: "flex", gap: "10px", alignItems:"center"}}>
-                            <span style={{borderRadius:"10px",width:"40px", height:"40px", display:"flex", alignContent:"center"}}><SignatureOutlined style={{borderRadius:"10px",padding: "10px 12px",backgroundColor: "rgb(253, 233, 240)", color:"#EE2B6C"}}/></span>
-                            <div><h2 style={{fontWeight:"bold"}}>Profile Settings</h2><p style={{color:"#999"}}>Update your personal information used for system logs and notifications</p></div>
+            {/* Main Layout Grid: Xếp dọc trên mobile/tablet, chia cột trên desktop */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                {/* Left Column - Accounts & Configs (Chiếm 2 phần ba diện tích) */}
+                <div className="lg:col-span-2 flex flex-col gap-6">
+
+                    {/* Profile Settings Card */}
+                    <div className="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.04)] border border-gray-100 p-5 flex flex-col gap-5">
+                        <div className="flex gap-3 items-center">
+                            <span className="w-10 h-10 rounded-lg bg-pink-50 text-[#EE2B6C] flex items-center justify-center border border-pink-100/60 shrink-0">
+                                <SignatureOutlined className="text-lg" />
+                            </span>
+                            <div className="min-w-0">
+                                <h2 className="text-base sm:text-lg font-bold text-gray-800 m-0">Profile Settings</h2>
+                                <p className="text-xs text-gray-400 m-0 mt-0.5 truncate">Update your personal information used for system logs and notifications</p>
+                            </div>
                         </div>
 
-                        <div style={{display: "grid", gridTemplateColumns:"2fr 1fr", gridGap:"10px"}}> 
-                            <div><label>FULL NAME</label> <Input style={{backgroundColor:"#F1F5F9"}} variant="borderless"/></div>
-                            <div><label>PHONE</label> <Input style={{backgroundColor:"#F1F5F9"}} variant="borderless"/></div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-1">
+                            <div className="sm:col-span-2 flex flex-col gap-1.5">
+                                <label className="text-xs font-bold text-gray-500 tracking-wider">FULL NAME</label>
+                                <Input className="bg-slate-100/80! hover:bg-slate-100! py-2 rounded-md" variant="borderless" />
+                            </div>
+                            <div className="flex flex-col gap-1.5">
+                                <label className="text-xs font-bold text-gray-500 tracking-wider">PHONE</label>
+                                <Input className="bg-slate-100/80! hover:bg-slate-100! py-2 rounded-md" variant="borderless" />
+                            </div>
                         </div>
 
-                        <div><label>EMAIL ADDRESS</label>  <Input style={{backgroundColor:"#F1F5F9"}} variant="borderless"/></div>
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-xs font-bold text-gray-500 tracking-wider">EMAIL ADDRESS</label>
+                            <Input className="bg-slate-100/80! hover:bg-slate-100! py-2 rounded-md" variant="borderless" />
+                        </div>
 
-                        <div style={{display:"flex", justifyContent:"flex-end"}}>
-                            <Button color="pink" variant="solid"  >
+                        <div className="flex justify-end mt-2">
+                            <Button color="pink" variant="solid" className="h-10 font-semibold px-6 shadow-sm">
                                 Save Changes
                             </Button>
                         </div>
                     </div>
-                    
 
-                    <div className="system-configuration" style={{backgroundColor:"#fff", borderRadius:"10px", boxShadow:"5px 5px 4px 0px #999",padding:"12px 20px", display:"grid", gridTemplateRows:"repeat(2, 1fr)", gap: "5px"} }>
-                        <div style={{display: "flex", gap: "10px", alignItems:"center"}}>
-                            <span style={{borderRadius:"10px",width:"60px", height:"60px", display:"flex", alignContent:"center"}}><ToolOutlined style={{borderRadius:"10px",padding: "10px 12px",backgroundColor: "rgb(255, 251, 235)", color:"#D97909"}}/></span>
-                            <div><h2 style={{fontWeight:"bold"}}>System Configuration</h2><p style={{color:"#999"}}>Control the global state of the customer-facing </p></div>
+                    {/* System Configuration Card */}
+                    <div className="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.04)] border border-gray-100 p-5 flex flex-col gap-5">
+                        <div className="flex gap-3 items-center">
+                            <span className="w-10 h-10 rounded-lg bg-amber-50 text-[#D97909] flex items-center justify-center border border-amber-100/60 shrink-0">
+                                <ToolOutlined className="text-lg" />
+                            </span>
+                            <div className="min-w-0">
+                                <h2 className="text-base sm:text-lg font-bold text-gray-800 m-0">System Configuration</h2>
+                                <p className="text-xs text-gray-400 m-0 mt-0.5 truncate">Control the global state of the customer-facing system</p>
+                            </div>
                         </div>
 
-                        <div style={{borderRadius:"10px",backgroundColor:"#F8FAFC",padding:"20px 24px",display:"flex", justifyContent:"space-between", alignItems:"center", gap:"10px"}}>
-                            <div><h3 style={{fontWeight:"bold"}}>Maintenance Mode</h3><p style={{color:"#999"}}>When enable, customers will see a "Under Maintenance" message across the entire site.</p></div>
-                            <Switch defaultChecked onChange={onChange} />
+                        <div className="rounded-xl bg-slate-50 border border-slate-100 p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mt-1">
+                            <div className="min-w-0">
+                                <h3 className="text-sm font-bold text-gray-700 m-0">Maintenance Mode</h3>
+                                <p className="text-xs text-gray-400 m-0 mt-1 leading-relaxed">When enabled, customers will see an "Under Maintenance" message across the entire site.</p>
+                            </div>
+                            <Switch defaultChecked onChange={onChange} className="shrink-0 mt-1 sm:mt-0" />
                         </div>
                     </div>
-
 
                 </div>
 
-                <div style={{padding:"20px", display:"grid", gridTemplateRows:"2fr 1fr", gap:"10px", gridGap:"20px"}}>
-                    <div style={{backgroundColor:"#fff", borderRadius:"10px", boxShadow:"5px 5px 4px 0px #999",padding:"12px 20px", display:"grid", gridTemplateRows:"repeat(4, 1fr)", gap: "20px"} }>
-                         <div style={{display: "flex", gap: "20px", alignItems:"center", padding:"10px 14px"}}>
-                             <span style={{borderRadius:"10px",width:"40px", height:"40px", display:"flex", alignContent:"center"}}><FormatPainterOutlined style={{borderRadius:"10px",padding: "10px 12px",backgroundColor: "#EEF2FF", color:"rgb(124, 119, 236)"}} /></span>
-                             <div><h2 style={{fontWeight:"bold"}}>Appearance & UI</h2><p style={{color:"#999"}}>Choose how the admin dashboard looks for you</p></div>
-                         </div>
+                <div className="flex flex-col gap-6">
 
-                         <div className="sunLight"  style={{display: "flex", gap: "20px", alignItems:"center", padding:"10px 14px", borderRadius:"10px", cursor:"pointer"}}>
-                             <span style={{borderRadius:"10px",width:"40px", height:"40px", display:"flex", alignContent:"center"}}><SunFilled style={{borderRadius:"10px",padding: "10px 12px",backgroundColor: "#ebebebcd", color:"rgb(245, 158, 11)"}} /></span>
-                             <div className="light"><h2 style={{fontWeight:"bold"}}>Light Mode</h2><p style={{color:"#999"}}>Standard bright interface</p></div>
-                             <ConfigProvider
-                                theme={{
-                                token: {
-                                    colorPrimary: 'rgb(238, 43, 108)', 
-                                },
-                                }}
-                             >
-                                <Checkbox onChange={onChange}></Checkbox>
+                    <div className="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.04)] border border-gray-100 p-5 flex flex-col gap-4">
+                        <div className="flex gap-3 items-center pb-1">
+                            <span className="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-500 flex items-center justify-center border border-indigo-100/60 shrink-0">
+                                <FormatPainterOutlined className="text-lg" />
+                            </span>
+                            <div className="min-w-0">
+                                <h2 className="text-base sm:text-lg font-bold text-gray-800 m-0">Appearance & UI</h2>
+                                <p className="text-xs text-gray-400 m-0 mt-0.5 truncate">Choose how the dashboard looks for you</p>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-between items-center p-3 rounded-xl border border-gray-100 hover:bg-slate-50/60 cursor-pointer transition-all gap-4">
+                            <div className="flex items-center gap-3 min-w-0">
+                                <span className="w-9 h-9 rounded-lg bg-amber-50 text-amber-500 flex items-center justify-center border border-amber-100/50 shrink-0">
+                                    <SunFilled className="text-base" />
+                                </span>
+                                <div className="min-w-0">
+                                    <h3 className="text-sm font-bold text-gray-700 m-0">Light Mode</h3>
+                                    <p className="text-xs text-gray-400 m-0 truncate">Standard bright interface</p>
+                                </div>
+                            </div>
+                            <ConfigProvider theme={{ token: { colorPrimary: 'rgb(238, 43, 108)' } }}>
+                                <Checkbox onChange={onChange} className="shrink-0" />
                             </ConfigProvider>
-                         </div>
+                        </div>
 
-                         <div className="moonLight" style={{display: "flex", gap: "20px", alignItems:"center", padding:"10px 14px", borderRadius:"10px", cursor:"pointer"}}>
-                             <span style={{borderRadius:"10px",width:"40px", height:"40px", display:"flex", alignContent:"center"}}><MoonFilled style={{borderRadius:"10px",padding: "10px 12px",backgroundColor: "rgb(30, 41, 59)", color:"rgb(165, 180, 252)"}} /></span>
-                             <div className="light"><h2 style={{fontWeight:"bold"}}>Light Mode</h2><p style={{color:"#999"}}>Reduced eye strain at night</p></div>
-                             <ConfigProvider
-                                theme={{
-                                token: {
-                                    colorPrimary: 'rgb(238, 43, 108)', 
-                                },
-                                }}
-                            >
-                                <Checkbox onChange={onChange}></Checkbox>
+                        <div className="flex justify-between items-center p-3 rounded-xl border border-gray-100 hover:bg-slate-50/60 cursor-pointer transition-all gap-4">
+                            <div className="flex items-center gap-3 min-w-0">
+                                <span className="w-9 h-9 rounded-lg bg-slate-800 text-indigo-300 flex items-center justify-center shrink-0">
+                                    <MoonFilled className="text-base" />
+                                </span>
+                                <div className="min-w-0">
+                                    <h3 className="text-sm font-bold text-gray-700 m-0">Dark Mode</h3>
+                                    <p className="text-xs text-gray-400 m-0 truncate">Reduced eye strain at night</p>
+                                </div>
+                            </div>
+                            <ConfigProvider theme={{ token: { colorPrimary: 'rgb(238, 43, 108)' } }}>
+                                <Checkbox onChange={onChange} className="shrink-0" />
                             </ConfigProvider>
-                         </div>
+                        </div>
 
-                         <div style={{display: "flex", gap: "20px", alignItems:"center", borderTop:"1px solid #999"}}>
-                             <div><p style={{color:"#999"}}><InfoCircleFilled style={{borderRadius:"10px",padding: "10px 12px", color:"rgb(55, 55, 62)"}} /> Switching themes will update your local CSS variables and library components</p></div>
-                         </div>
+                        <div className="flex gap-2.5 items-start border-t border-gray-100 pt-4 mt-1 text-xs text-gray-400 leading-normal">
+                            <InfoCircleFilled className="text-gray-400 mt-0.5 text-sm shrink-0" />
+                            <p className="m-0">Switching themes will update your local CSS variables and library components</p>
+                        </div>
                     </div>
 
-                    <div style={{display:"flex", flexDirection:"column", justifyContent:"space-around",backgroundColor:"rgb(255, 231, 240)", borderRadius:"10px", boxShadow:"5px 5px 4px 0px #999",padding:"12px 20px", gap: "20px", border:"1px solid rgb(238, 43, 108)"}}>
-                         <h4 style={{color:"rgb(238, 43, 108)", fontWeight:"bold"}}>QUICK NAVIGATION</h4>
-                         <div style={{display: "flex", gap: "20px", alignItems:"center", color: "#777", cursor:"pointer"}}>
-                            <span><SafetyCertificateFilled /></span>
-                            <h4>Security & API Keys</h4>
-                         </div>
-                         <div style={{display: "flex", gap: "20px", alignItems:"center", color: "#777", cursor:"pointer"}}>
-                            <span><HistoryOutlined /></span>
-                            <h4>Audit logs</h4>
-                         </div>
-                         <div style={{display: "flex", gap: "20px", alignItems:"center", color: "#777", cursor:"pointer"}}>
-                            <span><GlobalOutlined /></span>
-                            <h4>Localization</h4>
-                         </div>
+                    <div className="flex flex-col justify-center bg-pink-50/40 border border-pink-100 rounded-xl shadow-[0_4px_12px_rgba(238,43,108,0.02)] p-5 gap-4">
+                        <h4 className="text-xs font-bold tracking-wider text-[#EE436C] m-0">QUICK NAVIGATION</h4>
+
+                        <div className="flex items-center gap-3 text-sm font-semibold text-gray-600 hover:text-[#EE2B6C] cursor-pointer transition-colors group">
+                            <SafetyCertificateFilled className="text-gray-400 group-hover:text-[#EE2B6C] text-base shrink-0 transition-colors" />
+                            <span className="m-0">Security & API Keys</span>
+                        </div>
+
+                        <div className="flex items-center gap-3 text-sm font-semibold text-gray-600 hover:text-[#EE2B6C] cursor-pointer transition-colors group">
+                            <HistoryOutlined className="text-gray-400 group-hover:text-[#EE2B6C] text-base shrink-0 transition-colors" />
+                            <span className="m-0">Audit logs</span>
+                        </div>
+
+                        <div className="flex items-center gap-3 text-sm font-semibold text-gray-600 hover:text-[#EE2B6C] cursor-pointer transition-colors group">
+                            <GlobalOutlined className="text-gray-400 group-hover:text-[#EE2B6C] text-base shrink-0 transition-colors" />
+                            <span className="m-0">Localization</span>
+                        </div>
                     </div>
 
                 </div>
+
             </div>
         </div>
-    )
+    );
 }
 
 
