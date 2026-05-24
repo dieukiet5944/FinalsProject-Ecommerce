@@ -9,18 +9,18 @@ Giao diện dành cho khách hàng đặt bánh và cà phê.
 
 URL: https://finals-project-ecommerce.vercel.app/login
 
-Email: cr7@mu.edu.vn
+🕸️ Email: cr7@mu.edu.vn
 
-Password: ronaldo123
+🕸️ Password: ronaldo123
 
 Tính năng: Xem sản phẩm, gửi liên hệ, giỏ hàng.
 
 🛡️ Admin Side (Management)
 Giao diện quản trị hệ thống .
 
-Email: admin@123
+🕸️ Email: hoa.admin@thecrumbandbean.com
 
-Password: 123456789
+🕸️ Password: 123456
 
 Tính năng: Quản lý kho, duyệt đơn hàng, quản lý khách hàng, kiểm kê doanh thu .
 
