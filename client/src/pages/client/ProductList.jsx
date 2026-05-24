@@ -44,24 +44,20 @@ const ProductList = () => {
     fetchProducts();
   }, []);
 
-  // Get dynamic categories from actual data
   const allCategories = ['All Items', ...new Set(products.map(p => p.category))];
 
   useEffect(() => {
     let result = [...products];
 
-    // Filter by category
     if (selectedCategory !== 'All Items') {
       result = result.filter(p => p.category === selectedCategory);
     }
 
-    // Filter by search term
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
       result = result.filter(p => p.name.toLowerCase().includes(term));
     }
 
-    // Sort
     if (sortOption === 'price-low') result.sort((a, b) => a.price - b.price);
     if (sortOption === 'price-high') result.sort((a, b) => b.price - a.price);
     if (sortOption === 'name') result.sort((a, b) => a.name.localeCompare(b.name));

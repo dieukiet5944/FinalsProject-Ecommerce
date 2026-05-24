@@ -17,9 +17,9 @@ const Orders = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'Pending': return '#1890ff';     
-      case 'Completed': return '#52c41a';   
-      case 'Canceled': return '#f5222d';    
+      case 'Pending': return '#1890ff';
+      case 'Completed': return '#52c41a';
+      case 'Canceled': return '#f5222d';
       default: return '#888';
     }
   };
@@ -49,20 +49,20 @@ const Orders = () => {
 
       const userOwner = dataUsers.find(item => item.id === targetOrder.customerId);
 
-      const response = await axios.put(`http://localhost:8080/orders/${orderId}`, 
+      const response = await axios.put(`http://localhost:8080/orders/${orderId}`,
         { status: newStatus }
       );
 
       if (response && response.data.success) {
 
-        setDataSource(prevSource => 
-          prevSource.map(order => 
+        setDataSource(prevSource =>
+          prevSource.map(order =>
             order.id === orderId ? { ...order, status: newStatus } : order
           )
         );
-        
+
         if (userOwner) {
-          const updatedUser = { ...userOwner, status: newStatus }; 
+          const updatedUser = { ...userOwner, status: newStatus };
           setDataUsers(prevUsers =>
             prevUsers.map(u => u.id === userOwner.id ? updatedUser : u)
           );
@@ -128,14 +128,13 @@ const Orders = () => {
   const totalDrinks = categoryStats.drink;
 
 
-  //HERE
   const loadOrdersData = async () => {
     setLoading(true);
     try {
-     
+
       const usersRes = await axios.get("http://localhost:8080/users");
       const productsRes = await axios.get("http://localhost:8080/products");
-      const ordersRes = await axios.get("http://localhost:8080/orders"); 
+      const ordersRes = await axios.get("http://localhost:8080/orders");
 
       const listUsers = usersRes.data?.data || usersRes.data;
       const listProducts = productsRes.data?.data || productsRes.data;
@@ -146,7 +145,7 @@ const Orders = () => {
         const totalQty = order.items?.reduce((sum, item) => sum + Number(item.qty || 0), 0) || 0;
         const calculatedTotal = order.items?.reduce((sum, item) => sum + (Number(item.qty || 0) * Number(item.price || 0)), 0) || 0;
 
-       
+
         const matchedUser = listUsers.find(u => u.id === order.customerId);
 
         return {
@@ -178,7 +177,6 @@ const Orders = () => {
     }
   };
 
-  // Khởi chạy hàm khi Admin vừa truy cập vào trang quản trị
   useEffect(() => {
     loadOrdersData();
   }, []);
@@ -192,45 +190,74 @@ const Orders = () => {
       title: 'ORDER ID',
       dataIndex: 'id',
       key: 'id',
-      render: (id) => <span style={{ color: '#ff4d4f', fontWeight: 'bold' }}>{id}</span>,
+      width: 120,
+      render: (id) => (
+        <span className="text-[#ff4d4f] font-bold text-sm sm:text-base">
+          {id}
+        </span>
+      ),
     },
     {
       title: 'CUSTOMER',
       dataIndex: 'customer',
       key: 'customer',
+      width: 250,
       render: (customer) => (
-        <Space>
-          <Avatar src={`/product/avtusers/${customer.avatar}`} size={45} />
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{ fontWeight: 'bold', color: '#2d2424' }}>{customer.name}</span>
-            <span style={{ fontSize: '12px', color: '#8c8c8c' }}>{customer.email}</span>
+        <div className="flex items-center gap-3">
+          <Avatar
+            src={`/product/avtusers/${customer.avatar}`}
+            size={44}
+            className="border border-gray-100 shrink-0 object-cover"
+          />
+          <div className="flex flex-col min-w-0">
+            <span className="font-bold text-gray-800 text-sm sm:text-base truncate leading-snug">
+              {customer.name}
+            </span>
+            <span className="text-xs text-gray-400 font-medium truncate mt-0.5">
+              {customer.email}
+            </span>
           </div>
-        </Space>
+        </div>
       ),
     },
     {
       title: 'DATE',
       dataIndex: 'date',
       key: 'date',
-      render: (date) => <span style={{ color: '#595959' }}>{date}</span>,
+      width: 140,
+      render: (date) => (
+        <span className="text-gray-500 font-medium text-sm">
+          {date}
+        </span>
+      ),
     },
     {
       title: 'TOTAL',
       dataIndex: 'sumOrders',
       key: 'sumOrders',
-      render: (sumOrders) => <span style={{ fontWeight: 'bold' }}>${sumOrders.toFixed(2)}</span>,
+      width: 130,
+      render: (sumOrders) => (
+        <span className="font-bold text-gray-800 text-sm sm:text-base">
+          ${sumOrders.toFixed(2)}
+        </span>
+      ),
     },
     {
       title: 'STATUS',
       key: 'status',
       dataIndex: 'status',
+      width: 140,
       render: (status) => {
-        let color = '';
+        let color = 'default';
         if (status === 'Processing') color = 'processing';
         if (status === 'Completed') color = 'success';
+        if (status === 'Canceled') color = 'error'; 
 
         return (
-          <Tag color={color} style={{ borderRadius: '12px', fontWeight: 'bold', padding: '0 10px' }}>
+          <Tag
+            color={color}
+            className="rounded-full font-bold px-3 py-0.5 text-[11px] tracking-wider uppercase"
+          >
             {status}
           </Tag>
         );
@@ -239,37 +266,35 @@ const Orders = () => {
     {
       title: 'ACTIONS',
       key: 'action',
+      width: 80,
+      align: 'center',
       render: (_, record) => {
-
         const actionItems = [
           {
             key: 'vieworder',
-            label: 'View',
-            icon: <EyeOutlined />,
+            label: <span className="font-medium text-gray-700">View Details</span>,
+            icon: <EyeOutlined className="text-gray-400" />,
             onClick: () => handleViewOrder(record)
           },
-
-
           ...(record.status === 'Processing' ? [
             {
               key: 'accept',
-              label: 'Accept',
-              icon: <CheckCircleOutlined />,
+              label: <span className="font-medium text-gray-700">Accept</span>,
+              icon: <CheckCircleOutlined className="text-green-500" />,
               onClick: () => handleUpdateStatus(record.id, 'Completed')
             },
             {
               key: 'cancel',
-              label: 'Reject',
+              label: <span className="font-medium">Reject</span>,
               icon: <CloseCircleOutlined />,
               danger: true,
               onClick: () => handleUpdateStatus(record.id, 'Canceled')
             }
           ] : []),
-
           { type: 'divider' },
           {
             key: 'delete',
-            label: 'Delete',
+            label: <span className="font-medium">Delete</span>,
             icon: <DeleteOutlined />,
             danger: true,
             onClick: () => handleDelete(record)
@@ -277,126 +302,154 @@ const Orders = () => {
         ];
 
         return (
-
           <Dropdown
             menu={{ items: actionItems }}
             trigger={['click']}
             placement="bottomRight"
+            classNames={{ root: "shadow-md rounded-lg" }}
           >
-            <Button type="text" icon={<MoreOutlined style={{ fontSize: '20px' }} />} />
+            <Button
+              type="text"
+              shape="circle"
+              className="hover:bg-gray-100! flex items-center justify-center m-auto"
+              icon={<MoreOutlined className="text-gray-500 text-xl!" />}
+            />
           </Dropdown>
         );
       },
-
     }
-  ]
+  ];
 
 
   return (
-    <div style={{ padding: "24px 36px", display: "flex", flexDirection: "column", gap: "32px", height: "100vh" }}>
+    <div className="p-4 sm:p-6 md:p-9 flex flex-col gap-6 min-h-screen bg-gray-50/50">
 
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-        <div>
-          <h1 style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#EE2B6C" }}>Order Management</h1>
-          <p style={{ color: "#999" }}>Efficiently process and track your bakery's daily flow</p>
-        </div>
+      <div>
+        <h1 className="text-xl sm:text-2xl font-bold text-[#EE2B6C] m-0">Order Management</h1>
+        <p className="text-xs sm:text-sm text-gray-400 m-0 mt-1 font-medium">Efficiently process and track your bakery's daily flow</p>
       </div>
 
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
 
-
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gridGap: "20px" }}>
-        <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "10px", border: "1px solid #91d5ff", backgroundColor: "#e6f7ff", borderRadius: "10px", boxShadow: "5px 5px 4px 0px #999" }}>
-          <p style={{ color: "#0050b3", fontWeight: "bold" }}>TODAY'S REVENUE</p>
-          <h2 style={{ color: "#096dd9" }}>${calculateTotalRevenue()}</h2>
+        <div className="p-5 flex flex-col gap-2 border border-blue-100 bg-blue-50/60 rounded-xl shadow-[0_4px_12px_rgba(38,100,235,0.03)]">
+          <p className="text-xs font-bold tracking-wider text-blue-700/80 m-0">TODAY'S REVENUE</p>
+          <h2 className="text-xl sm:text-2xl font-extrabold text-blue-600 m-0">${calculateTotalRevenue()}</h2>
         </div>
 
-        <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "10px", backgroundColor: "#fffbe6", border: "1px solid #ffe58f", borderRadius: "10px", boxShadow: "5px 5px 4px 0px #999" }}>
-          <p style={{ color: "#874d00", fontWeight: "bold" }}>ITEM SOLD</p>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ color: "#874d00" }}>Cakes: <b>{totalCakes}</b> dishes</span>
-            <span style={{ color: "#874d00" }}>Drinks: <b>{totalDrinks}</b> dishes</span>
+        <div className="p-5 flex flex-col gap-2 bg-amber-50/60 border border-amber-100 rounded-xl shadow-[0_4px_12px_rgba(217,119,6,0.03)]">
+          <p className="text-xs font-bold tracking-wider text-amber-800 m-0">ITEMS SOLD</p>
+          <div className="flex justify-between items-center text-xs sm:text-sm text-amber-800 font-semibold mt-1">
+            <span>Cakes: <b className="text-amber-600 font-bold text-base">{totalCakes}</b> units</span>
+            <span>Drinks: <b className="text-amber-600 font-bold text-base">{totalDrinks}</b> units</span>
           </div>
         </div>
 
-        <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "10px", backgroundColor: "#f6ffed", border: "1px solid #b7eb8f", borderRadius: "10px", boxShadow: "5px 5px 4px 0px #999" }}>
-          <p style={{ color: "#237804", fontWeight: "bold" }}>TOTAL ORDERS</p>
-          <h2 style={{ color: "#389e0d" }}>{dataSource.length}</h2>
+        <div className="p-5 flex flex-col gap-2 bg-emerald-50/60 border border-emerald-100 rounded-xl shadow-[0_4px_12px_rgba(16,185,129,0.03)] sm:col-span-2 lg:col-span-1">
+          <p className="text-xs font-bold tracking-wider text-emerald-800 m-0">TOTAL ORDERS</p>
+          <h2 className="text-xl sm:text-2xl font-extrabold text-emerald-600 m-0">{dataSource.length}</h2>
+        </div>
+
+      </div>
+
+      <div className="flex justify-center items-center py-2">
+        <div className="inline-grid grid-cols-2 sm:grid-cols-4 bg-gray-200/60 p-1 rounded-xl w-full max-w-85 sm:max-w-125 gap-1 text-center">
+          <button
+            className="py-1.5 text-xs sm:text-sm font-semibold rounded-lg transition-all text-gray-600 hover:text-gray-900 focus:bg-white focus:text-gray-800 focus:shadow-sm active:bg-white active:shadow-sm"
+            onClick={() => handleFilter('ALL')}
+          >
+            ALL
+          </button>
+          <button
+            className="py-1.5 text-xs sm:text-sm font-semibold rounded-lg transition-all text-gray-600 hover:text-gray-900 focus:bg-white focus:text-blue-600 focus:shadow-sm active:bg-white active:shadow-sm"
+            onClick={() => handleFilter('Processing')}
+          >
+            PROCESSING
+          </button>
+          <button
+            className="py-1.5 text-xs sm:text-sm font-semibold rounded-lg transition-all text-gray-600 hover:text-gray-900 focus:bg-white focus:text-green-600 focus:shadow-sm active:bg-white active:shadow-sm"
+            onClick={() => handleFilter('Completed')}
+          >
+            COMPLETED
+          </button>
+          <button
+            className="py-1.5 text-xs sm:text-sm font-semibold rounded-lg transition-all text-gray-600 hover:text-gray-900 focus:bg-white focus:text-red-500 focus:shadow-sm active:bg-white active:shadow-sm"
+            onClick={() => handleFilter('Canceled')}
+          >
+            CANCELLED
+          </button>
         </div>
       </div>
 
-
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: "14p 24px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", borderRadius: "5px", backgroundColor: "#edf4fdce", padding: "5px 10px", textAlign: "center" }}>
-          <button className='btn-orders' onClick={() => handleFilter('ALL')}>ALL</button>
-          <button className='btn-orders' onClick={() => handleFilter('Processing')}>PROCESSING</button>
-          <button className='btn-orders' onClick={() => handleFilter('Completed')}>COMPLETED</button>
-          <button className='btn-orders' onClick={() => handleFilter('Canceled')}>CANCELLED</button>
-        </div>
-      </div>
-
-
-      <div style={{ padding: '20px', background: '#fff', borderRadius: '8px' }}>
+      <div className="bg-white rounded-xl p-4 sm:p-6 shadow-[0_4px_12px_rgba(0,0,0,0.02)] border border-gray-100 relative flex flex-col gap-5">
         <Spin spinning={loading}>
           <Table
             columns={columns}
             dataSource={filteredData}
-            pagination={{ pageSize: 5 }}
+            pagination={{ pageSize: 5, placement: 'bottomRight' }}
+            scroll={{ x: 800 }}
+            className="w-full"
           />
         </Spin>
-        <div style={{ marginTop: '-45px', color: '#8c8c8c' }}>
-          Showing 1 to 5 of 128 orders
+
+        <div className="sm:absolute bottom-7 left-6 text-xs sm:text-sm text-gray-400 font-medium mt-2 sm:mt-0 text-center sm:text-left">
+          Showing 1 to 5 of {filteredData.length} records
         </div>
       </div>
 
-
       <Modal
-        title={`Receipt: ${selectedOrder?.orderId}`}
+        title={<span className="text-base sm:text-lg font-bold text-gray-800">Receipt: {selectedOrder?.orderId}</span>}
         open={isModalOpen}
         onCancel={handleCancel}
         footer={null}
+        width={500}
+        className="max-w-[calc(100vw-32px)] sm:max-w-125"
       >
-
         {selectedOrder && (
-          <div style={{ color: '#333', padding: '10px' }}>
-            {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #eee', pb: '10px', mb: '15px' }}>
-              <span><b>Date:</b> {selectedOrder.date}</span>
-              <span style={{
-                color: getStatusColor(selectedOrder.status)
-              }}><b>Status:</b> {selectedOrder.status}</span>
+          <div className="text-gray-700 text-sm mt-4 space-y-5">
+
+            <div className="flex justify-between items-center pb-3 border-b border-gray-100 text-xs sm:text-sm">
+              <span className="text-gray-500 font-medium">
+                Date: <span className="text-gray-800 font-semibold">{selectedOrder.date}</span>
+              </span>
+              <span
+                className="font-bold px-2.5 py-0.5 rounded-md text-xs uppercase tracking-wide"
+                style={{
+                  color: getStatusColor(selectedOrder.status),
+                  backgroundColor: `${getStatusColor(selectedOrder.status)}12`
+                }}
+              >
+                Status: {selectedOrder.status}
+              </span>
             </div>
 
-            {/* Content */}
-            <div style={{ marginBottom: '20px' }}>
+            <div className="max-h-65 overflow-y-auto pr-1 space-y-3 scrollbar-thin">
               {selectedOrder.items?.map((item, index) => (
-                <div key={index} style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  marginBottom: '10px',
-                  paddingBottom: '5px',
-                  borderBottom: '1px dashed #f0f0f0'
-                }}>
-                  <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <span style={{ fontWeight: '500' }}>{item.name}</span>
-                    <small style={{ color: '#8c8c8c' }}>{item.qty} x ${Number(item.price).toFixed(2)}</small>
+                <div key={index} className="flex justify-between items-center pb-2 border-b border-dashed border-gray-100 last:border-0 last:pb-0 gap-4">
+                  <div className="flex flex-col min-w-0">
+                    <span className="font-semibold text-gray-800 text-sm sm:text-base truncate">{item.name}</span>
+                    <span className="text-xs text-gray-400 mt-0.5 font-medium">
+                      {item.qty} x ${Number(item.price).toFixed(2)}
+                    </span>
                   </div>
-                  <b style={{ alignSelf: 'center' }}>
+                  <b className="text-gray-800 text-sm sm:text-base shrink-0 pl-2">
                     ${(item.qty * item.price).toFixed(2)}
                   </b>
                 </div>
               ))}
             </div>
 
-            {/* Total */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', backgroundColor: '#f5f5f5', padding: '10px', borderRadius: '5px' }}>
-              <span style={{ fontSize: '16px' }}>Total Amount:</span>
-              <b style={{ fontSize: '20px', color: '#d4380d' }}>${Number(selectedOrder.sumOrders).toFixed(2)}</b>
+            <div className="flex justify-between items-center bg-gray-50 p-4 rounded-xl border border-gray-100">
+              <span className="text-sm sm:text-base text-gray-500 font-semibold">Total Amount:</span>
+              <b className="text-lg sm:text-xl text-red-500 font-extrabold">
+                ${Number(selectedOrder.sumOrders).toFixed(2)}
+              </b>
             </div>
+
           </div>
         )}
       </Modal>
     </div>
-  )
+  );
 }
 
 export default Orders

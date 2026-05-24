@@ -85,23 +85,59 @@ const Customers = () => {
     const handleViewProfile = (user) => {
         const bgStatus = user.status === "online" ? "rgb(237, 255, 241)" : "rgb(255, 237, 237)"
         Modal.info({
-            title: `Detailed information: ${user.full_name}`,
+            title: <span className="text-base sm:text-lg font-bold text-gray-800">Detailed information: {user.full_name}</span>,
             width: 500,
             content: (
-                <div style={{ marginTop: 20 }}>
-                    <div style={{ textAlign: 'center', marginBottom: 20 }}>
-                        <Avatar src={`/product/avtusers/${user.avatar}`} size={100} />
-                        <h3 style={{ margin: '10px 0' }}>{user.username}</h3>
-                        <Tag color={user.role === 'admin' ? 'gold' : 'blue'}>{user.role.toUpperCase()}</Tag>
+                <div className="mt-5 text-gray-700 text-sm sm:text-base space-y-3">
+                    <div className="text-center mb-5 flex flex-col items-center">
+                        <Avatar
+                            src={`/product/avtusers/${user.avatar}`}
+                            size={100}
+                            className="border-2 border-gray-100 shadow-sm"
+                        />
+                        <h3 className="text-lg sm:text-xl font-bold text-gray-800 my-2">{user.username}</h3>
+                        <Tag color={user.role === 'admin' ? 'gold' : 'blue'} className="px-3 py-0.5 font-medium rounded">
+                            {user.role.toUpperCase()}
+                        </Tag>
                     </div>
-                    <p><b>📧 Email:</b> {user.email}</p>
-                    <p><b>⚽ Total orders:</b> {user.history_orders.length} <AuditOutlined /> </p>
-                    <p><b>🕒 Last activity:</b> {user.last_active}</p>
-                    <p><b>📅 Date of participation:</b> {user.created_at ? new Date(user.created_at).toLocaleDateString('vi-VN') : "Chưa cập nhật"}</p>
-                    <p style={{ backgroundColor: bgStatus, width: "70px", borderRadius: "10px" }}><b>{user.status === "online" ? "🟢" : "🔴"} {user.status}</b></p>
+
+                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 space-y-3">
+                        <p className="flex items-center gap-2 m-0">
+                            <span className="font-semibold text-gray-500 w-36 sm:w-40 shrink-0">📧 Email:</span>
+                            <span className="text-gray-800 break-all">{user.email}</span>
+                        </p>
+                        <p className="flex items-center gap-2 m-0">
+                            <span className="font-semibold text-gray-500 w-36 sm:w-40 shrink-0">⚽ Total orders:</span>
+                            <span className="text-gray-800 font-medium flex items-center gap-1.5">
+                                {user.length} <AuditOutlined className="text-gray-400" />
+                            </span>
+                        </p>
+                        <p className="flex items-center gap-2 m-0">
+                            <span className="font-semibold text-gray-500 w-36 sm:w-40 shrink-0">🕒 Last activity:</span>
+                            <span className="text-gray-800">{user.last_active}</span>
+                        </p>
+                        <p className="flex items-center gap-2 m-0">
+                            <span className="font-semibold text-gray-500 w-36 sm:w-40 shrink-0">📅 Date of participation:</span>
+                            <span className="text-gray-800">
+                                {user.created_at ? new Date(user.created_at).toLocaleDateString('vi-VN') : "Chưa cập nhật"}
+                            </span>
+                        </p>
+
+                        <p className="flex items-center gap-2 m-0 pt-1">
+                            <span className="font-semibold text-gray-500 w-36 sm:w-40 shrink-0">Status:</span>
+                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider ${user.status === "online"
+                                ? "bg-green-50 text-green-700 border border-green-200"
+                                : "bg-red-50 text-red-600 border border-red-200"
+                                }`}>
+                                <span className={`w-2 h-2 rounded-full ${user.status === "online" ? "bg-green-500" : "bg-red-500"}`}></span>
+                                {user.status}
+                            </span>
+                        </p>
+                    </div>
                 </div>
             ),
             okText: 'Đóng',
+            className: "max-w-[calc(100vw-32px)] sm:max-w-[500px]",
         });
     };
 
@@ -140,110 +176,113 @@ const Customers = () => {
     const columns = [
         {
             title: 'CUSTOMER',
-            width: 250,
+            width: 200, // Thu nhỏ một chút để tối ưu không gian hiển thị
             key: 'users',
             render: (_, record) => (
-                <Space>
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                        <Avatar src={`/product/avtusers/${record.avatar}`} size={45} shape="square" />
-                        <div>
-                            <p style={{ fontWeight: 'bold', color: '#2d2424' }}>{record.full_name}</p>
-                            <p style={{ fontSize: '12px', color: '#8c8c8c' }}>ID: {record.id}</p>
-                        </div>
+                <div className="flex items-center gap-3">
+                    <Avatar
+                        src={`/product/avtusers/${record.avatar}`}
+                        size={44}
+                        shape="square"
+                        className="rounded-md border border-gray-100 object-cover shrink-0"
+                    />
+                    <div className="min-w-0">
+                        <p className="font-bold text-gray-800 m-0 truncate text-sm sm:text-base">
+                            {record.full_name}
+                        </p>
+                        <p className="text-xs text-gray-400 m-0 mt-0.5 font-medium">
+                            ID: {record.id}
+                        </p>
                     </div>
-                </Space>
+                </div>
             )
         },
         {
             title: 'CONTACT INFO',
-            width: 250,
+            width: 220,
             dataIndex: 'email',
             key: 'email',
-            render: (_, record) => <span>{record.email}</span>
+            render: (email) => (
+                <span className="text-gray-600 text-sm break-all font-medium">
+                    {email}
+                </span>
+            )
         },
         {
             title: 'TOTAL ORDERS',
-            width: 250,
-            dataIndex: 'history_orders', 
+            width: 180,
+            dataIndex: 'history_orders',
             key: 'history_orders',
-            render: (history_orders, record) => {
-                
-                const ordersCount = (record.history_orders || []).length;
+            render: (history_orders) => {
+                const ordersCount = (history_orders || []).length;
 
-                const toptier = ordersCount === 0 ? "New Member"
-                    : ordersCount <= 30 ? "Occasional"
-                        : ordersCount <= 60 ? "High Frequency"
-                            : "Top Tier";
+                let toptier = "New Member";
+                let badgeClass = "text-gray-500 bg-gray-100 border-gray-200";
 
-                const colorMap = {
-                    "New Member": "#8c8c8c",     
-                    "Occasional": "#fa8c16",     
-                    "High Frequency": "#52c41a", 
-                    "Top Tier": "#f5222d"        
-                };
+                if (ordersCount > 0 && ordersCount <= 30) {
+                    toptier = "Occasional";
+                    badgeClass = "text-orange-600 bg-orange-50 border-orange-200";
+                } else if (ordersCount <= 60 && ordersCount > 30) {
+                    toptier = "High Frequency";
+                    badgeClass = "text-green-600 bg-green-50 border-green-200";
+                } else if (ordersCount > 60) {
+                    toptier = "Top Tier";
+                    badgeClass = "text-red-600 bg-red-50 border-red-200";
+                }
 
                 return (
-                    <div >
-
-                        <span style={{
-                            color: colorMap[toptier],
-                            fontSize: '12px',
-                            fontWeight: 'bold',
-                            backgroundColor: `${colorMap[toptier]}15`, 
-                            padding: '2px 6px',
-                            borderRadius: '4px'
-                        }}>
-                            {toptier}
-                        </span>
-                    </div>
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold border uppercase tracking-wider ${badgeClass}`}>
+                        {toptier}
+                    </span>
                 );
             }
         },
         {
             title: 'LOYALTY POINTS',
-            width: 250,
-            dataIndex: 'history_orders', 
+            width: 160,
+            dataIndex: 'history_orders',
             key: 'points',
-            render: (history_orders, record) => {
-                const ordersCount = (record.history_orders || []).length;
-
+            render: (history_orders) => {
+                const ordersCount = (history_orders || []).length;
                 const point = ordersCount * 10;
 
                 return (
-                    <span style={{ fontWeight: 'bold', color: '#fa8c16' }}>⭐ {point.toLocaleString()}</span>
-                )
+                    <span className="font-bold text-orange-500 text-sm sm:text-base flex items-center gap-1">
+                        <span>⭐</span> {point.toLocaleString()}
+                    </span>
+                );
             }
         },
         {
             title: 'STATUS',
-            width: 250,
+            width: 140,
             key: 'status',
             dataIndex: 'status',
-            render: (_, record) => (
-                <Tag color={record.status === 'online' ? 'success' : 'error'} style={{ borderRadius: '12px' }}>
-                    {record.status}
+            render: (status) => (
+                <Tag
+                    color={status === 'online' ? 'success' : 'error'}
+                    className="rounded-full px-3 py-0.5 font-medium uppercase text-[11px] tracking-wider"
+                >
+                    {status}
                 </Tag>
             )
         },
         {
             title: 'ACTIONS',
-            width: 250,
-            width: 60,
+            width: 80,
             align: 'center',
             key: 'action',
             render: (_, record) => {
-
-
                 const actionItems = [
                     {
                         key: 'viewprofile',
-                        label: 'ViewInfo',
-                        icon: <ProfileOutlined />,
+                        label: <span className="font-medium text-gray-700">View Info</span>,
+                        icon: <ProfileOutlined className="text-gray-400" />,
                         onClick: () => handleViewProfile(record)
                     },
                     {
                         key: 'delete',
-                        label: 'Delete User',
+                        label: <span className="font-medium">Delete User</span>,
                         icon: <DeleteOutlined />,
                         danger: true,
                         onClick: () => handleDeleteUser(record)
@@ -251,15 +290,20 @@ const Customers = () => {
                 ];
 
                 return (
-
                     <Dropdown
                         menu={{ items: actionItems }}
                         trigger={['click']}
                         placement="bottomRight"
+                        classNames={{ root: "shadow-lg" }}
                     >
-                        <Button type="text" icon={<MoreOutlined style={{ fontSize: '20px' }} />} />
+                        <Button
+                            type="text"
+                            shape="circle"
+                            className="hover:bg-gray-100! flex items-center justify-center m-auto"
+                            icon={<MoreOutlined className="text-gray-500 text-xl!" />}
+                        />
                     </Dropdown>
-                )
+                );
             },
         },
     ];
@@ -267,64 +311,98 @@ const Customers = () => {
 
     return (
 
-        <div style={{ padding: "24px 36px", display: "flex", flexDirection: "column", gap: "20px", height: "100vh" }}>
+        <div className="p-4 sm:p-6 md:p-9 flex flex-col gap-6 min-h-screen bg-gray-50/50">
 
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+            {/* Header Section: Title & Action Button */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h1 style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#EE2B6C" }}>Customer Directory</h1>
-                    <p style={{ color: "#999" }}>Managing {data.length} members of Crumb & Bean Rewards</p>
+                    <h1 className="text-xl sm:text-2xl font-bold text-[#EE2B6C] m-0">Customer Directory</h1>
+                    <p className="text-xs sm:text-sm text-gray-400 m-0 mt-1 font-medium">
+                        Managing {data.length} members of Crumb & Bean Rewards
+                    </p>
                 </div>
 
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "10px" }}>
-                    <Button style={{ cursor: "pointer", display: "flex", justifyContent: "space-between", gap: "10px", padding: "10px 12px", alignItems: "center", backgroundColor: "#fff", border: "1px solid rgb(239, 61, 120)", borderRadius: "5px", color: "rgb(239, 61, 120)" }}><DownloadOutlined /> <h4>Export List</h4></Button>
+                <Button
+                    className="flex! items-center gap-2 px-4 py-2 bg-white border border-[#EF3D78] rounded-md text-[#EF3D78] font-semibold hover:text-white! hover:bg-[#EF3D78]! hover:border-[#EF3D78]! transition-all cursor-pointer shadow-sm w-full sm:w-auto justify-center"
+                >
+                    <DownloadOutlined className="text-base" />
+                    <span className="text-xs sm:text-sm">Export List</span>
+                </Button>
+            </div>
+
+            {/* Stats Cards Grid: 1 cột trên phone, 2 cột trên tablet, 4 cột trên desktop */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+                {/* Card 1: Total Customers */}
+                <div className="p-5 flex items-center gap-4 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-gray-100">
+                    <div className="p-3 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center text-xl border border-blue-100 shrink-0">
+                        <TeamOutlined />
+                    </div>
+                    <div>
+                        <h2 className="text-xl sm:text-2xl font-bold text-gray-800 m-0">{data.length}</h2>
+                        <p className="text-[11px] font-bold tracking-wider text-gray-400 m-0 mt-0.5">TOTAL CUSTOMERS</p>
+                    </div>
+                </div>
+
+                {/* Card 2: Active Loyalty Members */}
+                <div className="p-5 flex items-center gap-4 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-gray-100">
+                    <div className="p-3 bg-pink-50 text-[#EE2B6C] rounded-lg flex items-center justify-center text-xl border border-pink-100 shrink-0">
+                        <TagOutlined />
+                    </div>
+                    <div>
+                        <h2 className="text-xl sm:text-2xl font-bold text-gray-800 m-0">842</h2>
+                        <p className="text-[11px] font-bold tracking-wider text-gray-400 m-0 mt-0.5">LOYALTY MEMBERS</p>
+                    </div>
+                </div>
+
+                {/* Card 3: LTV Revenue */}
+                <div className="p-5 flex items-center gap-4 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-gray-100">
+                    <div className="p-3 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center text-xl border border-emerald-100 shrink-0">
+                        <DollarOutlined />
+                    </div>
+                    <div>
+                        <h2 className="text-xl sm:text-2xl font-bold text-gray-800 m-0">$53.2K</h2>
+                        <p className="text-[11px] font-bold tracking-wider text-gray-400 m-0 mt-0.5">LTV REVENUE</p>
+                    </div>
+                </div>
+
+                {/* Card 4: Retention Rate */}
+                <div className="p-5 flex items-center gap-4 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-gray-100">
+                    <div className="p-3 bg-orange-50 text-orange-600 rounded-lg flex items-center justify-center text-xl border border-orange-100 shrink-0">
+                        <FireOutlined />
+                    </div>
+                    <div>
+                        <h2 className="text-xl sm:text-2xl font-bold text-gray-800 m-0">92%</h2>
+                        <p className="text-[11px] font-bold tracking-wider text-gray-400 m-0 mt-0.5">RETENTION RATE</p>
+                    </div>
                 </div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gridGap: "20px" }}>
-                <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "10px", backgroundColor: "#fff", borderRadius: "10px", boxShadow: "5px 5px 4px 0px #999" }}>
-                    <div style={{ padding: "10px", backgroundColor: "rgb(239, 246, 255)", borderRadius: "5px", display: "flex", justifyContent: "center", alignItems: "center", color: "rgb(38, 99, 235)", border: "1px solid rgb(38, 99, 235)" }}><TeamOutlined /></div>
-                    <div>
-                        <h2>{data.length}</h2>
-                        <p style={{ color: "#999" }}>TOTAL CUSTOMERS</p>
-                    </div>
-                </div>
-
-                <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "10px", backgroundColor: "#fff", borderRadius: "10px", boxShadow: "5px 5px 4px 0px #999" }}>
-                    <div style={{ padding: "10px", backgroundColor: "rgb(253, 233, 240)", borderRadius: "5px", display: "flex", justifyContent: "center", alignItems: "center", color: "rgb(238, 43, 108)", border: "1px solid rgb(238, 43, 108)" }}><TagOutlined /></div>
-                    <div>
-                        <h2>842</h2>
-                        <p style={{ color: "#999" }}>ACTIVE LOYALTY MEMBERS</p>
-                    </div>
-                </div>
-
-                <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "10px", backgroundColor: "#fff", borderRadius: "10px", boxShadow: "5px 5px 4px 0px #999" }}>
-                    <div style={{ padding: "10px", backgroundColor: "rgb(237, 255, 241)", borderRadius: "5px", display: "flex", justifyContent: "center", alignItems: "center", color: "rgb(35, 163, 63)", border: "1px solid rgb(35, 163, 63)" }}><DollarOutlined /></div>
-                    <div>
-                        <h2>$53.2K</h2>
-                        <p style={{ color: "#999" }}>LTV REVENUE</p>
-                    </div>
-                </div>
-
-                <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "10px", backgroundColor: "#FFF", borderRadius: "10px", boxShadow: "5px 5px 4px 0px #999" }}>
-                    <div style={{ padding: "10px", backgroundColor: "rgb(255, 242, 229)", borderRadius: "5px", display: "flex", justifyContent: "center", alignItems: "center", color: "rgb(221, 137, 53)", border: "1px solid rgb(221, 137, 53) ", }}><FireOutlined /></div>
-                    <div>
-                        <h2>92%</h2>
-                        <p style={{ color: "#999" }}>RETENTION RATE</p>
-                    </div>
+            {/* Filter Navigation Tabs */}
+            <div className="flex justify-center items-center py-2">
+                <div className="inline-grid grid-cols-3 bg-gray-200/60 p-1 rounded-lg w-full max-w-[320px] sm:max-w-90">
+                    <button
+                        className="py-1.5 text-xs sm:text-sm font-semibold rounded-md transition-all text-gray-600 hover:text-gray-900 focus:bg-white focus:text-gray-800 focus:shadow-sm active:bg-white active:shadow-sm"
+                        onClick={() => handleFilter('ALL')}
+                    >
+                        ALL
+                    </button>
+                    <button
+                        className="py-1.5 text-xs sm:text-sm font-semibold rounded-md transition-all text-gray-600 hover:text-gray-900 focus:bg-white focus:text-green-600 focus:shadow-sm active:bg-white active:shadow-sm"
+                        onClick={() => handleFilter('online')}
+                    >
+                        ONLINE
+                    </button>
+                    <button
+                        className="py-1.5 text-xs sm:text-sm font-semibold rounded-md transition-all text-gray-600 hover:text-gray-900 focus:bg-white focus:text-red-500 focus:shadow-sm active:bg-white active:shadow-sm"
+                        onClick={() => handleFilter('offline')}
+                    >
+                        OFFLINE
+                    </button>
                 </div>
             </div>
 
-            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: "14p 24px" }}>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", borderRadius: "5px", backgroundColor: "#edf4fdce", padding: "5px 10px", textAlign: "center" }}>
-                    <button className='btn-orders' onClick={() => handleFilter('ALL')}>ALL</button>
-                    <button className='btn-orders' onClick={() => handleFilter('online')}>ONLINE</button>
-                    <button className='btn-orders' onClick={() => handleFilter('offline')}>OFFLINE</button>
-                </div>
-            </div>
-
-
-            {/* Table lisst customers 👨‍💼  */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "20px", backgroundColor: "#fff", borderRadius: "8px", padding: "14px 24px" }}>
+            {/* Table List Customers Section */}
+            <div className="flex flex-col gap-5 bg-white rounded-xl p-4 sm:p-6 shadow-[0_4px_12px_rgba(0,0,0,0.02)] border border-gray-100 relative">
                 <Spin spinning={loading}>
                     <Table
                         rowClassName={(record) => record.disabled ? 'row-disabled' : ''}
@@ -338,13 +416,15 @@ const Customers = () => {
                             showSizeChanger: false,
                             placement: 'bottomRight',
                         }}
+                        className="w-full"
                     />
                 </Spin>
-                <div style={{ marginTop: '-45px', color: '#8c8c8c' }}>
-                    Showing 1 to 5 of 128 orders
+
+                {/* Bộ đếm dữ liệu vị trí tương đối chuẩn UI Antd */}
+                <div className="sm:absolute bottom-7 left-6 text-xs sm:text-sm text-gray-400 font-medium mt-2 sm:mt-0 text-center sm:text-left">
+                    Showing 1 to 5 of {filteredData.length} records
                 </div>
             </div>
-
 
         </div>
     )

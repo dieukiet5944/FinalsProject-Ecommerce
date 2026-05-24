@@ -5,7 +5,6 @@ import { Link } from 'react-router-dom';
 const Home = () => {
   return (
     <div className="min-h-screen bg-light-bg text-light-text">
-      {/* Hero Section */}
       <section className="relative flex items-center h-screen hero-bg-white">
         <div className="absolute inset-0 bg-black/45" />
 

@@ -61,44 +61,52 @@ const AdminLogin = () => {
     };
 
     return (
-        <div style={{ width: "100%", height: "100vh", padding: "15px 20px", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
-            <div style={{ padding: "12px 24px", borderRadius: "8px", boxShadow: "0px 0px 10px 0px #333" }}>
-                <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
-                    <img src="../src/assets/logo.png" alt="logo" style={{ width: "120px", height: "120px" }} />
-                    <h1 style={{ fontSize: "24px", margin: "10px 0" }}>The Crumb & Bean</h1>
-                    <h2 style={{ fontSize: "16px", color: "#888" }}>ADMIN CONSOLE</h2>
+        <div className="w-full min-h-screen p-4 md:p-5 flex flex-col justify-center items-center bg-gray-50">
+            <div className="w-full max-w-90 sm:max-w-105 md:max-w-115 p-4 sm:p-6 md:p-8 bg-white rounded-lg shadow-[0_0_10px_0_rgba(51,51,51,0.15)]">
+
+                <div className="flex flex-col justify-center items-center text-center">
+                    <img
+                        src="../src/assets/logo.png"
+                        alt="logo"
+                        className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 object-contain"
+                    />
+                    <h1 className="text-xl sm:text-2xl font-bold my-2 text-gray-800">The Crumb & Bean</h1>
+                    <h2 className="text-sm font-semibold tracking-wider text-gray-400 uppercase mb-4">ADMIN CONSOLE</h2>
                 </div>
-                <Spin spinning={loading} >
-                    <Card variant="borderless">
-                        <div style={{ marginBottom: "20px" }}>
-                            <h3 style={{ margin: 0 }}>Admin Console Access</h3>
-                            <p style={{ color: "#999" }}>Enter your credentials to manage the shop system.</p>
+
+                <Spin spinning={loading}>
+                    <Card variant="borderless" className="p-0!">
+                        <div className="mb-5 text-center sm:text-left">
+                            <h3 className="m-0 text-base sm:text-lg font-medium text-gray-700">Admin Console Access</h3>
+                            <p className="text-xs sm:text-sm text-gray-400 mt-1">Enter your credentials to manage the shop system.</p>
                         </div>
-                        <Form onFinish={onFinish} layout="vertical">
+
+                        <Form onFinish={onFinish} layout="vertical" className="w-full">
                             <Form.Item
                                 name="email"
-                                label="Admin email"
+                                label={<span className="font-medium text-gray-600 text-sm">Admin email</span>}
                                 rules={[{ required: true, message: 'Please enter your email!' }]}
                             >
-                                <Input placeholder="Enter administrator name" />
+                                <Input placeholder="Enter administrator name" className="py-2" />
                             </Form.Item>
-
 
                             <Form.Item
                                 name="password"
-                                label={<div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center', gap: "120px" }}>
-                                    <span>Password</span>
-                                    <a href="/forgot-password" style={{ fontSize: '12px', color: '#EE2C6D' }}>
-                                        Forgot password?
-                                    </a>
-                                </div>}
+                                label={
+                                    <div className="flex justify-between items-center w-full">
+                                        <span className="font-medium text-gray-600 text-sm">Password</span>
+                                        <a href="/forgot-password" className="text-xs text-[#EE2C6D] hover:text-[#d12059] transition-colors">
+                                            Forgot password?
+                                        </a>
+                                    </div>
+                                }
                                 rules={[{ required: true, message: 'Please enter the password!' }]}
                             >
-                                <Input.Password placeholder="Enter password" />
+                                <Input.Password placeholder="Enter password" className="py-2" />
                             </Form.Item>
 
-                            <Form.Item>
-                                <Button type="primary" htmlType="submit" block loading={loading} color="pink" variant="solid">
+                            <Form.Item className="mb-0 mt-6">
+                                <Button type="primary" htmlType="submit" block loading={loading} color="pink" variant="solid" className="h-10 text-sm font-medium">
                                     Confirm
                                 </Button>
                             </Form.Item>

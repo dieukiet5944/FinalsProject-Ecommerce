@@ -1,8 +1,8 @@
 
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MenuUnfoldOutlined, ShoppingOutlined, InboxOutlined, TeamOutlined, StockOutlined, SettingOutlined, SearchOutlined, BellOutlined, LogoutOutlined } from '@ant-design/icons'
-import { Input, Button, Modal, message } from 'antd'
+import { MenuUnfoldOutlined, ShoppingOutlined, InboxOutlined, TeamOutlined, StockOutlined, SettingOutlined, SearchOutlined, BellOutlined, LogoutOutlined, MenuOutlined } from '@ant-design/icons'
+import { Input, Button, Modal, message, Drawer } from 'antd'
 
 import axios from 'axios';
 
@@ -17,6 +17,8 @@ import Setting from '../../components/admin/Setting'
 const HomePage = () => {
 
     const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
     const [admin, setAdmin] = useState([])
 
@@ -62,17 +64,38 @@ const HomePage = () => {
 
     const renderContent = () => {
         switch (currentPage) {
-            case 'dashboard': return admin.map((item, index) => ( <Dashboard key={item.id || index} name={item.userName} /> ));
+            case 'dashboard':
+                return admin.map((item, index) => (
+                    <Dashboard key={item.id || index} name={item.userName} />
+                ));
             case 'orders': return <Orders />;
             case 'inventory': return <Inventory />;
             case 'customers': return <Customers />;
             case 'setting': return <Setting />;
             case 'welcome':
                 return (
-                    <div className='welcome' style={{ padding: "14px 24px", display: "flex", justifyContent: "center", alignItems: "center", height: "100vh", gap: "20px" }}>
-                        <div><img src="../src/assets/logo.png" alt="" style={{ width: "350px", height: "350px", borderRadius: "50%" }} /></div>
-                        <div style={{ display: "flex", flexDirection: "column", gap: "5px", textAlign: "center" }}>
-                            {admin.map( (item, index) => ( <h2 key={item.id || index} style={{ fontSize: "3.5rem" }}>Welcome back {item.userName}!</h2>))} <p style={{ fontSize: "1.5rem", color: "rgb(238, 44, 109)" }}>Wishing you a productive and exciting workday!</p></div>
+                    <div className="w-full min-h-screen p-4 sm:p-6 md:p-8 flex flex-col md:flex-row justify-center items-center gap-6 sm:gap-10 bg-gray-50/30">
+                        <div className="shrink-0">
+                            <img
+                                src="../src/assets/logo.png"
+                                alt="logo"
+                                className="w-48 h-48 sm:w-64 sm:h-64 md:w-87.5 md:h-87.5 rounded-full object-cover shadow-md border-4 border-white"
+                            />
+                        </div>
+
+                        <div className="flex flex-col gap-2.5 text-center md:text-left max-w-xl">
+                            {admin.map((item, index) => (
+                                <h2
+                                    key={item.id || index}
+                                    className="text-2xl sm:text-4xl md:text-5xl font-extrabold text-gray-800 m-0 leading-tight tracking-tight"
+                                >
+                                    Welcome back, <span className="text-gray-900 block sm:inline">{item.userName}</span>!
+                                </h2>
+                            ))}
+                            <p className="text-sm sm:text-lg md:text-xl font-semibold text-[#EE2C6D] m-0 mt-1">
+                                Wishing you a productive and exciting workday!
+                            </p>
+                        </div>
                     </div>
                 );
             default: return null;
@@ -81,185 +104,242 @@ const HomePage = () => {
 
 
     return (
-        <div style={{ display: "grid", gridTemplateColumns: "22% 80%", width: "100%", height: "100vh", overflow: "hidden" }}>
-            <div className='menu-Nav' style={{ display: "grid", gridTemplateRows: "1fr 3fr 0fr", overflowY: "auto" }}>
-                <div className='logo-brand' style={{ display: "flex", alignItems: "center", gap: "10px", padding: "12px 18px", flex: "1" }}>
-                    <img src="../src/assets/logo.png" alt="" style={{ width: "120px", height: "120px" }} />
+        <div className="flex w-full h-screen overflow-hidden bg-slate-50">
 
-                    <div>
-                        <h3 style={{ fontWeight: "bold" }}>Crumb & Bean</h3>
-                        <h2 style={{ color: "rgb(238, 44, 109)" }}>ADMIN DASHBOARD</h2>
+            <div className="hidden md:flex flex-col w-65 lg:w-70 h-full bg-white border-r border-gray-100 shrink-0">
+
+                <div className="flex items-center gap-3 p-5 border-b border-gray-50">
+                    <img src="../src/assets/logo.png" alt="logo" className="w-14 h-14 object-contain rounded-full" />
+                    <div className="min-w-0">
+                        <h3 className="font-bold text-gray-800 m-0 text-base truncate">Crumb & Bean</h3>
+                        <h2 className="text-[11px] font-black tracking-wider text-[#EE2C6D] m-0 mt-0.5 uppercase">ADMIN DASHBOARD</h2>
                     </div>
                 </div>
 
-                <div className='navigation-menu' style={{ padding: "12px 18px", display: "flex", flexDirection: "column", gap: "10px" }}>
+                <div className="flex-1 p-4 flex flex-col gap-3 overflow-y-auto">
                     <Button
                         onClick={() => setCurrentPage('dashboard')}
-                        style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "flex-start",
-                            gap: "12px",
-                            width: "100%",
-                            height: "50px",
-                            padding: "0 20px",
-                            borderRadius: "10px",
-                            border: "none",
-                            fontSize: "16px",
-                            cursor: "pointer",
-                            transition: "0.3s",
-                            boxShadow: "none",
-                            backgroundColor: currentPage === 'dashboard' ? '#EE2B6C' : '#ffffff',
-                            color: currentPage === 'dashboard' ? '#ffffff' : '#555555',
-                        }}
+                        className={`flex! items-center! gap-3! w-full! h-12! px-4! rounded-xl! text-sm! font-semibold! border-none! shadow-none! outline-none! transition-all! justify-start! ${currentPage === 'dashboard'
+                                ? 'bg-[#EE2B6C]! text-white!'
+                                : 'bg-transparent! text-gray-500! hover:text-[#EE2B6C]! hover:bg-pink-50/50!'
+                            }`}
                     >
-                        <MenuUnfoldOutlined style={{ fontSize: '20px' }} /> <span style={{ margin: 0, lineHeight: 1 }}>Dashboard</span>
+                        <MenuUnfoldOutlined className="text-lg" /> <span>Dashboard</span>
                     </Button>
 
                     <Button
                         onClick={() => setCurrentPage('orders')}
-                        style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "flex-start",
-                            gap: "12px",
-                            width: "100%",
-                            height: "50px",
-                            padding: "0 20px",
-                            borderRadius: "10px",
-                            border: "none",
-                            fontSize: "16px",
-                            cursor: "pointer",
-                            transition: "0.3s",
-                            boxShadow: "none",
-                            backgroundColor: currentPage === 'orders' ? '#EE2B6C' : '#ffffff',
-                            color: currentPage === 'orders' ? '#ffffff' : '#555555',
-                        }}
+                        className={`flex! items-center! gap-3! w-full! h-12! px-4! rounded-xl! text-sm! font-semibold! border-none! shadow-none! outline-none! transition-all! justify-start! ${currentPage === 'orders'
+                                ? 'bg-[#EE2B6C]! text-white!'
+                                : 'bg-transparent! text-gray-500! hover:text-[#EE2B6C]! hover:bg-pink-50/50!'
+                            }`}
                     >
-                        <ShoppingOutlined style={{ fontSize: '20px' }} /> <span style={{ margin: 0, lineHeight: 1 }}>Orders</span>
+                        <ShoppingOutlined className="text-lg" /> <span>Orders</span>
                     </Button>
 
                     <Button
                         onClick={() => setCurrentPage('inventory')}
-                        style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "flex-start",
-                            gap: "12px",
-                            width: "100%",
-                            height: "50px",
-                            padding: "0 20px",
-                            borderRadius: "10px",
-                            border: "none",
-                            fontSize: "16px",
-                            cursor: "pointer",
-                            transition: "0.3s",
-                            boxShadow: "none",
-                            backgroundColor: currentPage === 'inventory' ? '#EE2B6C' : '#ffffff',
-                            color: currentPage === 'inventory' ? '#ffffff' : '#555555',
-                        }}
+                        className={`flex! items-center! gap-3! w-full! h-12! px-4! rounded-xl! text-sm! font-semibold! border-none! shadow-none! outline-none! transition-all! justify-start! ${currentPage === 'inventory'
+                                ? 'bg-[#EE2B6C]! text-white!'
+                                : 'bg-transparent! text-gray-500! hover:text-[#EE2B6C]! hover:bg-pink-50/50!'
+                            }`}
                     >
-                        <InboxOutlined style={{ fontSize: '20px' }} /> <span style={{ margin: 0, lineHeight: 1 }}>Inventory</span>
+                        <InboxOutlined className="text-lg" /> <span>Inventory</span>
                     </Button>
 
                     <Button
                         onClick={() => setCurrentPage('customers')}
-                        style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "flex-start",
-                            gap: "12px",
-                            width: "100%",
-                            height: "50px",
-                            padding: "0 20px",
-                            borderRadius: "10px",
-                            border: "none",
-                            fontSize: "16px",
-                            cursor: "pointer",
-                            transition: "0.3s",
-                            boxShadow: "none",
-                            backgroundColor: currentPage === 'customers' ? '#EE2B6C' : '#ffffff',
-                            color: currentPage === 'customers' ? '#ffffff' : '#555555',
-                        }}
+                        className={`flex! items-center! gap-3! w-full! h-12! px-4! rounded-xl! text-sm! font-semibold! border-none! shadow-none! outline-none! transition-all! justify-start! ${currentPage === 'customers'
+                                ? 'bg-[#EE2B6C]! text-white!'
+                                : 'bg-transparent! text-gray-500! hover:text-[#EE2B6C]! hover:bg-pink-50/50!'
+                            }`}
                     >
-                        <TeamOutlined style={{ fontSize: '20px' }} /> <span style={{ margin: 0, lineHeight: 1 }}>Customers</span>
+                        <TeamOutlined className="text-lg" /> <span>Customers</span>
                     </Button>
 
                     <Button
                         onClick={() => setCurrentPage('setting')}
-                        style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "flex-start",
-                            gap: "12px",
-                            width: "100%",
-                            height: "50px",
-                            padding: "0 20px",
-                            borderRadius: "10px",
-                            border: "none",
-                            fontSize: "16px",
-                            cursor: "pointer",
-                            transition: "0.3s",
-                            boxShadow: "none",
-                            backgroundColor: currentPage === 'setting' ? '#EE2B6C' : '#ffffff',
-                            color: currentPage === 'setting' ? '#ffffff' : '#555555',
-                        }}
+                        className={`flex! items-center! gap-3! w-full! h-12! px-4! rounded-xl! text-sm! font-semibold! border-none! shadow-none! outline-none! transition-all! justify-start! ${currentPage === 'setting'
+                                ? 'bg-[#EE2B6C]! text-white!'
+                                : 'bg-transparent! text-gray-500! hover:text-[#EE2B6C]! hover:bg-pink-50/50!'
+                            }`}
                     >
-                        <SettingOutlined style={{ fontSize: '20px' }} /> <span style={{ margin: 0, lineHeight: 1 }}>Setting</span>
+                        <SettingOutlined className="text-lg" /> <span>Setting</span>
                     </Button>
-
-
                 </div>
 
-                <div className='profile-nav' style={{ display: "flex", alignItems: "center", gap: "10px", padding: "12px 18px", flex: "1", borderTop: "2px solid #99999982" }}>
-                    <img src="../src/assets/logo-admin.jpg" alt="" style={{ width: "50px", height: "50px" }} />
+                {/* Admin Profile Footer PC */}
+                <div className="p-4 border-t border-gray-100 bg-gray-50/50 flex items-center gap-3">
+                    <img src="../src/assets/logo-admin.jpg" alt="avatar" className="w-11 h-11 rounded-xl object-cover border border-gray-200" />
                     {admin.map((item, index) => (
-                        <div key={item.id || index}>
-                            <h3 style={{ fontWeight: "bold" }}>{item.userName}</h3>
-                            <p style={{ color: "#999", fontSize: "0.8rem" }}>{item.role}</p>
+                        <div key={item.id || index} className="min-w-0">
+                            <h3 className="font-bold text-gray-800 text-sm m-0 truncate">{item.userName}</h3>
+                            <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider m-0 mt-0.5 truncate">{item.role}</p>
                         </div>
                     ))}
                 </div>
-
             </div>
 
 
-            <div className='slide-navigation' style={{ backgroundColor: "#F8F6F6", position: "relative", overflowY: "auto", display: "flex", flexDirection: "column", gap: "10px" }}>
-                <div className='slide-searching' style={{ zIndex: "1050", position: "sticky", top: "0", padding: "14px 24px", display: "grid", gridGap: "20px", gridTemplateColumns: "80% 20%", width: "100%", backgroundColor: "#fff" }}>
-                    <div style={{ display: "flex", alignItems: "center", width: "100%", gap: "30px" }}>
-                        <div style={{ width: "100%", padding: "5px 10px", borderRadius: "8px", backgroundColor: "rgb(241, 245, 249)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                            <SearchOutlined style={{ color: "#999" }} />
-                            <Input placeholder="Search orders, items, or customers..." variant="borderless" />
+            <div className="flex-1 flex flex-col h-full overflow-hidden">
+
+                <div className="sticky top-0 z-1000 w-full h-16 bg-white border-b border-gray-100 flex items-center justify-between px-4 sm:px-6 shrink-0 gap-4">
+
+                    <div className="flex items-center gap-3 flex-1 max-w-xl">
+
+                        <Button
+                            type="text"
+                            shape="circle"
+                            icon={<MenuOutlined className="text-lg text-gray-600" />}
+                            onClick={() => setIsDrawerOpen(true)}
+                            className="md:hidden flex! items-center justify-center hover:bg-gray-100! shrink-0"
+                        />
+
+                        <div className="w-full h-10 px-3 bg-slate-100 hover:bg-slate-200/70 transition-colors rounded-xl flex items-center gap-2 border border-transparent">
+                            <SearchOutlined className="text-gray-400 text-base" />
+                            <Input
+                                placeholder="Search orders, items, or customers..."
+                                variant="borderless"
+                                className="p-0 text-sm font-medium text-gray-700 placeholder-gray-400"
+                            />
                         </div>
-                        <BellOutlined />
-
+                        <Button type="text" shape="circle" className="flex! items-center justify-center text-gray-500 shrink-0">
+                            <BellOutlined className="text-lg" />
+                        </Button>
                     </div>
 
-                    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", borderLeft: "2px solid #99999967" }}>
-                        <img src="../src/assets/logo-admin.jpg" alt="" style={{ width: "50px", height: "50px" }} />
-                        <Button type="text" onClick={showModal}><LogoutOutlined style={{ fontSize: "1.2rem", color: "#999" }} /></Button>
+                    {/* Cụm chức năng Admin góc phải */}
+                    <div className="flex items-center gap-3 pl-4 border-l border-gray-200 shrink-0">
+                        <img src="../src/assets/logo-admin.jpg" alt="avatar" className="w-9 h-9 rounded-lg object-cover hidden sm:block border border-gray-100" />
+                        <Button
+                            type="text"
+                            shape="circle"
+                            onClick={showModal}
+                            className="hover:bg-red-50! text-gray-400! hover:text-red-500! flex! items-center justify-center transition-colors"
+                        >
+                            <LogoutOutlined className="text-base" />
+                        </Button>
                     </div>
-
-                    <Modal
-                        closable={{ 'aria-label': 'Custom Close Button' }}
-                        open={isModalOpen}
-                        onOk={handleOk}
-                        onCancel={handleCancel}
-                    >
-                        <h1>You want to LOGOUT!</h1>
-                    </Modal>
-
                 </div>
 
-
-                <div className="main-content">
-                    {/* Chỉ render nội dung dựa trên state */}
+                <div className="flex-1 overflow-y-auto main-content focus:outline-none">
                     {renderContent()}
                 </div>
             </div>
 
+
+            <Drawer
+                title={
+                    <div className="flex items-center gap-2.5">
+                        <img src="../src/assets/logo.png" alt="logo" className="w-9 h-9 object-contain rounded-full" />
+                        <span className="font-bold text-gray-800 text-base">Crumb & Bean Menu</span>
+                    </div>
+                }
+                placement="left"
+                onClose={() => setIsDrawerOpen(false)}
+                open={isDrawerOpen}
+                width={270}
+                styles={{ body: { padding: '16px 12px' } }}
+            >
+                <div className="flex flex-col gap-3">
+                    <Button
+                        onClick={() => { setCurrentPage('dashboard'); setIsDrawerOpen(false); }}
+                        className={`flex! items-center! gap-3! w-full! h-12! px-4! rounded-xl! text-sm! font-semibold! border-none! shadow-none! outline-none! transition-all! justify-start! ${currentPage === 'dashboard'
+                            ? 'bg-[#EE2B6C]! text-white!'
+                            : 'bg-transparent! text-gray-500! hover:text-[#EE2B6C]! hover:bg-pink-50/50!'
+                            }`}
+                    >
+                        <MenuUnfoldOutlined className="text-lg" /> <span>Dashboard</span>
+                    </Button>
+
+                    <Button
+                        onClick={() => { setCurrentPage('orders'); setIsDrawerOpen(false); }}
+                        className={`flex! items-center! gap-3! w-full! h-12! px-4! rounded-xl! text-sm! font-semibold! border-none! shadow-none! outline-none! transition-all! justify-start! ${currentPage === 'orders'
+                            ? 'bg-[#EE2B6C]! text-white!'
+                            : 'bg-transparent! text-gray-500! hover:text-[#EE2B6C]! hover:bg-pink-50/50!'
+                            }`}
+                    >
+                        <ShoppingOutlined className="text-lg" /> <span>Orders</span>
+                    </Button>
+
+                    <Button
+                        onClick={() => { setCurrentPage('inventory'); setIsDrawerOpen(false); }}
+                        className={`flex! items-center! gap-3! w-full! h-12! px-4! rounded-xl! text-sm! font-semibold! border-none! shadow-none! outline-none! transition-all! justify-start! ${currentPage === 'inventory'
+                            ? 'bg-[#EE2B6C]! text-white!'
+                            : 'bg-transparent! text-gray-500! hover:text-[#EE2B6C]! hover:bg-pink-50/50!'
+                            }`}
+                    >
+                        <InboxOutlined className="text-lg" /> <span>Inventory</span>
+                    </Button>
+
+                    <Button
+                        onClick={() => { setCurrentPage('customers'); setIsDrawerOpen(false); }}
+                        className={`flex! items-center! gap-3! w-full! h-12! px-4! rounded-xl! text-sm! font-semibold! border-none! shadow-none! outline-none! transition-all! justify-start! ${currentPage === 'customers'
+                            ? 'bg-[#EE2B6C]! text-white!'
+                            : 'bg-transparent! text-gray-500! hover:text-[#EE2B6C]! hover:bg-pink-50/50!'
+                            }`}
+                    >
+                        <TeamOutlined className="text-lg" /> <span>Customers</span>
+                    </Button>
+
+                    <Button
+                        onClick={() => { setCurrentPage('setting'); setIsDrawerOpen(false); }}
+                        className={`flex! items-center! gap-3! w-full! h-12! px-4! rounded-xl! text-sm! font-semibold! border-none! shadow-none! outline-none! transition-all! justify-start! ${currentPage === 'setting'
+                            ? 'bg-[#EE2B6C]! text-white!'
+                            : 'bg-transparent! text-gray-500! hover:text-[#EE2B6C]! hover:bg-pink-50/50!'
+                            }`}
+                    >
+                        <SettingOutlined className="text-lg" /> <span>Setting</span>
+                    </Button>
+                </div>
+
+
+                <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-100 bg-gray-50 flex items-center gap-3">
+                    <img src="../src/assets/logo-admin.jpg" alt="avatar" className="w-10 h-10 rounded-xl object-cover" />
+                    {admin.map((item, index) => (
+                        <div key={item.id || index} className="min-w-0">
+                            <h4 className="font-bold text-gray-800 text-sm m-0 truncate">{item.userName}</h4>
+                            <p className="text-[11px] text-gray-400 font-bold uppercase m-0 mt-0.5 truncate">{item.role}</p>
+                        </div>
+                    ))}
+                </div>
+
+
+                <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-100 bg-gray-50 flex items-center gap-3">
+                    <img src="../src/assets/logo-admin.jpg" alt="avatar" className="w-10 h-10 rounded-xl object-cover" />
+                    {admin.map((item, index) => (
+                        <div key={item.id || index} className="min-w-0">
+                            <h4 className="font-bold text-gray-800 text-sm m-0 truncate">{item.userName}</h4>
+                            <p className="text-[11px] text-gray-400 font-bold uppercase m-0 mt-0.5 truncate">{item.role}</p>
+                        </div>
+                    ))}
+                </div>
+            </Drawer>
+
+
+            <Modal
+                title={null}
+                closable={{ 'aria-label': 'Custom Close Button' }}
+                open={isModalOpen}
+                onOk={handleOk}
+                onCancel={handleCancel}
+                okText="Logout"
+                okButtonProps={{ danger: true, className: "font-semibold" }}
+                cancelButtonProps={{ className: "font-semibold" }}
+                className="max-w-[calc(100vw-32px)] sm:max-w-100"
+                centered
+            >
+                <div className="text-center py-4">
+                    <div className="w-12 h-12 rounded-full bg-red-50 text-red-500 flex items-center justify-center m-auto mb-3 text-xl">
+                        <LogoutOutlined />
+                    </div>
+                    <h3 className="text-lg font-bold text-gray-800 m-0">Confirm Logout</h3>
+                    <p className="text-sm text-gray-400 m-0 mt-1.5 font-medium">Are you sure you want to log out of the admin center?</p>
+                </div>
+            </Modal>
+
         </div>
-    )
+    );
 }
 
 

@@ -180,7 +180,7 @@ const Checkout = () => {
             <div className="bg-white border border-gray-200 rounded-3xl p-8 sticky top-28">
               <h2 className="text-2xl font-semibold mb-6">Order Summary</h2>
 
-              <div className="max-h-[420px] overflow-y-auto pr-2 space-y-5 mb-8">
+              <div className="max-h-105 overflow-y-auto pr-2 space-y-5 mb-8">
                 {cart.map((item, index) => (
                   <div key={index} className="flex justify-between items-start">
                     <div className="flex-1">
