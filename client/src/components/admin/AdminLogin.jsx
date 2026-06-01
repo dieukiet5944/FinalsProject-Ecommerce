@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import axios from 'axios'
 import { Input, Form, Card, Button, message, Spin } from 'antd';
+import { MailOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+
 
 
 const AdminLogin = () => {
@@ -85,24 +87,17 @@ const AdminLogin = () => {
                             <Form.Item
                                 name="email"
                                 label={<span className="font-medium text-gray-600 text-sm">Admin email</span>}
-                                rules={[{ required: true, message: 'Please enter your email!' }]}
+                                rules={[{ required: true, message: 'Please enter your email!' }, { type: 'email' }]}
                             >
-                                <Input placeholder="Enter administrator name" className="py-2" />
+                                <Input prefix={<MailOutlined className="text-gray-400" />} placeholder="Enter administrator name" className="h-11 rounded-lg" />
                             </Form.Item>
 
                             <Form.Item
                                 name="password"
-                                label={
-                                    <div className="flex justify-between items-center w-full">
-                                        <span className="font-medium text-gray-600 text-sm">Password</span>
-                                        <a href="/forgot-password" className="text-xs text-[#EE2C6D] hover:text-[#d12059] transition-colors">
-                                            Forgot password?
-                                        </a>
-                                    </div>
-                                }
+                                label={<span className="text-xs font-semibold text-slate-600 uppercase">Secret Password</span>}
                                 rules={[{ required: true, message: 'Please enter the password!' }]}
                             >
-                                <Input.Password placeholder="Enter password" className="py-2" />
+                                <Input.Password prefix={<LockOutlined className="text-gray-400" />} autoComplete="new-password" placeholder="••••••" className="h-11 rounded-lg" />
                             </Form.Item>
 
                             <Form.Item className="mb-0 mt-6">

@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MenuUnfoldOutlined, ShoppingOutlined, InboxOutlined, TeamOutlined, StockOutlined, SettingOutlined, SearchOutlined, BellOutlined, LogoutOutlined, MenuOutlined } from '@ant-design/icons'
+import { ShopOutlined, MenuUnfoldOutlined, ShoppingOutlined, InboxOutlined, TeamOutlined, StockOutlined, SettingOutlined, SearchOutlined, BellOutlined, LogoutOutlined, MenuOutlined } from '@ant-design/icons'
 import { Input, Button, Modal, message, Drawer } from 'antd'
 
 import axios from 'axios';
@@ -11,6 +11,9 @@ import Orders from '../../components/admin/OrderManagement'
 import Inventory from '../../components/admin/Inventory'
 import Customers from '../../components/admin/CustomerDirectory'
 import Setting from '../../components/admin/Setting'
+import StoreManagement from '../../components/admin/StoreManagement';
+
+import { ADMIN_ROUTES } from "../../router/menuRoute";
 
 
 
@@ -20,7 +23,32 @@ const HomePage = () => {
 
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
+    const [searchText, setSearchText] = useState('');
+
+    const [searchResults, setSearchResults] = useState([]);
+
     const [admin, setAdmin] = useState([])
+
+    const handleSearch = (e) => {
+        const value = e.target.value;
+        setSearchText(value);
+
+        if (value.trim() === '') {
+            setSearchResults([]);
+        } else {
+            const filtered = ADMIN_ROUTES.filter(route =>
+                route.title.toLowerCase().includes(value.toLowerCase()) ||
+                route.keywords.some(kw => kw.toLowerCase().includes(value.toLowerCase()))
+            );
+            setSearchResults(filtered);
+        }
+    };
+
+    const handleSelectPage = (pageKey) => {
+        setCurrentPage(pageKey);
+        setSearchText('');
+        setSearchResults([]);
+    };
 
     const showModal = () => {
         setIsModalOpen(true);
@@ -69,6 +97,7 @@ const HomePage = () => {
                     <Dashboard key={item.id || index} name={item.userName} />
                 ));
             case 'orders': return <Orders />;
+            case 'storemanagement': return <StoreManagement />;
             case 'inventory': return <Inventory />;
             case 'customers': return <Customers />;
             case 'setting': return <Setting />;
@@ -120,8 +149,8 @@ const HomePage = () => {
                     <Button
                         onClick={() => setCurrentPage('dashboard')}
                         className={`flex! items-center! gap-3! w-full! h-12! px-4! rounded-xl! text-sm! font-semibold! border-none! shadow-none! outline-none! transition-all! justify-start! ${currentPage === 'dashboard'
-                                ? 'bg-[#EE2B6C]! text-white!'
-                                : 'bg-transparent! text-gray-500! hover:text-[#EE2B6C]! hover:bg-pink-50/50!'
+                            ? 'bg-[#EE2B6C]! text-white!'
+                            : 'bg-transparent! text-gray-500! hover:text-[#EE2B6C]! hover:bg-pink-50/50!'
                             }`}
                     >
                         <MenuUnfoldOutlined className="text-lg" /> <span>Dashboard</span>
@@ -130,18 +159,28 @@ const HomePage = () => {
                     <Button
                         onClick={() => setCurrentPage('orders')}
                         className={`flex! items-center! gap-3! w-full! h-12! px-4! rounded-xl! text-sm! font-semibold! border-none! shadow-none! outline-none! transition-all! justify-start! ${currentPage === 'orders'
-                                ? 'bg-[#EE2B6C]! text-white!'
-                                : 'bg-transparent! text-gray-500! hover:text-[#EE2B6C]! hover:bg-pink-50/50!'
+                            ? 'bg-[#EE2B6C]! text-white!'
+                            : 'bg-transparent! text-gray-500! hover:text-[#EE2B6C]! hover:bg-pink-50/50!'
                             }`}
                     >
                         <ShoppingOutlined className="text-lg" /> <span>Orders</span>
                     </Button>
 
                     <Button
+                        onClick={() => setCurrentPage('storemanagement')}
+                        className={`flex! items-center! gap-3! w-full! h-12! px-4! rounded-xl! text-sm! font-semibold! border-none! shadow-none! outline-none! transition-all! justify-start! ${currentPage === 'storemanagement'
+                            ? 'bg-[#EE2B6C]! text-white!'
+                            : 'bg-transparent! text-gray-500! hover:text-[#EE2B6C]! hover:bg-pink-50/50!'
+                            }`}
+                    >
+                        <ShopOutlined className="text-lg" /> <span>Store Management</span>
+                    </Button>
+
+                    <Button
                         onClick={() => setCurrentPage('inventory')}
                         className={`flex! items-center! gap-3! w-full! h-12! px-4! rounded-xl! text-sm! font-semibold! border-none! shadow-none! outline-none! transition-all! justify-start! ${currentPage === 'inventory'
-                                ? 'bg-[#EE2B6C]! text-white!'
-                                : 'bg-transparent! text-gray-500! hover:text-[#EE2B6C]! hover:bg-pink-50/50!'
+                            ? 'bg-[#EE2B6C]! text-white!'
+                            : 'bg-transparent! text-gray-500! hover:text-[#EE2B6C]! hover:bg-pink-50/50!'
                             }`}
                     >
                         <InboxOutlined className="text-lg" /> <span>Inventory</span>
@@ -150,8 +189,8 @@ const HomePage = () => {
                     <Button
                         onClick={() => setCurrentPage('customers')}
                         className={`flex! items-center! gap-3! w-full! h-12! px-4! rounded-xl! text-sm! font-semibold! border-none! shadow-none! outline-none! transition-all! justify-start! ${currentPage === 'customers'
-                                ? 'bg-[#EE2B6C]! text-white!'
-                                : 'bg-transparent! text-gray-500! hover:text-[#EE2B6C]! hover:bg-pink-50/50!'
+                            ? 'bg-[#EE2B6C]! text-white!'
+                            : 'bg-transparent! text-gray-500! hover:text-[#EE2B6C]! hover:bg-pink-50/50!'
                             }`}
                     >
                         <TeamOutlined className="text-lg" /> <span>Customers</span>
@@ -160,15 +199,14 @@ const HomePage = () => {
                     <Button
                         onClick={() => setCurrentPage('setting')}
                         className={`flex! items-center! gap-3! w-full! h-12! px-4! rounded-xl! text-sm! font-semibold! border-none! shadow-none! outline-none! transition-all! justify-start! ${currentPage === 'setting'
-                                ? 'bg-[#EE2B6C]! text-white!'
-                                : 'bg-transparent! text-gray-500! hover:text-[#EE2B6C]! hover:bg-pink-50/50!'
+                            ? 'bg-[#EE2B6C]! text-white!'
+                            : 'bg-transparent! text-gray-500! hover:text-[#EE2B6C]! hover:bg-pink-50/50!'
                             }`}
                     >
                         <SettingOutlined className="text-lg" /> <span>Setting</span>
                     </Button>
                 </div>
 
-                {/* Admin Profile Footer PC */}
                 <div className="p-4 border-t border-gray-100 bg-gray-50/50 flex items-center gap-3">
                     <img src="../src/assets/logo-admin.jpg" alt="avatar" className="w-11 h-11 rounded-xl object-cover border border-gray-200" />
                     {admin.map((item, index) => (
@@ -195,20 +233,47 @@ const HomePage = () => {
                             className="md:hidden flex! items-center justify-center hover:bg-gray-100! shrink-0"
                         />
 
-                        <div className="w-full h-10 px-3 bg-slate-100 hover:bg-slate-200/70 transition-colors rounded-xl flex items-center gap-2 border border-transparent">
-                            <SearchOutlined className="text-gray-400 text-base" />
-                            <Input
-                                placeholder="Search orders, items, or customers..."
-                                variant="borderless"
-                                className="p-0 text-sm font-medium text-gray-700 placeholder-gray-400"
-                            />
+                        <div className="relative w-full">
+                            <div className="w-full h-10 px-3 bg-slate-100 hover:bg-slate-200/70 focus-within:bg-white focus-within:border-pink-400 transition-colors rounded-xl flex items-center gap-2 border border-transparent">
+                                <SearchOutlined className="text-gray-400 text-base" />
+                                <Input
+                                    placeholder="Search orders, items, or customers..."
+                                    variant="borderless"
+                                    value={searchText}
+                                    onChange={handleSearch}
+                                    className="p-0 text-sm font-medium text-gray-700 placeholder-gray-400 w-full"
+                                />
+                            </div>
+
+                            {searchResults.length > 0 && (
+                                <div className="absolute top-full left-0 right-0 mt-1.5 bg-white rounded-xl shadow-xl border border-slate-100 z-50 max-h-60 overflow-y-auto p-1.5 flex flex-col gap-1">
+                                    {searchResults.map((item) => (
+                                        <button
+                                            key={item.key}
+                                            type="button"
+                                            onClick={() => handleSelectPage(item.key)}
+                                            className="w-full text-left px-4 py-2.5 hover:bg-pink-50 text-slate-700 rounded-lg transition-colors flex justify-between items-center cursor-pointer group"
+                                        >
+                                            <div>
+                                                <span className="text-sm font-semibold block group-hover:text-[#EE2C6D] transition-colors">
+                                                    {item.title}
+                                                </span>
+                                                <span className="text-xs text-slate-400">Chức năng quản trị</span>
+                                            </div>
+                                            <span className="text-[10px] uppercase font-bold tracking-wider bg-slate-100 text-slate-400 px-2 py-0.5 rounded-md group-hover:bg-pink-100 group-hover:text-[#EE2C6D]">
+                                                Đi tới
+                                            </span>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                         </div>
+
                         <Button type="text" shape="circle" className="flex! items-center justify-center text-gray-500 shrink-0">
                             <BellOutlined className="text-lg" />
                         </Button>
                     </div>
 
-                    {/* Cụm chức năng Admin góc phải */}
                     <div className="flex items-center gap-3 pl-4 border-l border-gray-200 shrink-0">
                         <img src="../src/assets/logo-admin.jpg" alt="avatar" className="w-9 h-9 rounded-lg object-cover hidden sm:block border border-gray-100" />
                         <Button
@@ -238,7 +303,7 @@ const HomePage = () => {
                 placement="left"
                 onClose={() => setIsDrawerOpen(false)}
                 open={isDrawerOpen}
-                width={270}
+                size={270}
                 styles={{ body: { padding: '16px 12px' } }}
             >
                 <div className="flex flex-col gap-3">
@@ -292,18 +357,6 @@ const HomePage = () => {
                         <SettingOutlined className="text-lg" /> <span>Setting</span>
                     </Button>
                 </div>
-
-
-                <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-100 bg-gray-50 flex items-center gap-3">
-                    <img src="../src/assets/logo-admin.jpg" alt="avatar" className="w-10 h-10 rounded-xl object-cover" />
-                    {admin.map((item, index) => (
-                        <div key={item.id || index} className="min-w-0">
-                            <h4 className="font-bold text-gray-800 text-sm m-0 truncate">{item.userName}</h4>
-                            <p className="text-[11px] text-gray-400 font-bold uppercase m-0 mt-0.5 truncate">{item.role}</p>
-                        </div>
-                    ))}
-                </div>
-
 
                 <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-100 bg-gray-50 flex items-center gap-3">
                     <img src="../src/assets/logo-admin.jpg" alt="avatar" className="w-10 h-10 rounded-xl object-cover" />
