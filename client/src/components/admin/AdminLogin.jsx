@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import axios from 'axios'
 import { Input, Form, Card, Button, message, Spin } from 'antd';
 import { MailOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-
-
+import logo from '../../assets/logo.png';
 
 const AdminLogin = () => {
 
@@ -28,19 +27,17 @@ const AdminLogin = () => {
             const result = response.data;
 
 
-            if (result && result.success && result.data.accessToken) {
-                const adminData = result.data.admin;
-                localStorage.setItem("isAdminAuthenticated", "true");
-                localStorage.setItem("token", result.data.accessToken); // Lưu luôn token để xài sau này
-                localStorage.setItem("adminInfo", JSON.stringify({
-                    id: adminData.id,
-                    email: adminData.email
-                }));
+            if (result && result.data && result.data.accessToken) {
 
-                message.success(`Login successful! Welcome back, ${adminData.name}`);
+                localStorage.setItem("isAdminAuthenticated", "true");
+                localStorage.setItem("token", result.data.accessToken);
+                localStorage.setItem("adminInfo", JSON.stringify(result.data.admin));
+
+                message.success("Login successful! ❤️");
+
                 navigate('/homepage');
             } else {
-                message.error(result.message || 'Incorrect account or password!');
+                message.error(result.message || "Login failed!");
             }
         } catch (error) {
             console.error("Login error:", error);
@@ -57,7 +54,7 @@ const AdminLogin = () => {
 
                 <div className="flex flex-col justify-center items-center text-center">
                     <img
-                        src="../src/assets/logo.png"
+                        src={logo}
                         alt="logo"
                         className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 object-contain"
                     />
