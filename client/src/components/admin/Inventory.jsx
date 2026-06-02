@@ -138,7 +138,7 @@ const Inventory = () => {
               size="small"
               showInfo={false}
               strokeColor={strokeColor}
-              strokeWidth={6}
+              size={6}
               className="m-0"
             />
           </div>

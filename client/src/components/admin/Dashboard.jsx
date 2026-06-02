@@ -2,8 +2,15 @@ import React, { useState, useEffect, useMemo } from 'react'
 import { PoundCircleOutlined, ShoppingCartOutlined, UserAddOutlined, ThunderboltOutlined, ArrowRightOutlined, ExceptionOutlined, DollarOutlined, UserOutlined, DownOutlined } from '@ant-design/icons'
 import { Cascader, Row, Col, Progress, Space, DatePicker, Spin, message, Avatar, Typography, Card, Flex, Button, Dropdown } from 'antd'
 import axios from 'axios';
+import dayjs from 'dayjs';
+import isoWeek from 'dayjs/plugin/isoWeek';
+import isBetween from 'dayjs/plugin/isBetween';
 
 import WeeklySalesChart from './WeeklySalesChart';
+
+// Kích hoạt plugin để tính tuần từ Thứ 2 đến Chủ Nhật (ISO Week)
+dayjs.extend(isoWeek);
+dayjs.extend(isBetween);
 
 const twoColors = {
     '0%': '#108ee9',
@@ -31,6 +38,8 @@ const Dashboard = ({ name }) => {
     const [dataProduct, setDataProduct] = useState([]);
     const [historyOrders, setHistoryOrders] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [currentWeekRevenue, setCurrentWeekRevenue] = useState(0);
+    const [currentWeekOrdersCount, setCurrentWeekOrdersCount] = useState(0);
 
     const { Text: AntText } = Typography;
 
@@ -79,42 +88,54 @@ const Dashboard = ({ name }) => {
         getAlldata();
     }, []);
 
-    // 2. Tính tổng doanh thu bằng useMemo (Trả về kiểu số để dễ tính toán bắc cầu)
-    const totalRevenueNumber = useMemo(() => {
-        return historyOrders
-            .filter(order => order.status === 'Completed')
-            .reduce((sum, order) => sum + (Number(order.sumOrders) || 0), 0);
-    }, [historyOrders]);
+    // 2. Tính toán thời điểm đầu tuần hiện tại (Thứ 2, 00:00:00)
+    const startOfCurrentWeek = useMemo(() => {
+        return dayjs().startOf('isoWeek');
+    }, []);
 
-    // Hàm chuyển đổi doanh thu sang chuỗi hiển thị giao diện (Chỉ gọi khi cần render)
-    const formattedTotalRevenue = useMemo(() => {
-        return totalRevenueNumber.toLocaleString('en-US', {
+    // 3. Tính tổng doanh thu các tuần trước (historical revenue - Total Revenue của năm)
+    const historicalRevenueNumber = useMemo(() => {
+        return historyOrders
+            .filter(order => {
+                if (order.status !== 'Completed') return false;
+                const orderDate = dayjs(order.createdAt || order.updatedAt);
+                return orderDate.isBefore(startOfCurrentWeek); // < startOfCurrentWeek
+            })
+            .reduce((sum, order) => sum + (Number(order.sumOrders) || 0), 0);
+    }, [historyOrders, startOfCurrentWeek]);
+
+    // Hàm chuyển đổi doanh thu sang chuỗi hiển thị giao diện
+    const formatCurrency = (value) => {
+        return value.toLocaleString('en-US', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });
-    }, [totalRevenueNumber]);
+    };
 
-    // 3. Tính toán số đơn hàng đang xử lý
+    const formattedHistoricalRevenue = useMemo(() => formatCurrency(historicalRevenueNumber), [historicalRevenueNumber]);
+    const formattedCurrentWeekRevenue = useMemo(() => formatCurrency(currentWeekRevenue), [currentWeekRevenue]);
+
+    // 4. Tính toán số đơn hàng đang xử lý
     const pendingOrdersCount = useMemo(() => {
         return historyOrders.filter(order => order.status === 'Processing').length;
     }, [historyOrders]);
 
-    // 4. Tính toán số khách hàng online
+    // 5. Tính toán số khách hàng online
     const activeCustomersCount = useMemo(() => {
         return dataUser.filter(user => user.status === 'online').length;
     }, [dataUser]);
 
-    // 5. Tính toán Giá trị đơn hàng trung bình (AOV) - SỬA LỖI CHIA CHUỖI KHÔNG BỊ NaN
+    // 6. Tính toán Giá trị đơn hàng trung bình (AOV) - dựa trên tuần hiện tại
+    // AOV = Doanh thu tuần này / Số đơn hàng tuần này
+    // Reset về 0 khi kết thúc tuần (không có đơn hàng nào)
     const calculateAOV = useMemo(() => {
-        const completedOrders = historyOrders.filter(order => order.status === 'Completed');
-        if (completedOrders.length === 0) return "0.00";
+        if (currentWeekOrdersCount === 0) return "0.00";
+        return (currentWeekRevenue / currentWeekOrdersCount).toFixed(2);
+    }, [currentWeekRevenue, currentWeekOrdersCount]);
 
-        // Lấy số thuần túy chia cho số lượng đơn hàng
-        return (totalRevenueNumber / completedOrders.length).toFixed(2);
-    }, [historyOrders, totalRevenueNumber]);
-
-    // 6. Tính toán Top 5 sản phẩm bán chạy nhất
+    // 8. Tính toán Top 5 sản phẩm bán chạy nhất
     const topSellingItem = useMemo(() => {
+
         const imageLookup = {};
         if (dataProduct && dataProduct.length > 0) {
             dataProduct.forEach(p => {
@@ -151,7 +172,6 @@ const Dashboard = ({ name }) => {
             .slice(0, 5);
     }, [historyOrders, dataProduct]);
 
-    // Component vẽ nhãn đỉnh cho biểu đồ
     const CustomLabel = (props) => {
         const { x, y, value, payload } = props;
         if (payload.day === 'FRI') {
@@ -177,9 +197,7 @@ const Dashboard = ({ name }) => {
         { key: '12', label: 'Last Year' },
     ];
 
-    // ==========================================
-    // 2. CÁC CÂU LỆNH CHẶN RENDER (IF RETURN) LUÔN LUÔN ĐẶT DƯỚI HOOK
-    // ==========================================
+   
     if (loading) {
         return <div className="p-6 bg-white rounded-2xl h-80 flex items-center justify-center text-gray-400">Loading chart...</div>;
     }
@@ -201,9 +219,12 @@ const Dashboard = ({ name }) => {
                         <DollarOutlined className="text-lg p-2.5 rounded-lg bg-green-50 text-green-600 border border-green-100 shrink-0" />
                     </div>
                     <p className="text-xs font-bold tracking-wider text-gray-400 m-0">TOTAL REVENUE</p>
-                    <h2 className="text-lg sm:text-xl font-bold text-green-700 bg-green-50/60 px-3 py-1 rounded-md m-0 inline-block w-fit">
-                        ${totalRevenueNumber}
+                    <h2 className="text-lg sm:text-xl font-bold text-green-700 bg-green-50/60 px-3 py-1 rounded-md m-0 inline-block w-fit" title="Doanh thu các tuần trước (không bao gồm tuần hiện tại)">
+                        ${formattedCurrentWeekRevenue}
                     </h2>
+                    <p className="text-[10px] text-gray-400 m-0">
+                        (Total Revenue For The Year: ${formattedHistoricalRevenue})
+                    </p>
                 </div>
 
                 <div className="p-5 flex flex-col gap-3 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.04)] border border-gray-100">
@@ -240,11 +261,14 @@ const Dashboard = ({ name }) => {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                <div className="lg:col-span-2 flex flex-col bg-white p-5 sm:p-6 rounded-xl border border-gray-100 shadow-[0_4px_12px_rgba(0,0,0,0.02)] gap-6">
+                    <div className="lg:col-span-2 flex flex-col bg-white p-5 sm:p-6 rounded-xl border border-gray-100 shadow-[0_4px_12px_rgba(0,0,0,0.02)] gap-6">
 
-                    <WeeklySalesChart />
+                        <WeeklySalesChart 
+                            onCurrentWeekRevenueChange={setCurrentWeekRevenue}
+                            onCurrentWeekOrdersChange={setCurrentWeekOrdersCount}
+                        />
 
-                </div>
+                    </div>
 
                 <div className="right-column-scroll bg-white p-2 rounded-xl border border-gray-100 shadow-[0_4px_12px_rgba(0,0,0,0.02)] h-fit">
                     <Card

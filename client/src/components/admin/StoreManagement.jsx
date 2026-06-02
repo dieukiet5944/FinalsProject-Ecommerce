@@ -195,7 +195,7 @@ const StoreManagement = () => {
           columns={columns} 
           dataSource={stores} 
           pagination={{
-            position: ['bottomRight'],
+            placement: ['bottomRight'],
             defaultPageSize: 4,
             showSizeChanger: false,
             className: "pr-6 py-4"

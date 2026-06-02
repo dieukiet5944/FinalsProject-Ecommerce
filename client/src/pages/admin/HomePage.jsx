@@ -93,9 +93,8 @@ const HomePage = () => {
     const renderContent = () => {
         switch (currentPage) {
             case 'dashboard':
-                return admin.map((item, index) => (
-                    <Dashboard key={item.id || index} name={item.userName} />
-                ));
+                const loggedInAdmin = JSON.parse(localStorage.getItem("adminInfo"));
+                return <Dashboard name={loggedInAdmin?.name || "Admin"} />;
             case 'orders': return <Orders />;
             case 'storemanagement': return <StoreManagement />;
             case 'inventory': return <Inventory />;

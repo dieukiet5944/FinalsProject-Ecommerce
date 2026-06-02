@@ -1,17 +1,33 @@
 import mongoose from "mongoose";
 
+const orderItemSchema = new mongoose.Schema({
+    productId: {
+        type: String,
+        required: true
+    },
+    name: {
+        type: String,
+        required: true
+    },
+    qty: {
+        type: Number,
+        required: true
+    },
+    price: {
+        type: Number,
+        required: true
+    }
+}, { _id: false });
+
 const orderSchema = new mongoose.Schema({
     customerId: { 
         type: String, 
         required: true 
     },
-    productId: { 
-        type: String, 
-        required: true 
-    },
-    qty: { 
-        type: Number, 
-        required: true 
+    items: {
+        type: [orderItemSchema],
+        required: true,
+        default: []
     },
     totalPrice: { 
         type: Number, 
@@ -19,7 +35,7 @@ const orderSchema = new mongoose.Schema({
     },
     status: { 
         type: String, 
-        enum: ["Pending","Completed", "Canceled"], 
+        enum: ["Pending", "Processing", "Completed", "Canceled"], 
         default: "Pending" 
     },
 }, { 
@@ -28,4 +44,4 @@ const orderSchema = new mongoose.Schema({
 
 const OrderModel = mongoose.model("orders", orderSchema);
 
-export default OrderModel
+export default OrderModel;

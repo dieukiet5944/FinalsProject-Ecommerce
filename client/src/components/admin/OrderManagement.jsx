@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { Table, Tag, Avatar, Space, Button, Spin, Modal, Dropdown, message } from 'antd';
-import { MoreOutlined, EyeOutlined, CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined } from '@ant-design/icons'
+import { MoreOutlined, EyeOutlined, CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, AuditOutlined } from '@ant-design/icons'
 import axios from 'axios';
 
 
@@ -33,6 +33,39 @@ const Orders = () => {
     setIsModalOpen(true);
 
   }
+
+  const handleDelete = (order) => {
+    Modal.confirm({
+      title: 'Confirm order deletion',
+      content: `Are you sure you want to delete order ${order._id}? This action cannot be completed.`,
+      okText: 'Delete',
+      okType: 'danger',
+      cancelText: 'Cancel',
+      onOk: async () => {
+        try {
+          const response = await axios.delete(`http://localhost:8080/orders/${order._id}`);
+          
+          if (response && response.data.success) {
+            // Remove the order from the data source
+            setDataSource(prevSource => prevSource.filter(item => item.id !== order._id));
+            message.success(`Order ${order._id} has been successfully deleted!`);
+            
+            // Close modal if the deleted order is currently being viewed
+            if (selectedOrder && selectedOrder.id === order._id) {
+              setIsModalOpen(false);
+              setSelectedOrder(null);
+            }
+          } else {
+            throw new Error("API Delete Failed");
+          }
+        } catch (error) {
+          console.error("Delete Error:", error);
+          message.error(error.response?.data?.message || "The order cannot be deleted!");
+        }
+      },
+    });
+  };
+
   const handleFilter = (status) => {
     setFilterStatus(status);
   };
@@ -82,20 +115,7 @@ const Orders = () => {
     }
   };
 
-  // Done
-  const calculateTotalRevenue = () => {
-
-    const today = new Date().toISOString().split('T')[0];
-
-    const todayOrders = dataSource.filter(order => order.date === today && order.status === 'Completed');
-
-    const total = todayOrders.reduce((sum, order) => {
-      return sum + (Number(order.sumOrders) || 0);
-    }, 0);
-
-    return total.toLocaleString('en-US', { minimumFractionDigits: 2 });
-  };
-
+  
 
   // Done
   const categoryStats = useMemo(() => {
@@ -332,12 +352,12 @@ const Orders = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
 
         <div className="p-5 flex flex-col gap-2 border border-blue-100 bg-blue-50/60 rounded-xl shadow-[0_4px_12px_rgba(38,100,235,0.03)]">
-          <p className="text-xs font-bold tracking-wider text-blue-700/80 m-0">TODAY'S REVENUE</p>
-          <h2 className="text-xl sm:text-2xl font-extrabold text-blue-600 m-0">${calculateTotalRevenue()}</h2>
+          <p className="text-xs font-bold tracking-wider text-blue-700/80 m-0">COMPLETE ORDERS</p>
+          <h2 className="text-xl sm:text-2xl font-extrabold text-blue-600 m-0"><AuditOutlined/> {dataSource.reduce((init, item) => { return item.status === "Completed" ? init += 1 : init}, 0)}</h2>
         </div>
 
         <div className="p-5 flex flex-col gap-2 bg-amber-50/60 border border-amber-100 rounded-xl shadow-[0_4px_12px_rgba(217,119,6,0.03)]">
-          <p className="text-xs font-bold tracking-wider text-amber-800 m-0">ITEMS SOLD</p>
+          <p className="text-xs font-bold tracking-wider text-amber-800 m-0">ITEMS SOLD</p> 
           <div className="flex justify-between items-center text-xs sm:text-sm text-amber-800 font-semibold mt-1">
             <span>Cakes: <b className="text-amber-600 font-bold text-base">{totalCakes}</b> units</span>
             <span>Drinks: <b className="text-amber-600 font-bold text-base">{totalDrinks}</b> units</span>

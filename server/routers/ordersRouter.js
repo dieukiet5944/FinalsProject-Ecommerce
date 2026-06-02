@@ -3,11 +3,16 @@ import orderController from '../controller/orderController.js'
 
 const ordersRouter = express.Router();
 
+// GET all orders
 ordersRouter.get("/", orderController.getOrders);
 
-ordersRouter.post("/:id/restock", orderController.postOrder);
+// POST create new order
+ordersRouter.post("/", orderController.postOrder);
 
-ordersRouter.put("/:id", orderController.putUpdateOrder)
+// PUT update order by ID
+ordersRouter.put("/:id", orderController.putUpdateOrder);
 
+// DELETE order by ID
+ordersRouter.delete("/:id", orderController.deleteOrder);
 
-export default ordersRouter
+export default ordersRouter;

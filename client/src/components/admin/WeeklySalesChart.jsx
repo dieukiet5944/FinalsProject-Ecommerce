@@ -1,74 +1,170 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { DownOutlined, CalendarOutlined } from '@ant-design/icons';
 import { Button, Dropdown } from 'antd';
+import axios from 'axios';
 import dayjs from 'dayjs';
 import isoWeek from 'dayjs/plugin/isoWeek';
+import isBetween from 'dayjs/plugin/isBetween';
 
 // Kích hoạt plugin để tính tuần từ Thứ 2 đến Chủ Nhật (ISO Week)
 dayjs.extend(isoWeek);
+dayjs.extend(isBetween);
 
-const WeeklySalesChart = () => {
+const WeeklySalesChart = ({ onCurrentWeekRevenueChange, onCurrentWeekOrdersChange }) => {
   const [chartData, setChartData] = useState([]);
   const [filterKey, setFilterKey] = useState('this_week'); 
   const [timeLabel, setTimeLabel] = useState('');
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [currentWeekRevenue, setCurrentWeekRevenue] = useState(0);
+  const [currentWeekOrdersCount, setCurrentWeekOrdersCount] = useState(0);
 
- // Tạo tuần đầu tiên set về 0 
-  const generateDefaultWeeklyData = () => [
-    { day: 'MON', sales: 0 },
-    { day: 'TUE', sales: 0 },
-    { day: 'WED', sales: 0 },
-    { day: 'THU', sales: 0 },
-    { day: 'FRI', sales: 0 },
-    { day: 'SAT', sales: 0 },
-    { day: 'SUN', sales: 0 },
-  ];
+  // Ánh xạ ngày trong tuần từ Date object sang tên ngày (Thứ 2 = 0, Chủ Nhật = 6)
+  const getDayName = (date) => {
+    const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+    return dayNames[date.getDay()];
+  };
 
-  useEffect(() => {
+  // Tạo khung 7 ngày với giá trị mặc định = 0 (luôn đủ 7 ngày từ MON đến SUN)
+  const generateEmptyWeekData = () => {
+    return [
+      { day: 'MON', sales: 0 },
+      { day: 'TUE', sales: 0 },
+      { day: 'WED', sales: 0 },
+      { day: 'THU', sales: 0 },
+      { day: 'FRI', sales: 0 },
+      { day: 'SAT', sales: 0 },
+      { day: 'SUN', sales: 0 },
+    ];
+  };
+
+  // Tính toán doanh thu theo ngày từ danh sách orders
+  const calculateDailySales = useCallback((ordersList, startOfWeek, endOfWeek) => {
+    // Khởi tạo dữ liệu rỗng cho 7 ngày
+    const dailySalesMap = {};
+    let currentDay = startOfWeek.clone();
+    while (!currentDay.isAfter(endOfWeek, 'day')) {
+      const dayName = getDayName(currentDay.toDate());
+      dailySalesMap[dayName] = 0;
+      currentDay = currentDay.add(1, 'day');
+    }
+
+    // Tính doanh thu từ các đơn hàng Completed trong khoảng thời gian
+    let totalRevenue = 0;
+    let ordersCount = 0;
+    ordersList.forEach(order => {
+      if (order.status === 'Completed') {
+        const orderDate = dayjs(order.createdAt || order.updatedAt);
+        if (orderDate.isBetween(startOfWeek, endOfWeek, 'day', '[]')) {
+          const dayName = getDayName(orderDate.toDate());
+          const sales = order.totalPrice || 0;
+          dailySalesMap[dayName] = (dailySalesMap[dayName] || 0) + sales;
+          totalRevenue += sales;
+          ordersCount += 1;
+        }
+      }
+    });
+
+    // Chuyển thành mảng theo thứ tự MON -> SUN
+    const dayOrder = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+    return {
+      chartData: dayOrder.map(day => ({ day, sales: dailySalesMap[day] || 0 })),
+      totalRevenue,
+      ordersCount
+    };
+  }, []);
+
+  // Fetch orders from API
+  const fetchOrders = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get('http://localhost:8080/orders');
+      const ordersData = response.data?.data || [];
+      setOrders(ordersData);
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+      setOrders([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Xử lý logic tính toán biểu đồ
+  const processChartData = useCallback(() => {
     const now = dayjs();
     let startOfWeek, endOfWeek;
 
-    // 2. Định vị khoảng thời gian theo bộ lọc
+    // Định vị khoảng thời gian theo bộ lọc (isoWeek bắt đầu từ Thứ 2)
     if (filterKey === 'this_week') {
-      startOfWeek = now.startOf('isoWeek');
-      endOfWeek = now.endOf('isoWeek');
+      startOfWeek = now.startOf('isoWeek'); // Thứ 2 đầu tuần
+      endOfWeek = now.endOf('isoWeek');     // Chủ Nhật cuối tuần
     } else {
       startOfWeek = now.subtract(1, 'week').startOf('isoWeek');
       endOfWeek = now.subtract(1, 'week').endOf('isoWeek');
     }
 
-    // Cập nhật chuỗi hiển thị thời gian ở Subtitle (Ví dụ: "Jun 01 - Jun 07, 2026")
+    // Cập nhật chuỗi hiển thị thời gian
     setTimeLabel(`${startOfWeek.format('MMM DD')} - ${endOfWeek.format('MMM DD, YYYY')}`);
 
-    /**
-     * 3. MÔ PHỎNG LOGIC ĐỔ DATA TỪ DATABASE
-     * Ở môi trường thực tế, hôm nay là thứ 3 (TUE) thì DB tuần này sẽ chỉ trả về đơn của MON và TUE.
-     * Giả lập mảng data thực tế lấy về từ API/Database:
-     */
-    const dbSalesData = filterKey === 'this_week'   
-      ? [
-          { day: 'MON', sales: 1200 },
-          { day: 'TUE', sales: 1600 }, 
-          // WED, THU, FRI, SAT, SUN chưa đi qua nên DB hoàn toàn không có data
-        ]
-      : [
-          // Nếu chọn tuần trước thì hiển thị đầy đủ cả tuần cũ
-          { day: 'MON', sales: 1500 }, { day: 'TUE', sales: 1800 },
-          { day: 'WED', sales: 1400 }, { day: 'THU', sales: 2200 },
-          { day: 'FRI', sales: 2900 }, { day: 'SAT', sales: 3500 },
-          { day: 'SUN', sales: 4000 },
-        ];
+    // Tính toán doanh thu thực tế từ database
+    const { chartData: salesData, totalRevenue, ordersCount } = calculateDailySales(orders, startOfWeek, endOfWeek);
+    setChartData(salesData);
 
-    // 4. BIẾN ĐỔI LOGIC (MAPPING): Trộn data thực tế vào khung 7 ngày mặc định
-    const finalData = generateDefaultWeeklyData().map((defaultItem) => {
-      // Tìm xem ngày này trong Database có doanh thu chưa
-      const matchedData = dbSalesData.find(item => item.day === defaultItem.day);
-      // Nếu có thì lấy số tiền từ DB, chưa có (chưa đi qua/không có đơn) thì giữ nguyên 0
-      return matchedData ? { ...defaultItem, sales: matchedData.sales } : defaultItem;
-    });
+    // Chỉ cập nhật currentWeekRevenue khi đang xem tuần hiện tại
+    if (filterKey === 'this_week') {
+      setCurrentWeekRevenue(totalRevenue);
+      setCurrentWeekOrdersCount(ordersCount);
+    }
+  }, [filterKey, orders, calculateDailySales]);
 
-    setChartData(finalData);
-  }, [filterKey]); // Mỗi lần đổi filterKey (Tuần này / Tuần trước) useEffect sẽ chạy lại
+  // Fetch data lần đầu
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  // Xử lý khi có orders mới hoặc thay đổi filter
+  useEffect(() => {
+    if (orders.length > 0 || filterKey) {
+      processChartData();
+    }
+  }, [filterKey, orders, processChartData]);
+
+  // Thông báo doanh thu tuần hiện tại lên Dashboard
+  useEffect(() => {
+    if (filterKey === 'this_week' && onCurrentWeekRevenueChange) {
+      onCurrentWeekRevenueChange(currentWeekRevenue);
+    }
+  }, [currentWeekRevenue, filterKey, onCurrentWeekRevenueChange]);
+
+  // Thông báo số đơn hàng tuần hiện tại lên Dashboard
+  useEffect(() => {
+    if (filterKey === 'this_week' && onCurrentWeekOrdersChange) {
+      onCurrentWeekOrdersChange(currentWeekOrdersCount);
+    }
+  }, [currentWeekOrdersCount, filterKey, onCurrentWeekOrdersChange]);
+
+  // Auto-reset: Kiểm tra mỗi giây để phát hiện thời điểm chuyển tuần
+  useEffect(() => {
+    const checkWeekChange = () => {
+      const now = dayjs();
+      // Kiểm tra nếu vừa mới chuyển sang tuần mới (Thứ 2, 00:00:00)
+      const startOfCurrentWeek = now.startOf('isoWeek');
+      const isMondayMidnight = now.day() === 1 && now.hour() === 0 && now.minute() === 0;
+      
+      if (isMondayMidnight && filterKey === 'this_week') {
+        // Reset biểu đồ về 0 vì tuần mới chưa có đơn hàng nào
+        setChartData(generateEmptyWeekData());
+        setCurrentWeekRevenue(0);
+        setCurrentWeekOrdersCount(0);
+        setTimeLabel(`${startOfCurrentWeek.format('MMM DD')} - ${now.endOf('isoWeek').format('MMM DD, YYYY')}`);
+      }
+    };
+
+    // Kiểm tra mỗi giây để bắt chính xác thời điểm 00:00:00
+    const interval = setInterval(checkWeekChange, 1000);
+    return () => clearInterval(interval);
+  }, [filterKey]);
 
   // Cấu hình danh sách Dropdown của Ant Design
   const items = [
