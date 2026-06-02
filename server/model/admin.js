@@ -2,12 +2,7 @@ import mongoose from 'mongoose'
 
 
 const adminSchema = new mongoose.Schema({
-    id:{
-        type: String,
-        required: true,
-        unique: true
-    },
-    userName:{
+    name:{
         type: String,
         required: true,
     },
@@ -36,6 +31,9 @@ const adminSchema = new mongoose.Schema({
     status: {
         type: String,
         default: "active"
+    },
+    refreshToken: {
+        type: String,
     }
 },{ 
     timestamps: true 
