@@ -16,10 +16,6 @@ const userSchema = new mongoose.Schema({
         type: String, 
         required: true 
     },
-    full_name: { 
-        type: String, 
-        required: true 
-    },
     email: { 
         type: String, 
         required: true, 
@@ -29,8 +25,8 @@ const userSchema = new mongoose.Schema({
         required: true },
     role: { 
         type: String, 
-        enum: ["customer", "admin"], 
-        default: "customer" 
+        enum: ["user", "admin"], 
+        default: "user" 
     },
     status: { 
         type: String, 
@@ -40,13 +36,9 @@ const userSchema = new mongoose.Schema({
     avatar: { 
         type: String, 
         default: "" 
-    },
-    last_active: { 
-        type: Date, 
-        default: Date.now 
     }
 },{ 
-    timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } 
+    timestamps: true
 });
 
 const UserModel = mongoose.model("users", userSchema);

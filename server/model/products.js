@@ -1,13 +1,7 @@
-import mongoose from 'mongoose'
-import { type } from 'os';
+import mongoose from 'mongoose';
 
 
 const productSchema = new mongoose.Schema({
-    id: {
-        type: String,
-        required: true,
-        unique: true
-    },
     name: {
         type: String,
         required: true
@@ -25,23 +19,8 @@ const productSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    stock: {
-        capacity: { 
-            type: Number, 
-            required: true 
-        },
-        currentstock: { 
-            type: Number, 
-            required: true, 
-            default: 0 
-        }
-    },
-    createdAt: {
-        type: String,
-        required: true
-    },
-    expiryDate: {
-        type: String,
+    quantity: {
+        type: Number,
         required: true
     },
     status: {

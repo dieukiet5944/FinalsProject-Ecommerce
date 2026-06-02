@@ -8,57 +8,46 @@ import { useNavigate } from 'react-router-dom';
 
 const AdminLogin = () => {
 
-    const [data, setData] = useState([]);
-    const [loading, setLoading] = useState(true)
     const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                setLoading(true);
-                const response = await axios.get("http://localhost:8080/secret-key/admin");
-                const result = response.data;
+    const onFinish = async (values) => {
+        try {
+            setLoading(true);
 
-                if (result && result.success && Array.isArray(result.data)) {
-                    setData(result.data);
-                    console.log("Danh sách tài khoản Admin đã lấy về thành công:", result.data);
-                } else {
-                    console.error("The API structure has changed; the admin array is not found!");
-                    setData([]);
-                }
-            } catch (error) {
-                console.error("Loading error:", error);
-                setData([]);
-            } finally {
-                setLoading(false);
+            const loginPayload = {
+                email: values.email,
+                password: values.password
+            };
+
+            const response = await axios.post(
+                "http://localhost:8080/secret-key/admin/login",
+                loginPayload
+            );
+
+            const result = response.data;
+
+
+            if (result && result.success && result.data.accessToken) {
+                const adminData = result.data.admin;
+                localStorage.setItem("isAdminAuthenticated", "true");
+                localStorage.setItem("token", result.data.accessToken); // Lưu luôn token để xài sau này
+                localStorage.setItem("adminInfo", JSON.stringify({
+                    id: adminData.id,
+                    email: adminData.email
+                }));
+
+                message.success(`Login successful! Welcome back, ${adminData.name}`);
+                navigate('/homepage');
+            } else {
+                message.error(result.message || 'Incorrect account or password!');
             }
-        };
-        fetchData();
-    }, []);
-
-    if (loading) return <Spin size="large" />;
-    console.log("Data being used for comparison:", data);
-    const onFinish = (values) => {
-
-        console.log("Dữ liệu người dùng gõ từ Form:", values);
-        const emailInput = values.email;
-        const passwordInput = values.password;
-
-        const userExists = data.find(
-            (u) => u.email === emailInput && String(u.password) === String(passwordInput)
-        );
-        if (userExists) {
-            localStorage.setItem("isAdminAuthenticated", "true");
-
-            localStorage.setItem("adminInfo", JSON.stringify({
-                id: userExists.id,
-                email: userExists.email
-            }));
-
-            message.success('Login successful! Welcome back, ' + userExists.email);
-            navigate('/homepage');
-        } else {
-            message.error('Incorrect account or password!');
+        } catch (error) {
+            console.error("Login error:", error);
+            const errorMsg = error.response?.data?.message || 'Incorrect account or password!';
+            message.error(errorMsg);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -83,25 +72,49 @@ const AdminLogin = () => {
                             <p className="text-xs sm:text-sm text-gray-400 mt-1">Enter your credentials to manage the shop system.</p>
                         </div>
 
-                        <Form onFinish={onFinish} layout="vertical" className="w-full">
+                        <Form
+                            onFinish={onFinish}
+                            layout="vertical"
+                            className="w-full"
+                            disabled={loading}
+                        >
                             <Form.Item
                                 name="email"
                                 label={<span className="font-medium text-gray-600 text-sm">Admin email</span>}
-                                rules={[{ required: true, message: 'Please enter your email!' }, { type: 'email' }]}
+                                rules={[
+                                    { required: true, message: 'Please enter your email!' },
+                                    { type: 'email', message: 'Please enter a valid email address!' }
+                                ]}
                             >
-                                <Input prefix={<MailOutlined className="text-gray-400" />} placeholder="Enter administrator name" className="h-11 rounded-lg" />
+                                <Input
+                                    prefix={<MailOutlined className="text-gray-400" />}
+                                    placeholder="Enter administrator email"
+                                    className="h-11 rounded-lg"
+                                />
                             </Form.Item>
+
 
                             <Form.Item
                                 name="password"
-                                label={<span className="text-xs font-semibold text-slate-600 uppercase">Secret Password</span>}
+                                label={<span className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Secret Password</span>}
                                 rules={[{ required: true, message: 'Please enter the password!' }]}
                             >
-                                <Input.Password prefix={<LockOutlined className="text-gray-400" />} autoComplete="new-password" placeholder="••••••" className="h-11 rounded-lg" />
+                                <Input.Password
+                                    prefix={<LockOutlined className="text-gray-400" />}
+                                    autoComplete="current-password"
+                                    placeholder="••••••"
+                                    className="h-11 rounded-lg"
+                                />
                             </Form.Item>
 
                             <Form.Item className="mb-0 mt-6">
-                                <Button type="primary" htmlType="submit" block loading={loading} color="pink" variant="solid" className="h-10 text-sm font-medium">
+                                <Button
+                                    type="primary"
+                                    htmlType="submit"
+                                    block
+                                    loading={loading}
+                                    className="h-11 text-sm font-medium rounded-lg bg-[#EE2C6D] border-[#EE2C6D] hover:bg-[#d6235f] hover:border-[#d6235f]"
+                                >
                                     Confirm
                                 </Button>
                             </Form.Item>

@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ShopOutlined, MenuUnfoldOutlined, ShoppingOutlined, InboxOutlined, TeamOutlined, StockOutlined, SettingOutlined, SearchOutlined, BellOutlined, LogoutOutlined, MenuOutlined } from '@ant-design/icons'
+import { ShopOutlined, MenuUnfoldOutlined, ShoppingOutlined, InboxOutlined, TeamOutlined, StockOutlined, SettingOutlined, SearchOutlined, BellOutlined, LogoutOutlined, MenuOutlined, ArrowRightOutlined } from '@ant-design/icons'
 import { Input, Button, Modal, message, Drawer } from 'antd'
 
 import axios from 'axios';
@@ -261,7 +261,7 @@ const HomePage = () => {
                                                 <span className="text-xs text-slate-400">Chức năng quản trị</span>
                                             </div>
                                             <span className="text-[10px] uppercase font-bold tracking-wider bg-slate-100 text-slate-400 px-2 py-0.5 rounded-md group-hover:bg-pink-100 group-hover:text-[#EE2C6D]">
-                                                Đi tới
+                                                <ArrowRightOutlined />
                                             </span>
                                         </button>
                                     ))}
