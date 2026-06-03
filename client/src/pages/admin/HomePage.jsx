@@ -88,6 +88,41 @@ const HomePage = () => {
         getData();
     }, [])
 
+    const showLogoutConfirm = () => {
+        Modal.confirm({
+            title: <span className="font-bold text-gray-800">Confirm Logout</span>,
+            content: "Are you sure you want to sign out of the Admin Dashboard?",
+            okText: 'Logout',
+            okType: 'danger', 
+            cancelText: 'Cancel',
+            centered: true, 
+            onOk: async () => {
+                try {
+                    const storedAdmin = JSON.parse(localStorage.getItem('adminInfo'));
+
+                    const adminId = storedAdmin?._id || storedAdmin?.id;
+
+                    if (adminId) {
+                        await axios.post(`http://localhost:8080/secret-key/admin/${adminId}/logout`, { userId: adminId });
+                    }
+
+                    localStorage.removeItem('adminInfo');
+                    localStorage.removeItem('token'); 
+
+                    message.success("Logged out successfully! See you again. 👋");
+
+                    navigate('/login');
+
+                } catch (error) {
+                    console.error("Logout error:", error);
+
+                    localStorage.clear();
+                    navigate('/login');
+                }
+            },
+        });
+    };
+
     const [currentPage, setCurrentPage] = useState('welcome');
 
     const renderContent = () => {
@@ -112,14 +147,16 @@ const HomePage = () => {
                         </div>
 
                         <div className="flex flex-col gap-2.5 text-center md:text-left max-w-xl">
-                            {admin.map((item, index) => (
-                                <h2
-                                    key={item.id || index}
-                                    className="text-2xl sm:text-4xl md:text-5xl font-extrabold text-gray-800 m-0 leading-tight tracking-tight"
-                                >
-                                    Welcome back, <span className="text-gray-900 block sm:inline">{item.userName}</span>!
+                            {admin && admin.length > 0 ? (
+                                <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold text-gray-800 m-0 leading-tight tracking-tight">
+                                    Welcome back, <span className="text-gray-900 block sm:inline">{admin[0].userName}</span>!
                                 </h2>
-                            ))}
+                            ) : (
+                                <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold text-gray-800 m-0 leading-tight tracking-tight">
+                                    Welcome back, <span className="text-gray-900 block sm:inline">Admin</span>!
+                                </h2>
+                            )}
+
                             <p className="text-sm sm:text-lg md:text-xl font-semibold text-[#EE2C6D] m-0 mt-1">
                                 Wishing you a productive and exciting workday!
                             </p>
@@ -278,7 +315,7 @@ const HomePage = () => {
                         <Button
                             type="text"
                             shape="circle"
-                            onClick={showModal}
+                            onClick={showLogoutConfirm}
                             className="hover:bg-red-50! text-gray-400! hover:text-red-500! flex! items-center justify-center transition-colors"
                         >
                             <LogoutOutlined className="text-base" />
@@ -358,13 +395,22 @@ const HomePage = () => {
                 </div>
 
                 <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-100 bg-gray-50 flex items-center gap-3">
-                    <img src="../src/assets/logo-admin.jpg" alt="avatar" className="w-10 h-10 rounded-xl object-cover" />
-                    {admin.map((item, index) => (
-                        <div key={item.id || index} className="min-w-0">
-                            <h4 className="font-bold text-gray-800 text-sm m-0 truncate">{item.userName}</h4>
-                            <p className="text-[11px] text-gray-400 font-bold uppercase m-0 mt-0.5 truncate">{item.role}</p>
+                    <img src="../src/assets/logo-admin.jpg" alt="avatar" className="w-10 h-10 rounded-xl object-cover shrink-0" />
+                    {admin && admin.length > 0 ? (
+                        <div className="min-w-0 flex-1">
+                            <h4 className="font-bold text-gray-800 text-sm m-0 truncate">
+                                {admin[0].userName}
+                            </h4>
+                            <p className="text-[11px] text-gray-400 font-bold uppercase m-0 mt-0.5 truncate">
+                                {admin[0].role || 'Admin'}
+                            </p>
                         </div>
-                    ))}
+                    ) : (
+                        <div className="min-w-0 flex-1">
+                            <h4 className="font-bold text-gray-800 text-sm m-0 truncate">Admin Account</h4>
+                            <p className="text-[11px] text-gray-400 font-bold uppercase m-0 mt-0.5 truncate">Loading...</p>
+                        </div>
+                    )}
                 </div>
             </Drawer>
 

@@ -37,7 +37,7 @@ const Cart = () => {
           {/* Product List - Scrollable */}
           <div className="lg:col-span-7">
             <div
-              className="bg-light-card border border-gray-100 rounded-3xl p-6 max-h-[620px] overflow-y-auto custom-scroll"
+              className="bg-light-card border border-gray-100 rounded-3xl p-6 max-h-155 overflow-y-auto custom-scroll"
             >
               <div className="space-y-6 pr-2">
                 {cart.map((item) => (

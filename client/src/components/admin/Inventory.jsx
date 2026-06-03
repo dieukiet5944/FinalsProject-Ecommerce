@@ -82,7 +82,7 @@ const Inventory = () => {
               {record.name}
             </p>
             <p className="text-xs text-gray-400 m-0 mt-0.5 font-medium">
-              SKU: {record.id}
+              SKU: {record._id}
             </p>
           </div>
         </div>
@@ -104,42 +104,52 @@ const Inventory = () => {
     },
     {
       title: 'STOCK LEVEL',
-      dataIndex: 'stock',
-      key: 'stock',
+      dataIndex: 'quantity',
+      key: 'quantity',
       width: 180,
-      render: (stock) => {
-        if (!stock) return <span className="text-gray-400 text-sm italic">N/A</span>;
+      render: (quantity, record) => {
 
-        const percentage = Math.round((stock.currentstock / stock.capacity) * 100);
+        if (quantity === undefined || quantity === null) {
+          return <span className="text-gray-400 text-sm italic">N/A</span>;
+        }
 
-        let strokeColor = '#52c41a';
+        const maxCapacity = 100;
+        const percentage = Math.min(Math.round((quantity / maxCapacity) * 100), 100);
+
+        let strokeColor = '#52c41a'; // Xanh lá mặc định
         let textColorClass = 'text-green-600';
+        let displayStatus = "IN STOCK";
 
-        if (percentage <= 20) {
-          strokeColor = '#ff4d4f';
+        if (quantity === 0) {
+          strokeColor = '#ff4d4f'; // Màu Đỏ
           textColorClass = 'text-red-500 font-bold animate-pulse';
-        } else if (percentage <= 60) {
-          strokeColor = '#faad14';
-          textColorClass = 'text-amber-500';
+          displayStatus = "OUT OF STOCK";
+        } else if (quantity <= 20) {
+          strokeColor = '#faad14'; // Màu Cam/Vàng
+          textColorClass = 'text-amber-500 font-semibold';
+          displayStatus = "LOW STOCK";
         }
 
         return (
-          <div className="w-full max-w-35">
-            <div className="flex justify-between items-end mb-1">
-              <span className="text-xs font-medium text-gray-600">
-                {stock.currentstock}/{stock.capacity} <span className="text-gray-400 font-normal">Units</span>
+          <div className="w-full max-w-40 bg-gray-50/50 p-2 rounded-lg border border-gray-100/80 shadow-2xs">
+
+            <div className="flex justify-between items-center mb-1.5">
+              <span className="text-xs font-bold text-gray-700 tracking-tight">
+                {quantity} <span className="text-gray-400 font-normal text-[11px]">/ {maxCapacity} Pcs</span>
               </span>
-              <span className={`text-xs font-bold ${percentage <= 60 ? textColorClass : 'text-[#6F4E37]'}`}>
+
+              <span className="text-[10px] font-extrabold text-gray-400">
                 {percentage}%
               </span>
             </div>
+
             <Progress
-              percent={percentage}
-              size="small"
+              percent={percentage === 0 && quantity > 0 ? 8 : percentage}
               showInfo={false}
               strokeColor={strokeColor}
-              size={6}
-              className="m-0"
+              strokeWidth={6}
+              strokeLinecap="round"
+              className="m-0 w-full drop-shadow-3xs"
             />
           </div>
         );
@@ -158,22 +168,30 @@ const Inventory = () => {
     },
     {
       title: 'STATUS',
-      dataIndex: 'status',
+      dataIndex: 'quantity',
       key: 'status',
       width: 140,
-      render: (_, record) => {
-        const currentStatus = calculateStatus(record.stock?.currentstock, record.stock?.capacity);
+      render: (quantity) => {
 
-        let color = 'success';
-        if (currentStatus === 'OUT OF STOCK') color = 'default';
-        if (currentStatus === 'LOW STOCK') color = 'error';
+        const qty = quantity !== undefined && quantity !== null ? Number(quantity) : 0;
+
+        let tagColor = 'green';
+        let displayStatus = 'IN STOCK';
+
+        if (qty === 0) {
+          tagColor = 'red';
+          displayStatus = 'OUT OF STOCK';
+        } else if (qty <= 20) {
+          tagColor = 'warning';
+          displayStatus = 'LOW STOCK';
+        }
 
         return (
           <Tag
-            color={color}
-            className="rounded-full font-bold px-3 py-0.5 text-[11px] tracking-wider uppercase"
+            color={tagColor}
+            className="rounded-full font-bold px-3 py-0.5 text-[11px] tracking-wider uppercase border-none shadow-sm"
           >
-            {currentStatus}
+            {displayStatus}
           </Tag>
         );
       },
@@ -203,7 +221,7 @@ const Inventory = () => {
             label: <span className="font-medium">Disable</span>,
             icon: <DeleteOutlined />,
             danger: true,
-            onClick: () => handleDelete(record.id)
+            onClick: () => handleDelete(record)
           },
         ];
 
@@ -228,9 +246,8 @@ const Inventory = () => {
 
   const lowStockCount = useMemo(() => {
     return (data || []).filter(item => {
-      const current = item.stock?.currentstock || 0;
-      const capacity = item.stock?.capacity || 1;
-      return (current / capacity) * 100 <= 20;
+      const qty = item.quantity !== undefined && item.quantity !== null ? Number(item.quantity) : 0;
+      return qty <= 20;
     }).length;
   }, [data]);
 
@@ -246,16 +263,16 @@ const Inventory = () => {
 
   const handleActionRequest = () => {
     const lowStockItems = data.filter(item => {
-      const current = item.stock?.currentstock ?? 0;
-      const capacity = item.stock?.capacity || 100;
-      return (current / capacity) * 100 <= 20;
+      const qty = item.quantity !== undefined && item.quantity !== null ? Number(item.quantity) : 0;
+      return qty <= 20; // Giữ nguyên luật gom hàng <= 20 cái
     });
 
     if (lowStockItems.length === 0) {
-      message.success("All items are in stock, Admin, please rest assured.");
+      message.success("All items are in stock, Admin, please rest assured. ✨");
       return;
     }
 
+    // Khởi tạo object lưu số lượng tạm thời
     let tempAmounts = {};
 
     Modal.confirm({
@@ -267,7 +284,8 @@ const Inventory = () => {
       content: (
         <div className="max-h-80 sm:max-h-100 overflow-y-auto pr-2 mt-4 space-y-1 scrollbar-thin scrollbar-thumb-gray-200">
           {lowStockItems.map((item) => (
-            <div key={item.id} className="flex items-center justify-between py-3.5 border-b border-gray-100 last:border-0 gap-4">
+            /* 1. ĐỒNG BỘ SỬ DỤNG _ID LÀM KEY */
+            <div key={item._id} className="flex items-center justify-between py-3.5 border-b border-gray-100 last:border-0 gap-4">
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <Avatar
                   src={`/product/${item.category.toLowerCase()}/${item.image}`}
@@ -277,9 +295,12 @@ const Inventory = () => {
                 />
                 <div className="min-w-0">
                   <b className="text-sm sm:text-base text-gray-800 block truncate leading-tight">{item.name}</b>
+
+                  {/* 2. ĐÃ PHẲNG HÓA GIAO DIỆN: Hiển thị trực tiếp quantity dựa trên mốc trần 100 */}
                   <span className="text-xs text-gray-400 block mt-1 font-medium">
-                    Still available: <b className="text-red-500 font-bold">{item.stock?.currentstock ?? 0}</b> / {item.stock?.capacity || 100} Units
+                    Still available: <b className="text-red-500 font-bold">{item.quantity ?? 0}</b> / 100 Units
                   </span>
+
                   <div className="mt-1 flex items-center">
                     <Badge status="error" text={<span className="text-[11px] font-bold text-red-400 uppercase tracking-wider">Alert!</span>} />
                   </div>
@@ -290,7 +311,8 @@ const Inventory = () => {
                   min={0}
                   placeholder="SL"
                   className="w-20 rounded-md font-medium"
-                  onChange={(val) => { tempAmounts[item.id] = val; }}
+                  /* 3. ĐỒNG BỘ: Lưu số lượng nhập vào key _id */
+                  onChange={(val) => { tempAmounts[item._id] = val; }}
                 />
               </div>
             </div>
@@ -298,7 +320,9 @@ const Inventory = () => {
         </div>
       ),
       onOk: async () => {
-        const itemsToUpdate = lowStockItems.filter(item => tempAmounts[item.id] > 0);
+        // Lọc chuẩn xác theo key _id
+        const itemsToUpdate = lowStockItems.filter(item => tempAmounts[item._id] > 0);
+
         if (itemsToUpdate.length === 0) {
           message.info("No additional quantities have been imported yet");
           return;
@@ -306,40 +330,47 @@ const Inventory = () => {
 
         try {
           setLoading(true);
-          await Promise.all(itemsToUpdate.map(async (item) => {
-            const addedAmount = tempAmounts[item.id];
-            const current = item.stock?.currentstock || 0;
-            const capacity = item.stock?.capacity || 100;
-            const newCurrentStock = current + addedAmount;
-            const newStatus = getStatusByStock(newCurrentStock, capacity);
 
+          // Gửi API restock đồng loạt theo _id
+          await Promise.all(itemsToUpdate.map(async (item) => {
+            const addedAmount = tempAmounts[item._id];
             const payload = {
-              stock: { capacity, currentstock: newCurrentStock },
-              status: newStatus
+              quantityToAdd: Number(addedAmount)
             };
-            await axios.put(`${API_BASE_URL}/${item.id}`, payload);
+            await axios.put(`${API_BASE_URL}/${item._id}`, payload);
           }));
 
+          // Cập nhật State giao diện thời gian thực
           setData((prev) =>
             prev.map((item) => {
-              const addedAmount = tempAmounts[item.id];
+              const addedAmount = tempAmounts[item._id];
+
               if (addedAmount > 0) {
-                const current = item.stock?.currentstock || 0;
-                const capacity = item.stock?.capacity || 100;
-                const newCurrentStock = current + addedAmount;
+                const currentQty = item.quantity || 0;
+                const newQuantity = currentQty + Number(addedAmount);
+
+                // 4. ĐỒNG BỘ LUẬT 3 MỨC MỚI (>20 In Stock, <=20 Low Stock, 0 Out of Stock)
+                let newStatus = "IN STOCK";
+                if (newQuantity === 0) {
+                  newStatus = "OUT OF STOCK";
+                } else if (newQuantity <= 20) {
+                  newStatus = "LOW STOCK";
+                }
+
                 return {
                   ...item,
-                  stock: { ...item.stock, currentstock: newCurrentStock },
-                  status: getStatusByStock(newCurrentStock, capacity)
+                  quantity: newQuantity,
+                  status: newStatus
                 };
               }
               return item;
             })
           );
-          message.success(`Successfully restocked ${itemsToUpdate.length} products!`);
+
+          message.success(`Successfully restocked ${itemsToUpdate.length} products! 📦`);
         } catch (error) {
-          console.error(error);
-          message.error("Batch restock failed!");
+          console.error("Batch restock error:", error);
+          message.error("Batch restock failed! Please check connection.");
         } finally {
           setLoading(false);
         }
@@ -353,78 +384,108 @@ const Inventory = () => {
 
   const avgFreshness = useMemo(() => {
     if (!Array.isArray(data) || data.length === 0) return 100;
-    const cakes = data.filter(item => item.category === 'CAKE' && item.createdAt && item.expiryDate);
+
+    const cakes = data.filter(item => item.category === 'CAKE' && item.createdAt);
     if (cakes.length === 0) return 100;
 
     const now = new Date();
-    const totalFreshness = cakes.reduce((sum, item) => {
-      const start = new Date(item.createdAt);
-      const end = new Date(item.expiryDate);
-      const totalLifeSpan = end - start;
-      const timePassed = now - start;
-      let itemFreshness = ((totalLifeSpan - timePassed) / totalLifeSpan) * 100;
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-      return sum + Math.max(0, Math.min(100, itemFreshness));
+    const totalFreshness = cakes.reduce((sum, item) => {
+
+      const createdDate = new Date(item.createdAt);
+      const createdStart = new Date(createdDate.getFullYear(), createdDate.getMonth(), createdDate.getDate());
+
+      const timeDiff = todayStart - createdStart;
+
+      const daysOld = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+
+      let itemFreshness = 100;
+      if (daysOld === 1) {
+        itemFreshness = 70;
+      } else if (daysOld === 2) {
+        itemFreshness = 40;  // 
+      } else if (daysOld >= 3) {
+        itemFreshness = 0;
+      }
+
+      return sum + itemFreshness;
     }, 0);
 
     return Math.round(totalFreshness / cakes.length);
   }, [data]);
 
   const getFreshnessColor = (percent) => {
-    if (percent > 70) return "#6dee89";
+    if (percent > 70) return "#52c41a";
     if (percent > 30) return "#faad14";
     return "#ff4d4f";
   };
 
   const handleRestock = async (record) => {
     let inputAmount = 0;
-    const maxCapacity = record.stock?.capacity || 100;
-    const current = record.stock?.currentstock || 0;
+
+    // 1. Phẳng hóa dữ liệu lấy từ dòng (record) được click
+    const maxCapacity = 100; // Đặt mốc trần cố định là 100 cái theo luật mới
+    const currentQty = record.quantity !== undefined && record.quantity !== null ? Number(record.quantity) : 0;
 
     Modal.confirm({
-      title: <span className="font-bold text-gray-800">Import goods for: {record.name}</span>,
+      title: <span className="font-bold text-gray-800">📦 Import goods for: {record.name}</span>,
       content: (
         <div className="mt-2 space-y-2 text-sm text-gray-600">
-          <p>Current quantity: <span className="font-bold text-gray-800">{current}</span></p>
+          <p>Current quantity: <span className="font-bold text-gray-800">{currentQty}</span> / {maxCapacity} Units</p>
           <div className="flex flex-col gap-1">
             <span>Enter additional quantity:</span>
             <InputNumber
               min={1}
-              max={maxCapacity - current}
-              defaultValue={0}
-              onChange={(val) => { inputAmount = val; }}
+              max={maxCapacity - currentQty} // Giới hạn tối đa chỉ được nhập thêm để đầy mốc 100 cái
+              placeholder="e.g., 20"
+              onChange={(val) => { inputAmount = Number(val || 0); }}
               className="w-full"
             />
           </div>
         </div>
       ),
       onOk: async () => {
+        // Kiểm tra tính hợp lệ của số lượng nhập vào
         if (inputAmount <= 0) {
           message.warning("Please enter a quantity greater than 0.");
           return Promise.reject();
         }
-        if (current + inputAmount > maxCapacity) {
-          message.error(`Exceeds capacity!`);
+        if (currentQty + inputAmount > maxCapacity) {
+          message.error(`Exceeds capacity! Maximum storage is ${maxCapacity} units.`);
           return Promise.reject();
         }
 
         try {
           setLoading(true);
-          const newCurrentStock = current + inputAmount;
-          const newStatus = calculateStatus(newCurrentStock, maxCapacity);
-          const cleanStock = { capacity: maxCapacity, currentstock: newCurrentStock };
+          const newQuantity = currentQty + inputAmount;
 
-          const payload = { stock: cleanStock, status: newStatus };
-          await axios.put(`${API_BASE_URL}/${record.id}`, payload);
+          // 2. Tự động tính toán lại 3 mức Status mới dựa trên quantity mới
+          let newStatus = "IN STOCK";
+          if (newQuantity === 0) {
+            newStatus = "OUT OF STOCK";
+          } else if (newQuantity <= 20) {
+            newStatus = "LOW STOCK";
+          }
 
+          // Tạo payload phẳng gửi lên Backend
+          const payload = { quantityToAdd: inputAmount };
+
+          // Gọi API cập nhật restock theo trường _id của MongoDB
+          await axios.put(`${API_BASE_URL}/${record._id}`, payload);
+
+          // 3. Cập nhật Real-time lại State hiển thị trên Table giao diện (Cấu trúc phẳng)
           setData((prev) =>
             prev.map((item) =>
-              item.id === record.id ? { ...item, stock: cleanStock, status: newStatus } : item
+              item._id === record._id
+                ? { ...item, quantity: newQuantity, status: newStatus }
+                : item
             )
           );
-          message.success(`Goods received successfully! Main warehouse: ${newCurrentStock}`);
+
+          message.success(`Goods received successfully! Total stock: ${newQuantity} 🎉`);
         } catch (error) {
-          console.error(error);
+          console.error("Single restock error:", error);
           message.error("Error during goods receiving!");
         } finally {
           setLoading(false);
@@ -442,11 +503,13 @@ const Inventory = () => {
   const handleEdit = (record) => {
     setEditingProduct(record);
     form.setFieldsValue({
-      ...record,
-      stock: {
-        capacity: record.stock?.capacity,
-        currentstock: record.stock?.currentstock
-      }
+      _id: record._id,
+      name: record.name,
+      price: record.price,
+      category: record.category,
+      quantity: record.quantity,
+      status: record.status,
+      image: record.image
     });
     setIsEditModalOpen(true);
   };
@@ -456,49 +519,62 @@ const Inventory = () => {
       const values = await form.validateFields();
       setLoading(true);
 
-      const { stock: formStock, image, ...otherValues } = values;
-      const initialStatus = !editingProduct
-        ? getStatusByStock(formStock.currentstock || 0, formStock.capacity || 100)
-        : editingProduct.status;
-
-      const payload = {
-        ...otherValues,
-        image: image || (editingProduct?.image || "default.jpg"),
-        stock: {
-          capacity: formStock.capacity,
-          currentstock: editingProduct ? editingProduct.stock.currentstock : (formFormStock.currentstock || 0)
-        },
-        status: editingProduct ? editingProduct.status : initialStatus,
-      };
-
-      if (payload.category === "CAKE" && !editingProduct) {
-        payload.createdAt = new Date().toISOString().split('T')[0];
-      }
+      console.log("Sản phẩm đang chuẩn bị sửa:", editingProduct);
 
       if (editingProduct) {
-        await axios.put(`${API_BASE_URL}/${editingProduct.id}`, payload);
+        const payload = {
+          name: values.name,
+          price: Number(values.price),
+          category: values.category,
+          quantity: Number(values.quantity),
+          status: values.status,
+          image: values.image || editingProduct.image || "default.jpg"
+        };
+
+        await axios.put(`${API_BASE_URL}/${editingProduct._id}`, payload);
+
+
         setData(prev => prev.map(item =>
-          item.id === editingProduct.id ? { ...item, ...payload, id: item.id } : item
+          item._id === editingProduct._id ? { ...item, ...payload } : item
         ));
-        message.success("Product updated successfully!");
+
+        message.success("Product updated successfully! ❤️");
       } else {
+        const payload = {
+          name: values.name,
+          price: Number(values.price),
+          category: values.category,
+          quantity: Number(values.quantity),
+          status: values.status || "IN STOCK",
+          image: values.image || "default.jpg"
+        };
+
         const response = await axios.post(API_BASE_URL, payload);
-        const newProd = response.data;
-        setData(prev => [newProd, ...prev]);
-        message.success("New product added successfully!");
+        const newProd = response.data?.data;
+
+        if (newProd) {
+          setData(prev => [newProd, ...prev]);
+          message.success("New product added successfully! 🎉");
+        } else {
+          message.error("Failed to create product");
+        }
       }
+
       setIsEditModalOpen(false);
       form.resetFields();
       setEditingProduct(null);
+
     } catch (error) {
-      console.error("Error", error);
-      message.error("Please double-check the input fields!");
+      console.error("Error Detail:", error);
+
+      const errorMsg = error.response?.data?.message || "Please double-check the input fields!";
+      message.error(errorMsg);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (record) => {
     Modal.confirm({
       title: 'Are you sure you want to delete this product?',
       content: 'This action cannot be undone.',
@@ -507,8 +583,8 @@ const Inventory = () => {
       cancelText: 'Cancel',
       onOk: async () => {
         try {
-          await axios.delete(`${API_BASE_URL}/${id}`);
-          setData(prev => prev.filter(item => item.id !== id));
+          await axios.delete(`${API_BASE_URL}/${record._id}`);
+          setData(prev => prev.filter(item => item._id !== record._id));
           message.success("Product disabled successfully!");
         } catch (error) {
           console.error(error);
@@ -539,14 +615,7 @@ const Inventory = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-
-        <div className="p-5 flex flex-col gap-2 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.04)] border border-gray-100">
-          <p className="text-xs font-bold tracking-wider text-gray-400 m-0">TOTAL SKU</p>
-          <div className="flex justify-between items-center mt-1">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 m-0">{data.length}</h2>
-          </div>
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
 
         <div className="p-5 flex flex-col gap-2 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.04)] border border-gray-100">
           <p className="text-xs font-bold tracking-wider text-gray-400 m-0">LOW STOCK ALERTS</p>
@@ -563,23 +632,35 @@ const Inventory = () => {
           </div>
         </div>
 
-        <div className="p-5 flex flex-col gap-2 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.04)] border border-gray-100">
-          <p className="text-xs font-bold tracking-wider text-gray-400 m-0">BAKERY FRESHNESS</p>
+        <div className="p-5 flex flex-col gap-2 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.04)] border border-gray-100 transition-all duration-300 hover:shadow-md">
+
+          <p className="text-xs font-bold tracking-wider text-gray-400 m-0 uppercase">BAKERY FRESHNESS</p>
+
           <div className="flex justify-between items-center gap-3 mt-1 min-w-0">
-            <h2 className="text-xl sm:text-2xl font-bold m-0 shrink-0" style={{ color: getFreshnessColor(avgFreshness) }}>
+
+            <h2 className="text-xl sm:text-2xl font-black m-0 shrink-0 transition-colors duration-300" style={{ color: getFreshnessColor(avgFreshness) }}>
               {avgFreshness}%
             </h2>
+
+
             <div className="w-full max-w-35 sm:max-w-45">
               <Progress
                 percent={avgFreshness}
                 strokeColor={getFreshnessColor(avgFreshness)}
                 showInfo={false}
-                className="m-0"
-                size={{ strokeWidth: 6 }}
+                className="m-0 w-full"
+                strokeWidth={6}
+                strokeLinecap="round "
               />
             </div>
-            <span className="text-base sm:text-lg font-bold shrink-0" style={{ color: getFreshnessColor(avgFreshness) }}>
-              {avgFreshness > 30 ? "✔" : "⚠"}
+
+
+            <span className="text-xs font-extrabold shrink-0 px-2 py-0.5 rounded-md uppercase tracking-wider transition-colors duration-300"
+              style={{
+                color: getFreshnessColor(avgFreshness),
+                backgroundColor: `${getFreshnessColor(avgFreshness)}15`
+              }}>
+              {avgFreshness > 70 ? "Fresh" : avgFreshness > 30 ? "Good" : "Stale"}
             </span>
           </div>
         </div>
@@ -600,7 +681,7 @@ const Inventory = () => {
       <div className="bg-white rounded-xl p-4 sm:p-6 shadow-[0_4px_12px_rgba(0,0,0,0.02)] border border-gray-100 relative flex flex-col gap-5">
         <Spin spinning={loading}>
           <Table
-            rowKey="id"
+            rowKey="_id"
             rowClassName={(record) => record.disabled ? 'row-disabled' : ''}
             columns={columns}
             dataSource={data}
@@ -615,12 +696,16 @@ const Inventory = () => {
           />
 
           <Modal
-            title={<span className="text-base sm:text-lg font-bold text-gray-800">{editingProduct ? `Edit Product: ${editingProduct.name}` : "Add New Product"}</span>}
+            title={
+              <span className="text-base sm:text-lg font-bold text-gray-800">
+                {editingProduct ? `Edit Product: ${editingProduct.name}` : "Add New Product"}
+              </span>
+            }
             open={isEditModalOpen}
             onCancel={() => setIsEditModalOpen(false)}
             onOk={handleSaveEdit}
             confirmLoading={loading}
-            okText="Save Changes"
+            okText={editingProduct ? "Save Changes" : "Add Product"}
             cancelText="Cancel"
             width={650}
             className="max-w-[calc(100vw-32px)] sm:max-w-162.5"
@@ -632,7 +717,7 @@ const Inventory = () => {
                   <Avatar
                     size={90}
                     shape="square"
-                    src={`/product/${(category || 'drink').toLowerCase()}/${form.getFieldValue('image')}`}
+                    src={`/product/${(form.getFieldValue('category') || 'DRINK').toLowerCase()}/${form.getFieldValue('image') || ''}`}
                     icon={<PictureOutlined />}
                     className="rounded-lg! border border-gray-100 bg-white shadow-sm object-cover"
                   />
@@ -656,57 +741,73 @@ const Inventory = () => {
                 </div>
               </div>
 
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1">
-                <Form.Item
-                  name="id"
-                  label={<span className="font-semibold text-gray-600 text-sm">Stock Keeping Unit (SKU)</span>}
-                  rules={[{ required: !editingProduct, message: 'Please enter the code!' }]}
-                >
-                  <Input placeholder="e.g. BC-011" disabled={!!editingProduct} className="py-2" />
-                </Form.Item>
+
+                {editingProduct && (
+                  <Form.Item
+                    name="_id"
+                    label={<span className="font-semibold text-gray-600 text-sm">Product ID</span>}
+                  >
+                    <Input disabled className="py-2 bg-gray-100" />
+                  </Form.Item>
+                )}
 
                 <Form.Item
                   name="name"
                   label={<span className="font-semibold text-gray-600 text-sm">Product Name</span>}
                   rules={[{ required: true, message: 'Product name is required!' }]}
                 >
-                  <Input className="py-2" />
+                  <Input placeholder="e.g., Matcha Latte" className="py-2" />
                 </Form.Item>
+
 
                 <Form.Item
                   name="price"
-                  label={<span className="font-semibold text-gray-600 text-sm">Price ($)</span>}
+                  label={<span className="font-semibold text-gray-600 text-sm">Price (VND)</span>}
                   rules={[{ required: true, message: 'Price is required!' }]}
                 >
-                  <InputNumber min={0} className="w-full py-0.5 rounded-md" />
+                  <InputNumber
+                    min={0}
+                    className="w-full py-0.5 rounded-md"
+                    formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                    parser={value => value.replace(/\$\s?|(,*)/g, '')}
+                    placeholder="e.g., 45,000"
+                  />
                 </Form.Item>
 
-                <Form.Item name="category" label={<span className="font-semibold text-gray-600 text-sm">Category</span>}>
-                  <Select className="h-10 rounded-md">
+                <Form.Item
+                  name="category"
+                  label={<span className="font-semibold text-gray-600 text-sm">Category</span>}
+                  rules={[{ required: true, message: 'Category is required!' }]}
+                >
+                  <Select className="h-10 rounded-md" placeholder="Select category">
                     <Select.Option value="DRINK">DRINK</Select.Option>
                     <Select.Option value="CAKE">CAKE</Select.Option>
                   </Select>
                 </Form.Item>
 
-                <Form.Item name={['stock', 'capacity']} label={<span className="font-semibold text-gray-600 text-sm">Max Capacity</span>}>
-                  <InputNumber min={1} className="w-full py-0.5 rounded-md" />
-                </Form.Item>
-
-                <Form.Item name={['stock', 'currentstock']} label={<span className="font-semibold text-gray-600 text-sm">Initial Stock</span>}>
-                  <InputNumber min={0} disabled={!!editingProduct} className="w-full py-0.5 rounded-md" />
-                </Form.Item>
-              </div>
-
-              {category === 'CAKE' && (
                 <Form.Item
-                  name="expiryDate"
-                  label={<span className="font-semibold text-gray-600 text-sm">Expiry Date</span>}
-                  rules={[{ required: true, message: 'Expiry date is required for cakes!' }]}
-                  className="mt-2"
+                  name="quantity"
+                  label={<span className="font-semibold text-gray-600 text-sm">Stock Quantity</span>}
+                  rules={[{ required: true, message: 'Quantity is required!' }]}
                 >
-                  <DatePicker className="w-full py-2 rounded-md" placeholder="Select expiry date" />
+                  <InputNumber min={0} max={editingProduct ? undefined : 100} placeholder="e.g., 50 (Max 100 for new product)" className="w-full py-0.5 rounded-md" />
                 </Form.Item>
-              )}
+
+                <Form.Item
+                  name="status"
+                  label={<span className="font-semibold text-gray-600 text-sm">Inventory Status</span>}
+                  initialValue="IN STOCK"
+                >
+                  <Select className="h-10 rounded-md">
+                    <Select.Option value="IN STOCK">IN STOCK</Select.Option>
+                    <Select.Option value="LOW STOCK">LOW STOCK</Select.Option>
+                    <Select.Option value="OUT OF STOCK">OUT OF STOCK</Select.Option>
+                  </Select>
+                </Form.Item>
+
+              </div>
             </Form>
           </Modal>
         </Spin>

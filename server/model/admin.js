@@ -29,8 +29,9 @@ const adminSchema = new mongoose.Schema({
         default: ""
     },
     status: {
-        type: String,
-        default: "active"
+        type: String, 
+        enum: ["online", "offline"], 
+        default: "offline" 
     },
     refreshToken: {
         type: String,
