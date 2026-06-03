@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'
-import { DownloadOutlined, UserAddOutlined, TeamOutlined, TagOutlined, DollarOutlined, FireOutlined, FunnelPlotOutlined, MoreOutlined, ProfileOutlined, DeleteOutlined, AuditOutlined } from '@ant-design/icons'
+import React, { useState, useEffect, useMemo } from 'react'
+import { DownloadOutlined, UserAddOutlined, TeamOutlined, TagOutlined, TrophyOutlined, DollarOutlined, FireOutlined, FunnelPlotOutlined, MoreOutlined, ProfileOutlined, DeleteOutlined, AuditOutlined } from '@ant-design/icons'
 import { Modal, Table, Tag, Avatar, Space, Button, Dropdown, Spin, message } from 'antd'
 import axios from 'axios'
 // import {customerSource} from './data'
@@ -7,7 +7,7 @@ import axios from 'axios'
 const Customers = () => {
 
     const [data, setData] = useState([]);
-    const [dataMerge, setDataMerge] = useState([]);
+    const [dataUser, setdataUser] = useState([]);
     const [dataOrder, setdataOrder] = useState([])
     const [loading, setLoading] = useState(true)
     const [filterStatus, setFilterStatus] = useState('ALL');
@@ -26,7 +26,15 @@ const Customers = () => {
                 const ordersResult = resOrders.data?.data;
 
                 const mixedUsers = usersResult.map(user => {
-                    const matchingOrders = ordersResult.filter(order => order.customerId === user.id);
+
+                    const userIdStr = user.id ? String(user.id) : '';
+                    const matchingOrders = ordersResult.filter(order => {
+                        if (!order.customerId) return false;
+
+                        const orderCustomerIdStr = String(order.customerId);
+
+                        return orderCustomerIdStr === userIdStr;
+                    });
 
                     return {
                         ...user,
@@ -35,10 +43,10 @@ const Customers = () => {
                 });
 
                 if (mixedUsers && Array.isArray(mixedUsers)) {
-                    setDataMerge(mixedUsers);
+                    setdataUser(mixedUsers);
                 } else {
-                    console.log("Cấu trúc dữ liệu UserMerge  không hợp lệ!");
-                    setDataMerge([]);
+                    console.log("Cấu trúc dữ liệu dataUser  không hợp lệ!");
+                    setdataUser([]);
                 }
 
                 if (usersResult && Array.isArray(usersResult)) {
@@ -62,7 +70,7 @@ const Customers = () => {
                 message.error("Không thể kết nối đến máy chủ dữ liệu!");
 
                 setData([]);
-                setDataMerge([]);
+                setdataUser([]);
                 setdataOrder([]);
             } finally {
                 setLoading(false);
@@ -78,8 +86,8 @@ const Customers = () => {
     };
 
     const filteredData = filterStatus === 'ALL'
-        ? dataMerge
-        : dataMerge.filter(item => item.status.toLowerCase() === filterStatus.toLowerCase());
+        ? dataUser
+        : dataUser.filter(item => item.status.toLowerCase() === filterStatus.toLowerCase());
 
 
     const handleViewProfile = (user) => {
@@ -109,7 +117,7 @@ const Customers = () => {
                         <p className="flex items-center gap-2 m-0">
                             <span className="font-semibold text-gray-500 w-36 sm:w-40 shrink-0">⚽ Total orders:</span>
                             <span className="text-gray-800 font-medium flex items-center gap-1.5">
-                                {user.length} <AuditOutlined className="text-gray-400" />
+                                {user.history_orders.length} <AuditOutlined className="text-gray-400" />
                             </span>
                         </p>
                         <p className="flex items-center gap-2 m-0">
@@ -142,21 +150,22 @@ const Customers = () => {
     };
 
 
-    const handleDeleteUser = (id) => {
+    const handleDeleteUser = (record) => {
         Modal.confirm({
             title: 'Xác nhận xóa người dùng?',
             content: 'Dữ liệu của người dùng này sẽ bị xóa vĩnh viễn khỏi hệ thống MongoDB.',
             okText: 'Xóa ngay lập tức',
             okType: 'danger',
             cancelText: 'Hủy bỏ',
+            centered: true,
             onOk: async () => {
                 try {
                     setLoading(true);
-                    const response = await axios.delete(`http://localhost:8080/users/${id}`);
+                    const response = await axios.delete(`http://localhost:8080/users/${record._id}`);
 
-                    if (response.data.success || response.status === 200) {
+                    if (response.data?.success || response.status === 200) {
 
-                        setDataUsers(prev => prev.filter(item => item.id !== id));
+                        setdataUser(prev => prev.filter(item => item._id !== record._id));
 
                         message.success("Xóa người dùng thành công!");
                     } else {
@@ -172,11 +181,48 @@ const Customers = () => {
         });
     };
 
+    const activeLoyaltyCount = useMemo(() => {
+        if (!Array.isArray(dataUser) || dataUser.length === 0) return 0;
+
+        const loyaltyMembers = dataUser.filter(user => {
+            const ordersCount = (user.history_orders || []).length;
+            return ordersCount > 0;
+        });
+
+        return loyaltyMembers.length;
+    }, [dataUser]);
+
+    const formatShortVND = (value) => {
+        if (!value || isNaN(value)) return "0 ₫";
+
+        if (value >= 1_000_000) {
+            return `${(value / 1_000_000).toFixed(1)}M ₫`;
+        } else if (value >= 1_000) {
+            return `${(value / 1_000).toFixed(0)}K ₫`;
+        }
+
+        return `${value} ₫`;
+    };
+
+    const topSpender = useMemo(() => {
+        if (!Array.isArray(dataUser) || dataUser.length === 0) return null;
+
+        return dataUser.reduce((highest, currentUser) => {
+            const currentTotal = (currentUser.history_orders || []).reduce((sum, order) => sum + (order.totalPrice || 0), 0);
+            currentUser.totalSpent = currentTotal; 
+
+            if (!highest) return currentUser;
+
+            const highestTotal = (highest.history_orders || []).reduce((sum, order) => sum + (order.totalPrice || 0), 0);
+            return currentTotal > highestTotal ? currentUser : highest;
+        }, null);
+    }, [dataUser]);
+
 
     const columns = [
         {
             title: 'CUSTOMER',
-            width: 200, // Thu nhỏ một chút để tối ưu không gian hiển thị
+            width: 200,
             key: 'users',
             render: (_, record) => (
                 <div className="flex items-center gap-3">
@@ -188,10 +234,10 @@ const Customers = () => {
                     />
                     <div className="min-w-0">
                         <p className="font-bold text-gray-800 m-0 truncate text-sm sm:text-base">
-                            {record.full_name}
+                            {record.username}
                         </p>
                         <p className="text-xs text-gray-400 m-0 mt-0.5 font-medium">
-                            ID: {record.id}
+                            ID: {record._id}
                         </p>
                     </div>
                 </div>
@@ -210,28 +256,28 @@ const Customers = () => {
         },
         {
             title: 'TOTAL ORDERS',
-            width: 180,
+            width: 160,
             dataIndex: 'history_orders',
             key: 'history_orders',
             render: (history_orders) => {
                 const ordersCount = (history_orders || []).length;
 
                 let toptier = "New Member";
-                let badgeClass = "text-gray-500 bg-gray-100 border-gray-200";
+                let badgeClass = "text-gray-500 bg-gray-50 border-gray-200";
 
                 if (ordersCount > 0 && ordersCount <= 30) {
                     toptier = "Occasional";
                     badgeClass = "text-orange-600 bg-orange-50 border-orange-200";
-                } else if (ordersCount <= 60 && ordersCount > 30) {
+                } else if (ordersCount > 30 && ordersCount <= 60) {
                     toptier = "High Frequency";
                     badgeClass = "text-green-600 bg-green-50 border-green-200";
                 } else if (ordersCount > 60) {
                     toptier = "Top Tier";
-                    badgeClass = "text-red-600 bg-red-50 border-red-200";
+                    badgeClass = "text-red-600 bg-red-50 border-red-200 font-bold";
                 }
 
                 return (
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold border uppercase tracking-wider ${badgeClass}`}>
+                    <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold border uppercase tracking-wider ${badgeClass}`}>
                         {toptier}
                     </span>
                 );
@@ -247,9 +293,10 @@ const Customers = () => {
                 const point = ordersCount * 10;
 
                 return (
-                    <span className="font-bold text-orange-500 text-sm sm:text-base flex items-center gap-1">
-                        <span>⭐</span> {point.toLocaleString()}
-                    </span>
+                    <div className="flex items-center gap-1.5 font-bold text-sm text-gray-800">
+                        <span className="text-base text-amber-500">⭐</span>
+                        <span>{point}</span>
+                    </div>
                 );
             }
         },
@@ -258,14 +305,23 @@ const Customers = () => {
             width: 140,
             key: 'status',
             dataIndex: 'status',
-            render: (status) => (
-                <Tag
-                    color={status === 'online' ? 'success' : 'error'}
-                    className="rounded-full px-3 py-0.5 font-medium uppercase text-[11px] tracking-wider"
-                >
-                    {status}
-                </Tag>
-            )
+            render: (status) => {
+
+                const currentStatus = status || 'offline';
+                const isOnline = currentStatus === 'online';
+
+                return (
+                    <Tag
+                        color={isOnline ? 'success' : 'error'}
+                        className={`rounded-full px-3 py-0.5 font-bold uppercase text-[11px] tracking-wider border-none shadow-xs ${isOnline ? 'animate-pulse' : ''
+                            }`}
+                    >
+                        {/* Thêm một dấu chấm tròn nhỏ tinh tế trước chữ */}
+                        <span className="inline-block w-1.5 h-1.5 rounded-full mr-1.5 bg-current" />
+                        {currentStatus}
+                    </Tag>
+                );
+            }
         },
         {
             title: 'ACTIONS',
@@ -338,7 +394,7 @@ const Customers = () => {
                         <TeamOutlined />
                     </div>
                     <div>
-                        <h2 className="text-xl sm:text-2xl font-bold text-gray-800 m-0">{data.length}</h2>
+                        <h2 className="text-xl sm:text-2xl font-bold text-gray-800 m-0">{dataUser.length}</h2>
                         <p className="text-[11px] font-bold tracking-wider text-gray-400 m-0 mt-0.5">TOTAL CUSTOMERS</p>
                     </div>
                 </div>
@@ -349,20 +405,35 @@ const Customers = () => {
                         <TagOutlined />
                     </div>
                     <div>
-                        <h2 className="text-xl sm:text-2xl font-bold text-gray-800 m-0">842</h2>
+                        <h2 className="text-xl sm:text-2xl font-bold text-gray-800 m-0">{activeLoyaltyCount}</h2>
                         <p className="text-[11px] font-bold tracking-wider text-gray-400 m-0 mt-0.5">LOYALTY MEMBERS</p>
                     </div>
                 </div>
 
                 {/* Card 3: LTV Revenue */}
-                <div className="p-5 flex items-center gap-4 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-gray-100">
-                    <div className="p-3 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center text-xl border border-emerald-100 shrink-0">
-                        <DollarOutlined />
+                <div className="p-5 flex items-center gap-4 bg-linear-to-br from-amber-50 to-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-amber-100 transition-all duration-300 hover:shadow-md relative overflow-hidden group">
+                    {/* Biểu tượng Vương miện / Cúp VIP thay cho nút Dollar */}
+                    <div className="p-3 bg-amber-500 text-white rounded-lg flex items-center justify-center text-xl shrink-0 shadow-sm shadow-amber-200">
+                        {/* Nhế import TrophyOutlined hoặc CrownOutlined từ @ant-design/icons nha Hòa */}
+                        <TrophyOutlined className="animate-bounce" style={{ animationDuration: '3s' }} />
                     </div>
-                    <div>
-                        <h2 className="text-xl sm:text-2xl font-bold text-gray-800 m-0">$53.2K</h2>
-                        <p className="text-[11px] font-bold tracking-wider text-gray-400 m-0 mt-0.5">LTV REVENUE</p>
+
+                    <div className="min-w-0 flex-1">
+                        {/* Số tiền kỷ lục được rút gọn (Ví dụ: 2.4M ₫) */}
+                        <h2 className="text-xl sm:text-2xl font-black text-amber-600 m-0 truncate" title={new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(topSpender?.totalSpent || 0)}>
+                            {topSpender?.totalSpent ? formatShortVND(topSpender.totalSpent) : "0 ₫"}
+                        </h2>
+
+                        {/* Hiển thị Tên người nắm giữ kỷ lục */}
+                        <p className="text-[11px] font-bold tracking-wider text-gray-500 m-0 mt-0.5 uppercase truncate">
+                            👑 {topSpender?.full_name || topSpender?.username || "CHƯA CÓ VIP"}
+                        </p>
                     </div>
+
+                    {/* Nhãn nhỏ góc Card tăng độ xịn xò */}
+                    <span className="absolute -top-1 -right-1 bg-amber-500 text-white font-extrabold text-[8px] px-2 py-1 rounded-bl-lg uppercase tracking-widest scale-90">
+                        TOP VIP
+                    </span>
                 </div>
 
                 {/* Card 4: Retention Rate */}

@@ -1,16 +1,17 @@
 // src/pages/auth/Register.jsx
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import axios from 'axios';
 
 const Register = () => {
   const [formData, setFormData] = useState({
     username: '',
-    full_name: '',
+    name: '',
     email: '',
     password: '',
     confirmPassword: '',
-    phone: ''
+    phone: '',
+    avatar: 'default-avatar.jpg'
   });
 
   const [error, setError] = useState('');
@@ -18,8 +19,8 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const { login } = useAuth();
   const navigate = useNavigate();
+  const API_BASE_URL = 'http://localhost:8080';
 
   const handleChange = (e) => {
     setFormData({
@@ -45,42 +46,24 @@ const Register = () => {
     setLoading(true);
 
     try {
-      const newUser = {
+      // Register user with real database API
+      const response = await axios.post(`${API_BASE_URL}/users/register`, {
         username: formData.username,
-        full_name: formData.full_name,
+        name: formData.name,
         email: formData.email,
-        password_display: formData.password,
+        password: formData.password,
         phone: formData.phone || "",
-        role: "customer",
-        status: "online",
-        avatar: "default-avatar.jpg",
-        created_at: new Date().toISOString(),
-        last_active: "Just now",
-        order: 0,
-        cart: [],
-        history_orders: []
-      };
-
-      const res = await fetch("https://69cfba0fa4647a9fc675e215.mockapi.io/users", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newUser),
+        avatar: formData.avatar
       });
 
-      if (!res.ok) throw new Error("Registration failed");
-
-      const createdUser = await res.json();
-
-      alert("Account created successfully! Logging you in...");
-
-      // Auto login after registration
-      await login(createdUser.email, createdUser.password_display);
-
-      navigate('/');
+      if (response.data) {
+        alert("Account created successfully! Please log in.");
+        navigate('/login');
+      }
 
     } catch (err) {
       console.error(err);
-      setError(err.message || "Registration failed. Email or username may already exist.");
+      setError(err.response?.data?.message || err.message || "Registration failed. Email or username may already exist.");
     } finally {
       setLoading(false);
     }
@@ -136,8 +119,8 @@ const Register = () => {
               <label className="block mb-1 text-xs font-semibold text-gray-500">FULL NAME</label>
               <input
                 type="text"
-                name="full_name"
-                value={formData.full_name}
+                name="name"
+                value={formData.name}
                 onChange={handleChange}
                 required
                 className="w-full px-4 py-3 text-gray-900 bg-gray-100 border border-gray-200 rounded-2xl focus:border-primary-500"

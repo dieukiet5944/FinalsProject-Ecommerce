@@ -10,4 +10,6 @@ adminRouter.post("/register", adminController.registerAdmin );
 
 adminRouter.post("/login", checkloginAD, adminController.loginAdmin )
 
+adminRouter.post('/:id/logout', adminController.logoutAdmin);
+
 export default adminRouter

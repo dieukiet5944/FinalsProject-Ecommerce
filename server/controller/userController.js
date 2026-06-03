@@ -72,6 +72,7 @@ const userControllers = {
                 email: user.email
             });
 
+            user.status = "online";
 
             user.refreshToken = refreshToken;
 
@@ -97,6 +98,38 @@ const userControllers = {
                 message: "Internal Server Error",
                 error: error.message
             });
+        }
+    },
+    logout: async (req, res) => {
+        try {
+            const { id } = req.params;
+
+            if (!id || id === 'undefined') {
+                id = req.body.userId;
+            }
+
+            if (!id) {
+                return res.status(400).send({
+                    success: false,
+                    message: "Không nhận diện được ID của User để thực hiện đăng xuất."
+                });
+            }
+
+            const updateUser = await UserModel.findByIdAndUpdate(id, { status: "offline" }, { new: true });
+
+            if (!updatedUser) {
+                return res.status(404).send({
+                    success: false,
+                    message: "Tài khoản User không tồn tại trong hệ thống."
+                });
+            }
+
+            res.status(200).send({
+                success: true,
+                message: "Đăng xuất thành công!"
+            });
+        } catch (error) {
+            res.status(500).send({ success: false, message: error.message });
         }
     },
     getUsers: async (req, res) => {
@@ -164,7 +197,7 @@ const userControllers = {
             const updatedUser = await User.findByIdAndUpdate(
                 userId,
                 { $set: cleanData },
-                { new: true, runValidators: true } 
+                { new: true, runValidators: true }
             );
 
             if (!updatedUser) {
@@ -179,6 +212,35 @@ const userControllers = {
         } catch (error) {
             return res.status(500).json({
                 message: "Lỗi xử lý cập nhật trên Server",
+                error: error.message
+            });
+        }
+    },
+
+    deleteUser: async (req, res) => {
+        try {
+            const { id } = req.params;
+
+            const user = await UserModel.findByIdAndDelete(id);
+
+            if (!user) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Không tìm thấy user với ID này trên hệ thống."
+                });
+            }
+
+            res.status(200).json({
+                success: true,
+                message: "Xóa user thành công!",
+                data: user
+            });
+
+        } catch (error) {
+            console.log("Loi server khi xoa user:", error.message);
+            res.status(500).json({
+                success: false,
+                message: "Internal Server Error",
                 error: error.message
             });
         }

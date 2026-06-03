@@ -43,6 +43,7 @@ const adminController = {
                 email: admin.email
             });
 
+            admin.status = "online";
 
             admin.refreshToken = refreshToken;
 
@@ -70,6 +71,39 @@ const adminController = {
         }
     },
 
+    logoutAdmin: async (req, res) => {
+        try {
+            const { id } = req.params;
+
+            if (!id || id === 'undefined') {
+                id = req.body.userId;
+            }
+
+            if (!id) {
+                return res.status(400).send({
+                    success: false,
+                    message: "Không nhận diện được ID của Admin để thực hiện đăng xuất."
+                });
+            }
+
+            const updatedAdmin = await AdminModel.findByIdAndUpdate(id, { status: "offline" }, { new: true });
+
+            if (!updatedAdmin) {
+                return res.status(404).send({
+                    success: false,
+                    message: "Tài khoản Admin không tồn tại trong hệ thống."
+                });
+            }
+
+            res.status(200).send({
+                success: true,
+                message: "Đăng xuất thành công!"
+            });
+        } catch (error) {
+            res.status(500).send({ success: false, message: error.message });
+        }
+    },
+
     registerAdmin: async (req, res) => {
         try {
             const { email, name, phoneNumber, password } = req.body
@@ -79,7 +113,7 @@ const adminController = {
                     message: "This field required!!!"
                 })
             }
-            
+
 
             const admin = await AdminModel.findOne({ email });
 
