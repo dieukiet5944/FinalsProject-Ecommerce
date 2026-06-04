@@ -2,6 +2,9 @@ import React, { useState, useEffect, useMemo } from 'react'
 import { DownloadOutlined, UserAddOutlined, TeamOutlined, TagOutlined, TrophyOutlined, DollarOutlined, FireOutlined, FunnelPlotOutlined, MoreOutlined, ProfileOutlined, DeleteOutlined, AuditOutlined } from '@ant-design/icons'
 import { Modal, Table, Tag, Avatar, Space, Button, Dropdown, Spin, message } from 'antd'
 import axios from 'axios'
+
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 // import {customerSource} from './data'
 
 const Customers = () => {
@@ -209,7 +212,7 @@ const Customers = () => {
 
         return dataUser.reduce((highest, currentUser) => {
             const currentTotal = (currentUser.history_orders || []).reduce((sum, order) => sum + (order.totalPrice || 0), 0);
-            currentUser.totalSpent = currentTotal; 
+            currentUser.totalSpent = currentTotal;
 
             if (!highest) return currentUser;
 
@@ -217,6 +220,59 @@ const Customers = () => {
             return currentTotal > highestTotal ? currentUser : highest;
         }, null);
     }, [dataUser]);
+
+    const handleExportPDF = () => {
+        // 1. Khởi tạo đối tượng PDF khổ A4, đơn vị tính bằng mm
+        const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+
+        // 2. Thiết lập Tiêu đề chính của file báo cáo
+        doc.setFontSize(18);
+        doc.text("THE CRUMB & BEAN - CUSTOMER REPORT", 14, 20);
+
+        doc.setFontSize(10);
+        doc.text(`Exported date: ${new Date().toLocaleDateString('vi-VN')}`, 14, 26);
+
+        // 3. Định nghĩa cấu trúc Tiêu đề cột cho bảng dữ liệu trong PDF
+        const tableHeaders = [["STT", "Full Name", "Email", "Status", "Total Orders", "LTV Revenue"]];
+
+        // 4. Map mảng dataUser thực tế của Hòa thành các dòng dữ liệu thô (Array of Arrays)
+        const tableRows = (dataUser || []).map((user, index) => {
+            const ordersCount = (user.history_orders || []).length;
+            const totalRevenue = (user.history_orders || []).reduce((sum, order) => sum + (order.totalPrice || 0), 0);
+
+            // Tính toán danh hiệu hạng giống hệt bên ngoài Table Antd của bạn
+            let tier = "New Member";
+            if (ordersCount > 0 && ordersCount <= 30) tier = "Occasional";
+            else if (ordersCount > 30 && ordersCount <= 60) tier = "High Frequency";
+            else if (ordersCount > 60) tier = "Top Tier";
+
+            return [
+                index + 1,
+                user.full_name || user.username || "N/A",
+                user.email || "N/A",
+                tier.toUpperCase(),
+                `${ordersCount} Orders`,
+                new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(totalRevenue)
+            ];
+        });
+
+        // 5. Sử dụng plugin autotable để tự động căn chỉnh và vẽ bảng vào file PDF
+        autoTable(doc, {
+            startY: 32, // Khoảng cách bắt đầu vẽ bảng dưới tiêu đề
+            head: tableHeaders,
+            body: tableRows,
+            theme: 'striped', // Hiệu ứng dòng kẻ sọc xám trắng xen kẽ
+            headStyles: { fillColor: [239, 61, 120] }, // Màu hồng thương hiệu #EF3D78 của bạn
+            styles: { fontSize: 9, cellPadding: 3 },
+            columnStyles: {
+                0: { cellWidth: 12 }, // Cột số thứ tự bóp nhỏ
+                5: { fontStyle: 'bold' } // Cột tổng tiền LTV in đậm
+            }
+        });
+
+        // 6. Kích hoạt trình duyệt tự động tải file xuống máy Admin
+        doc.save("TheCrumbAndBean_Customer_List.pdf");
+    };
 
 
     const columns = [
@@ -379,6 +435,7 @@ const Customers = () => {
                 </div>
 
                 <Button
+                    onClick={handleExportPDF}
                     className="flex! items-center gap-2 px-4 py-2 bg-white border border-[#EF3D78] rounded-md text-[#EF3D78] font-semibold hover:text-white! hover:bg-[#EF3D78]! hover:border-[#EF3D78]! transition-all cursor-pointer shadow-sm w-full sm:w-auto justify-center"
                 >
                     <DownloadOutlined className="text-base" />

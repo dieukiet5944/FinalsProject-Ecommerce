@@ -1,6 +1,7 @@
 import express from 'express'
 import userControllers from '../controller/userController.js'
 import { checkloginUser } from '../middleware/checkLoginuser.js';
+import { checkUpdateUsers } from '../middleware/checkUpdateUsers.js';
 
 const usersRouter = express.Router();
 
@@ -8,7 +9,7 @@ usersRouter.get("/", userControllers.getUsers);
 
 usersRouter.get("/:id", userControllers.getUsersId);
 
-usersRouter.put("/:id", userControllers.putUsersId);
+usersRouter.put("/:id", checkUpdateUsers, userControllers.putUsersId);
 
 usersRouter.post("/register", userControllers.resgisterUser);
 
