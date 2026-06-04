@@ -6,9 +6,9 @@ const adminController = {
     getAdmin: async (req, res) => {
         try {
 
-            const response = await AdminModel.find({});
+            const response = await AdminModel.find();
 
-            if (!response) throw new Error(" Can't get data from database");
+            if (!response || response.length === 0) throw new Error(" Can't get data from database");
 
             return res.status(200).send({
                 success: true,
@@ -57,7 +57,11 @@ const adminController = {
                     admin: {
                         id: admin._id,
                         email: admin.email,
-                        name: admin.name
+                        name: admin.name,
+                        avatar: admin.avatar,
+                        role: admin.role,
+                        createAt: admin.createdAt,
+                        phone: admin.phoneNumber
                     }
                 }
             });
@@ -132,9 +136,8 @@ const adminController = {
                 email,
                 phoneNumber,
                 password: hashingPassword,
-                avatar: "https://link-anh-cua-hoa.png",
+                avatar: "logo-admin.jpg",
                 role: "admin",
-                status: "active"
             })
 
             res.status(201).json({
@@ -207,6 +210,40 @@ const adminController = {
             return res.status(403).json({
                 success: false,
                 message: "Invalid or expired refresh token",
+                error: error.message
+            });
+        }
+    },
+
+    putAdminId: async (req, res) => {
+        try {
+            const { id } = req.params;
+            const updateData = req.body;
+
+            const admin = await AdminModel.findById(id);
+            if (!admin) return res.status(404).json({ message: "Admin not found" });
+
+            if (updateData.currentPassword && updateData.newPassword) {
+                updateData.password = hashingPassword;
+                delete updateData.currentPassword; 
+                delete updateData.newPassword;
+            }
+
+            const updatedAdmin = await AdminModel.findByIdAndUpdate(
+                id,
+                { $set: updateData },
+                { new: true }
+            );
+
+            return res.status(200).json({
+                success: true,
+                message: "Cập nhật thành công!",
+                data: updatedAdmin
+            });
+
+        } catch (error) {
+            return res.status(500).json({
+                message: "Lỗi xử lý cập nhật trên Server",
                 error: error.message
             });
         }

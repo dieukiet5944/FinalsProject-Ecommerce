@@ -194,7 +194,7 @@ const userControllers = {
 
             const cleanData = req.validatedUpdateData;
 
-            const updatedUser = await User.findByIdAndUpdate(
+            const updatedUser = await UserModel.findByIdAndUpdate(
                 userId,
                 { $set: cleanData },
                 { new: true, runValidators: true }

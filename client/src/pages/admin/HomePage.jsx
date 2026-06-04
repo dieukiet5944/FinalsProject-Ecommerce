@@ -70,15 +70,13 @@ const HomePage = () => {
     useEffect(() => {
         const getData = async () => {
             try {
-                const response = await axios.get("http://localhost:8080/secret-key/admin");
-                const result = response.data
+                const response = localStorage.getItem("adminInfo")
+                if (response) {
+                    const currentAdmin = JSON.parse(response);
 
-                if (result && result.success && Array.isArray(result.data)) {
-                    setAdmin(result.data);
-                    console.log("Danh sách tài khoản Admin đã lấy về thành công:", result.data);
-                } else {
-                    console.error("The API structure has changed; the admin array is not found!");
-                    setAdmin([]);
+                    console.log("👉 ĐÂY LÀ OBJECT ADMIN CỦA BẠN:", currentAdmin);
+
+                    setAdmin(currentAdmin);
                 }
             } catch (error) {
                 console.error("Data retrieval error:", error);
@@ -93,9 +91,9 @@ const HomePage = () => {
             title: <span className="font-bold text-gray-800">Confirm Logout</span>,
             content: "Are you sure you want to sign out of the Admin Dashboard?",
             okText: 'Logout',
-            okType: 'danger', 
+            okType: 'danger',
             cancelText: 'Cancel',
-            centered: true, 
+            centered: true,
             onOk: async () => {
                 try {
                     const storedAdmin = JSON.parse(localStorage.getItem('adminInfo'));
@@ -107,7 +105,7 @@ const HomePage = () => {
                     }
 
                     localStorage.removeItem('adminInfo');
-                    localStorage.removeItem('token'); 
+                    localStorage.removeItem('token');
 
                     message.success("Logged out successfully! See you again. 👋");
 
@@ -244,13 +242,12 @@ const HomePage = () => {
                 </div>
 
                 <div className="p-4 border-t border-gray-100 bg-gray-50/50 flex items-center gap-3">
-                    <img src="../src/assets/logo-admin.jpg" alt="avatar" className="w-11 h-11 rounded-xl object-cover border border-gray-200" />
-                    {admin.map((item, index) => (
-                        <div key={item.id || index} className="min-w-0">
-                            <h3 className="font-bold text-gray-800 text-sm m-0 truncate">{item.userName}</h3>
-                            <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider m-0 mt-0.5 truncate">{item.role}</p>
+                    <img src={`/product/adminavt/${admin.avatar}`} alt="avatar" className="w-11 h-11 rounded-xl object-cover border border-gray-200" />
+                   
+                        <div key={admin.id} className="min-w-0">
+                            <h3 className="font-bold text-gray-800 text-sm m-0 truncate">{admin.name}</h3>
+                            <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider m-0 mt-0.5 truncate">{admin.role}</p>
                         </div>
-                    ))}
                 </div>
             </div>
 
@@ -311,7 +308,7 @@ const HomePage = () => {
                     </div>
 
                     <div className="flex items-center gap-3 pl-4 border-l border-gray-200 shrink-0">
-                        <img src="../src/assets/logo-admin.jpg" alt="avatar" className="w-9 h-9 rounded-lg object-cover hidden sm:block border border-gray-100" />
+                        <img src={`/product/adminavt/${admin.avatar}`} alt="avatar" className="w-9 h-9 rounded-lg object-cover hidden sm:block border border-gray-100" />
                         <Button
                             type="text"
                             shape="circle"
@@ -395,7 +392,7 @@ const HomePage = () => {
                 </div>
 
                 <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-100 bg-gray-50 flex items-center gap-3">
-                    <img src="../src/assets/logo-admin.jpg" alt="avatar" className="w-10 h-10 rounded-xl object-cover shrink-0" />
+                    <img src={`/product/adminavt/${admin?.avatar}`} alt="avatar" className="w-10 h-10 rounded-xl object-cover shrink-0" />
                     {admin && admin.length > 0 ? (
                         <div className="min-w-0 flex-1">
                             <h4 className="font-bold text-gray-800 text-sm m-0 truncate">

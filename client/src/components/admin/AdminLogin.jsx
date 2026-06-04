@@ -24,6 +24,8 @@ const AdminLogin = () => {
                 loginPayload
             );
 
+            console.log("This error", response)
+
             const result = response.data;
 
 

@@ -1,157 +1,284 @@
-import React from "react";
-import { SignatureOutlined, ToolOutlined, FormatPainterOutlined, SunFilled, MoonFilled, InfoCircleFilled, SafetyCertificateFilled, HistoryOutlined, GlobalOutlined } from "@ant-design/icons"
-import { Input, Button, Switch, Checkbox, ConfigProvider } from "antd";
+import React, { useEffect, useState } from "react";
+import { UserOutlined, LockOutlined, EditOutlined, PhoneOutlined, MailOutlined, EnvironmentOutlined } from '@ant-design/icons';
+import { message, Modal } from "antd";
+import axios from "axios";
 
 const Setting = () => {
 
-    const onChange = checked => {
-        console.log(`switch to ${checked}`);
+    const [dataAdmin, setdataAdmin] = useState([]);
+    const [loading, setLoading] = useState(true)
+
+
+    const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
+
+    const [editProfile, setEditProfile] = useState({
+        name: '',
+        email: '',
+        avatar: '',
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+    });
+
+    const sampleAvatars = ['logo-admin.jpg', 'avt-admin.jpg', 'avt-2d-admin.jpg', 'avt-admin1.jpg'];
+
+    useEffect(() => {
+        setLoading(true);
+        const loadDataAdmin = async () => {
+            try {
+                const savedAdminInfo = localStorage.getItem("adminInfo");
+
+                if (savedAdminInfo) {
+                    const currentAdmin = JSON.parse(savedAdminInfo);
+
+                    setdataAdmin(currentAdmin);
+
+                    setEditProfile({
+                        name: currentAdmin.name || '',
+                        email: currentAdmin.email || '',
+                        avatar: currentAdmin.avatar || 'logo-admin.jpg',
+                        currentPassword: '',
+                        newPassword: '',
+                        confirmPassword: ''
+                    });
+
+                    console.log("Đã lấy thông tin Admin đăng nhập từ localStorage:", currentAdmin);
+                } else {
+                    console.warn("Không tìm thấy dữ liệu adminInfo trong localStorage!");
+                }
+
+                console.log("Tải toàn bộ dữ liệu admin và đơn hàng thành công!");
+            } catch (error) {
+                console.error("Lỗi kết nối hệ thống:", error);
+                message.error("Không thể kết nối đến máy chủ dữ liệu!");
+
+                setdataAdmin([])
+            }
+            finally {
+                setLoading(false)
+            }
+        }
+
+        loadDataAdmin();
+    }, []);
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setEditProfile(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleDiscard = () => {
+        loadDataAdmin();
+        message.info("Đã hủy bỏ các thay đổi thô 🔄");
+    };
+
+    const handleSaveProfile = async () => {
+        try {
+            const updatePayload = {};
+
+            if (editProfile.avatar !== dataAdmin.avatar) {
+                updatePayload.avatar = editProfile.avatar;
+            }
+
+            if (editProfile.name !== dataAdmin.name) {
+                if (!editProfile.name) return message.error("Tên không được để trống!");
+                updatePayload.name = editProfile.name;
+            }
+
+            if (editProfile.email !== dataAdmin.email) {
+                if (!editProfile.email) return message.error("Email không được để trống!");
+                updatePayload.email = editProfile.email;
+            }
+
+            const hasTypedPassword = editProfile.currentPassword || editProfile.newPassword || editProfile.confirmPassword;
+            if (hasTypedPassword) {
+                if (!editProfile.currentPassword || !editProfile.newPassword) {
+                    return message.error("Vui lòng nhập đầy đủ Mật khẩu hiện tại và Mật khẩu mới!");
+                }
+                if (editProfile.newPassword !== editProfile.confirmPassword) {
+                    return message.error("Mật khẩu mới và Xác nhận mật khẩu không trùng khớp! ❌");
+                }
+                updatePayload.currentPassword = editProfile.currentPassword;
+                updatePayload.newPassword = editProfile.newPassword;
+            }
+
+            if (Object.keys(updatePayload).length === 0) {
+                return message.info("Bạn chưa thay đổi thông tin nào cả! 🤔");
+            }
+
+            const response = await axios.put(
+                `http://localhost:8080/secret-key/admin/${dataAdmin.id || dataAdmin._id}`,
+                updatePayload
+            );
+
+            if (response.data?.success || response.status === 200) {
+                
+                const updatedAdminInfo = {
+                    ...dataAdmin,
+                    ...updatePayload 
+                };
+
+                localStorage.setItem("adminInfo", JSON.stringify(updatedAdminInfo));
+                setdataAdmin(updatedAdminInfo);
+
+                setEditProfile(prev => ({
+                    ...prev,
+                    currentPassword: '',
+                    newPassword: '',
+                    confirmPassword: ''
+                }));
+
+                message.success("Cập nhật dữ liệu thành công! ❤️");
+            }
+
+        } catch (error) {
+            console.error("Update error:", error);
+            message.error(error.response?.data?.message || "Mật khẩu hiện tại không chính xác hoặc trùng Email!");
+        }
     };
 
     return (
-        <div className="p-4 sm:p-6 md:p-9 flex flex-col gap-6 min-h-screen bg-gray-50/50">
+        <div className="max-w-4xl mx-auto p-6 space-y-6 bg-gray-50 min-h-screen">
 
-            {/* Title Header */}
-            <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-[#EE2B6C] m-0">Advanced Settings</h1>
-                <p className="text-xs sm:text-sm text-gray-400 m-0 mt-1 font-medium">Configure global platform parameters and personalize your administrative experience</p>
-            </div>
+            <div className="bg-white rounded-xl border border-gray-100 p-6 flex flex-col sm:flex-row items-center gap-6 relative shadow-xs">
 
-            {/* Main Layout Grid: Xếp dọc trên mobile/tablet, chia cột trên desktop */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-                {/* Left Column - Accounts & Configs (Chiếm 2 phần ba diện tích) */}
-                <div className="lg:col-span-2 flex flex-col gap-6">
-
-                    {/* Profile Settings Card */}
-                    <div className="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.04)] border border-gray-100 p-5 flex flex-col gap-5">
-                        <div className="flex gap-3 items-center">
-                            <span className="w-10 h-10 rounded-lg bg-pink-50 text-[#EE2B6C] flex items-center justify-center border border-pink-100/60 shrink-0">
-                                <SignatureOutlined className="text-lg" />
-                            </span>
-                            <div className="min-w-0">
-                                <h2 className="text-base sm:text-lg font-bold text-gray-800 m-0">Profile Settings</h2>
-                                <p className="text-xs text-gray-400 m-0 mt-0.5 truncate">Update your personal information used for system logs and notifications</p>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-1">
-                            <div className="sm:col-span-2 flex flex-col gap-1.5">
-                                <label className="text-xs font-bold text-gray-500 tracking-wider">FULL NAME</label>
-                                <Input className="bg-slate-100/80! hover:bg-slate-100! py-2 rounded-md" variant="borderless" />
-                            </div>
-                            <div className="flex flex-col gap-1.5">
-                                <label className="text-xs font-bold text-gray-500 tracking-wider">PHONE</label>
-                                <Input className="bg-slate-100/80! hover:bg-slate-100! py-2 rounded-md" variant="borderless" />
-                            </div>
-                        </div>
-
-                        <div className="flex flex-col gap-1.5">
-                            <label className="text-xs font-bold text-gray-500 tracking-wider">EMAIL ADDRESS</label>
-                            <Input className="bg-slate-100/80! hover:bg-slate-100! py-2 rounded-md" variant="borderless" />
-                        </div>
-
-                        <div className="flex justify-end mt-2">
-                            <Button color="pink" variant="solid" className="h-10 font-semibold px-6 shadow-sm">
-                                Save Changes
-                            </Button>
-                        </div>
-                    </div>
-
-                    {/* System Configuration Card */}
-                    <div className="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.04)] border border-gray-100 p-5 flex flex-col gap-5">
-                        <div className="flex gap-3 items-center">
-                            <span className="w-10 h-10 rounded-lg bg-amber-50 text-[#D97909] flex items-center justify-center border border-amber-100/60 shrink-0">
-                                <ToolOutlined className="text-lg" />
-                            </span>
-                            <div className="min-w-0">
-                                <h2 className="text-base sm:text-lg font-bold text-gray-800 m-0">System Configuration</h2>
-                                <p className="text-xs text-gray-400 m-0 mt-0.5 truncate">Control the global state of the customer-facing system</p>
-                            </div>
-                        </div>
-
-                        <div className="rounded-xl bg-slate-50 border border-slate-100 p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mt-1">
-                            <div className="min-w-0">
-                                <h3 className="text-sm font-bold text-gray-700 m-0">Maintenance Mode</h3>
-                                <p className="text-xs text-gray-400 m-0 mt-1 leading-relaxed">When enabled, customers will see an "Under Maintenance" message across the entire site.</p>
-                            </div>
-                            <Switch defaultChecked onChange={onChange} className="shrink-0 mt-1 sm:mt-0" />
-                        </div>
-                    </div>
-
+                <div className="relative shrink-0">
+                    <img
+                        src={`/product/adminavt/${editProfile.avatar || 'logo-admin.jpg'}`}
+                        alt="admin-avatar"
+                        className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl object-cover bg-slate-800 border border-gray-150"
+                    />
+                    <button
+                        onClick={() => setIsAvatarModalOpen(true)}
+                        className="absolute -bottom-1 -right-1 bg-[#EF3D78] text-white p-2 rounded-lg hover:bg-[#d63065] transition-colors shadow-md flex items-center justify-center cursor-pointer border-2 border-white"
+                    >
+                        <EditOutlined className="text-xs" />
+                    </button>
                 </div>
 
-                <div className="flex flex-col gap-6">
-
-                    <div className="bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.04)] border border-gray-100 p-5 flex flex-col gap-4">
-                        <div className="flex gap-3 items-center pb-1">
-                            <span className="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-500 flex items-center justify-center border border-indigo-100/60 shrink-0">
-                                <FormatPainterOutlined className="text-lg" />
-                            </span>
-                            <div className="min-w-0">
-                                <h2 className="text-base sm:text-lg font-bold text-gray-800 m-0">Appearance & UI</h2>
-                                <p className="text-xs text-gray-400 m-0 mt-0.5 truncate">Choose how the dashboard looks for you</p>
-                            </div>
-                        </div>
-
-                        <div className="flex justify-between items-center p-3 rounded-xl border border-gray-100 hover:bg-slate-50/60 cursor-pointer transition-all gap-4">
-                            <div className="flex items-center gap-3 min-w-0">
-                                <span className="w-9 h-9 rounded-lg bg-amber-50 text-amber-500 flex items-center justify-center border border-amber-100/50 shrink-0">
-                                    <SunFilled className="text-base" />
-                                </span>
-                                <div className="min-w-0">
-                                    <h3 className="text-sm font-bold text-gray-700 m-0">Light Mode</h3>
-                                    <p className="text-xs text-gray-400 m-0 truncate">Standard bright interface</p>
-                                </div>
-                            </div>
-                            <ConfigProvider theme={{ token: { colorPrimary: 'rgb(238, 43, 108)' } }}>
-                                <Checkbox onChange={onChange} className="shrink-0" />
-                            </ConfigProvider>
-                        </div>
-
-                        <div className="flex justify-between items-center p-3 rounded-xl border border-gray-100 hover:bg-slate-50/60 cursor-pointer transition-all gap-4">
-                            <div className="flex items-center gap-3 min-w-0">
-                                <span className="w-9 h-9 rounded-lg bg-slate-800 text-indigo-300 flex items-center justify-center shrink-0">
-                                    <MoonFilled className="text-base" />
-                                </span>
-                                <div className="min-w-0">
-                                    <h3 className="text-sm font-bold text-gray-700 m-0">Dark Mode</h3>
-                                    <p className="text-xs text-gray-400 m-0 truncate">Reduced eye strain at night</p>
-                                </div>
-                            </div>
-                            <ConfigProvider theme={{ token: { colorPrimary: 'rgb(238, 43, 108)' } }}>
-                                <Checkbox onChange={onChange} className="shrink-0" />
-                            </ConfigProvider>
-                        </div>
-
-                        <div className="flex gap-2.5 items-start border-t border-gray-100 pt-4 mt-1 text-xs text-gray-400 leading-normal">
-                            <InfoCircleFilled className="text-gray-400 mt-0.5 text-sm shrink-0" />
-                            <p className="m-0">Switching themes will update your local CSS variables and library components</p>
-                        </div>
-                    </div>
-
-                    <div className="flex flex-col justify-center bg-pink-50/40 border border-pink-100 rounded-xl shadow-[0_4px_12px_rgba(238,43,108,0.02)] p-5 gap-4">
-                        <h4 className="text-xs font-bold tracking-wider text-[#EE436C] m-0">QUICK NAVIGATION</h4>
-
-                        <div className="flex items-center gap-3 text-sm font-semibold text-gray-600 hover:text-[#EE2B6C] cursor-pointer transition-colors group">
-                            <SafetyCertificateFilled className="text-gray-400 group-hover:text-[#EE2B6C] text-base shrink-0 transition-colors" />
-                            <span className="m-0">Security & API Keys</span>
-                        </div>
-
-                        <div className="flex items-center gap-3 text-sm font-semibold text-gray-600 hover:text-[#EE2B6C] cursor-pointer transition-colors group">
-                            <HistoryOutlined className="text-gray-400 group-hover:text-[#EE2B6C] text-base shrink-0 transition-colors" />
-                            <span className="m-0">Audit logs</span>
-                        </div>
-
-                        <div className="flex items-center gap-3 text-sm font-semibold text-gray-600 hover:text-[#EE2B6C] cursor-pointer transition-colors group">
-                            <GlobalOutlined className="text-gray-400 group-hover:text-[#EE2B6C] text-base shrink-0 transition-colors" />
-                            <span className="m-0">Localization</span>
-                        </div>
-                    </div>
-
+                <div className="text-center sm:text-left flex-1">
+                    <h1 className="text-xl sm:text-2xl font-extrabold text-gray-900 m-0">{dataAdmin?.name || "ADMIN"}</h1>
+                    <p className="text-[#EF3D78] font-extrabold text-xs tracking-wider uppercase m-0 mt-1">{dataAdmin?.role || "SUPER ADMIN"}</p>
                 </div>
 
+                <div className="flex items-center gap-3 w-full sm:w-auto justify-center sm:justify-end mt-4 sm:mt-0">
+                    <button
+                        onClick={handleDiscard}
+                        className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-500 font-bold text-xs sm:text-sm hover:bg-gray-50 transition-all cursor-pointer"
+                    >
+                        Discard
+                    </button>
+                    <button
+                        onClick={handleSaveProfile}
+                        className="px-5 py-2 bg-[#EF3D78] text-white rounded-lg font-bold text-xs sm:text-sm hover:bg-[#d63065] transition-all cursor-pointer shadow-xs shadow-pink-100"
+                    >
+                        Save Changes
+                    </button>
+                </div>
             </div>
+
+            {/* KHỐI PERSONAL INFORMATION */}
+            <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-xs">
+                <div className="flex items-center gap-2 text-[#EF3D78] font-bold text-base border-b border-gray-50 pb-4 mb-5">
+                    <UserOutlined />
+                    <span className="text-gray-900 font-extrabold tracking-tight">Personal Information</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Full Name</label>
+                        <input
+                            type="text"
+                            name="name"
+                            autoComplete="none"
+                            value={editProfile.name}
+                            onChange={handleInputChange}
+                            className="w-full bg-gray-50/70 border border-gray-100 rounded-lg px-3 py-2.5 text-sm font-semibold text-gray-800 focus:outline-hidden focus:border-[#EF3D78] focus:bg-white transition-all"
+                        />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Notification Email</label>
+                        <input
+                            type="email"
+                            name="email"
+                            autoComplete="none"
+                            value={editProfile.email}
+                            onChange={handleInputChange}
+                            className="w-full bg-gray-50/70 border border-gray-100 rounded-lg px-3 py-2.5 text-sm font-semibold text-gray-800 focus:outline-hidden focus:border-[#EF3D78] focus:bg-white transition-all"
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-xs flex flex-col gap-5">
+                <div className="flex items-center gap-2 text-[#EF3D78] font-bold text-base border-b border-gray-50 pb-4 mb-1">
+                    <LockOutlined />
+                    <span className="text-gray-900 font-extrabold tracking-tight">Change Password</span>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                    <label className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Current Password</label>
+                    <input
+                        type="password"
+                        name="currentPassword"
+                        autoComplete="new-password"
+                        placeholder="••••••••"
+                        value={editProfile.currentPassword}
+                        onChange={handleInputChange}
+                        className="w-full bg-gray-50/70 border border-gray-100 rounded-lg px-3 py-2.5 text-sm font-semibold text-gray-800 focus:outline-hidden focus:border-[#EF3D78] focus:bg-white transition-all"
+                    />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">New Password</label>
+                        <input
+                            type="password"
+                            name="newPassword"
+                            autoComplete="new-password"
+                            placeholder="••••••••"
+                            value={editProfile.newPassword}
+                            onChange={handleInputChange}
+                            className="w-full bg-gray-50/70 border border-gray-100 rounded-lg px-3 py-2.5 text-sm font-semibold text-gray-800 focus:outline-hidden focus:border-[#EF3D78] focus:bg-white transition-all"
+                        />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Confirm New Password</label>
+                        <input
+                            type="password"
+                            name="confirmPassword"
+                            autoComplete="new-password"
+                            placeholder="••••••••"
+                            value={editProfile.confirmPassword}
+                            onChange={handleInputChange}
+                            className="w-full bg-gray-50/70 border border-gray-100 rounded-lg px-3 py-2.5 text-sm font-semibold text-gray-800 focus:outline-hidden focus:border-[#EF3D78] focus:bg-white transition-all"
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <Modal
+                title="Select Admin Avatar"
+                open={isAvatarModalOpen}
+                onCancel={() => setIsAvatarModalOpen(false)}
+                footer={null}
+                centered
+                width={400}
+            >
+                <div className="grid grid-cols-2 gap-4 pt-4">
+                    {sampleAvatars.map((avtName) => (
+                        <div
+                            key={avtName}
+                            onClick={() => {
+                                setEditProfile(prev => ({ ...prev, avatar: avtName }));
+                                setIsAvatarModalOpen(false);
+                                message.success(`Đã chọn tạm hình ảnh ${avtName}, nhấn Save để lưu lưu!`);
+                            }}
+                            className={`cursor-pointer border-2 p-1 rounded-xl transition-all overflow-hidden bg-slate-800 hover:border-[#EF3D78] ${editProfile.avatar === avtName ? 'border-[#EF3D78] scale-95 shadow-md' : 'border-transparent'}`}
+                        >
+                            <img src={`/product/adminavt/${avtName}`} alt={avtName} className="w-full h-28 object-cover rounded-lg" />
+                        </div>
+                    ))}
+                </div>
+            </Modal>
+
         </div>
     );
 }
