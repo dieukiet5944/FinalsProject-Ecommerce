@@ -11,22 +11,24 @@ import isBetween from 'dayjs/plugin/isBetween';
 dayjs.extend(isoWeek);
 dayjs.extend(isBetween);
 
-const WeeklySalesChart = ({ onCurrentWeekRevenueChange, onCurrentWeekOrdersChange }) => {
+const WeeklySalesChart = ({
+  onCurrentWeekRevenueChange,
+  onCurrentWeekOrdersChange,
+  onHistoricalRevenueChange
+}) => {
   const [chartData, setChartData] = useState([]);
-  const [filterKey, setFilterKey] = useState('this_week'); 
+  const [filterKey, setFilterKey] = useState('this_week');
   const [timeLabel, setTimeLabel] = useState('');
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [currentWeekRevenue, setCurrentWeekRevenue] = useState(0);
   const [currentWeekOrdersCount, setCurrentWeekOrdersCount] = useState(0);
 
-  // Ánh xạ ngày trong tuần từ Date object sang tên ngày (Thứ 2 = 0, Chủ Nhật = 6)
   const getDayName = (date) => {
     const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
     return dayNames[date.getDay()];
   };
 
-  // Tạo khung 7 ngày với giá trị mặc định = 0 (luôn đủ 7 ngày từ MON đến SUN)
   const generateEmptyWeekData = () => {
     return [
       { day: 'MON', sales: 0 },
@@ -39,9 +41,7 @@ const WeeklySalesChart = ({ onCurrentWeekRevenueChange, onCurrentWeekOrdersChang
     ];
   };
 
-  // Tính toán doanh thu theo ngày từ danh sách orders
   const calculateDailySales = useCallback((ordersList, startOfWeek, endOfWeek) => {
-    // Khởi tạo dữ liệu rỗng cho 7 ngày
     const dailySalesMap = {};
     let currentDay = startOfWeek.clone();
     while (!currentDay.isAfter(endOfWeek, 'day')) {
@@ -50,15 +50,19 @@ const WeeklySalesChart = ({ onCurrentWeekRevenueChange, onCurrentWeekOrdersChang
       currentDay = currentDay.add(1, 'day');
     }
 
-    // Tính doanh thu từ các đơn hàng Completed trong khoảng thời gian
     let totalRevenue = 0;
+    let totalHistoricalRevenue = 0;
     let ordersCount = 0;
+
     ordersList.forEach(order => {
       if (order.status === 'Completed') {
+        const sales = order.totalPrice || 0;
         const orderDate = dayjs(order.createdAt || order.updatedAt);
+
+        totalHistoricalRevenue += sales;
+
         if (orderDate.isBetween(startOfWeek, endOfWeek, 'day', '[]')) {
           const dayName = getDayName(orderDate.toDate());
-          const sales = order.totalPrice || 0;
           dailySalesMap[dayName] = (dailySalesMap[dayName] || 0) + sales;
           totalRevenue += sales;
           ordersCount += 1;
@@ -66,16 +70,16 @@ const WeeklySalesChart = ({ onCurrentWeekRevenueChange, onCurrentWeekOrdersChang
       }
     });
 
-    // Chuyển thành mảng theo thứ tự MON -> SUN
     const dayOrder = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+
     return {
       chartData: dayOrder.map(day => ({ day, sales: dailySalesMap[day] || 0 })),
       totalRevenue,
+      totalHistoricalRevenue,
       ordersCount
     };
   }, []);
 
-  // Fetch orders from API
   const fetchOrders = async () => {
     setLoading(true);
     try {
@@ -90,70 +94,65 @@ const WeeklySalesChart = ({ onCurrentWeekRevenueChange, onCurrentWeekOrdersChang
     }
   };
 
-  // Xử lý logic tính toán biểu đồ
   const processChartData = useCallback(() => {
+    if (!orders || orders.length === 0) return;
+
     const now = dayjs();
     let startOfWeek, endOfWeek;
 
-    // Định vị khoảng thời gian theo bộ lọc (isoWeek bắt đầu từ Thứ 2)
     if (filterKey === 'this_week') {
-      startOfWeek = now.startOf('isoWeek'); // Thứ 2 đầu tuần
-      endOfWeek = now.endOf('isoWeek');     // Chủ Nhật cuối tuần
+      startOfWeek = now.startOf('isoWeek');
+      endOfWeek = now.endOf('isoWeek');
     } else {
       startOfWeek = now.subtract(1, 'week').startOf('isoWeek');
       endOfWeek = now.subtract(1, 'week').endOf('isoWeek');
     }
 
-    // Cập nhật chuỗi hiển thị thời gian
     setTimeLabel(`${startOfWeek.format('MMM DD')} - ${endOfWeek.format('MMM DD, YYYY')}`);
 
-    // Tính toán doanh thu thực tế từ database
-    const { chartData: salesData, totalRevenue, ordersCount } = calculateDailySales(orders, startOfWeek, endOfWeek);
-    setChartData(salesData);
+    const { chartData, totalRevenue, totalHistoricalRevenue, ordersCount } = calculateDailySales(orders, startOfWeek, endOfWeek);
 
-    // Chỉ cập nhật currentWeekRevenue khi đang xem tuần hiện tại
+    setChartData(chartData);
+
+    if (onHistoricalRevenueChange) {
+      onHistoricalRevenueChange(totalHistoricalRevenue);
+    }
+
     if (filterKey === 'this_week') {
       setCurrentWeekRevenue(totalRevenue);
       setCurrentWeekOrdersCount(ordersCount);
     }
-  }, [filterKey, orders, calculateDailySales]);
+  }, [filterKey, orders, calculateDailySales, onHistoricalRevenueChange]);
 
-  // Fetch data lần đầu
   useEffect(() => {
     fetchOrders();
   }, []);
 
-  // Xử lý khi có orders mới hoặc thay đổi filter
   useEffect(() => {
     if (orders.length > 0 || filterKey) {
       processChartData();
     }
   }, [filterKey, orders, processChartData]);
 
-  // Thông báo doanh thu tuần hiện tại lên Dashboard
   useEffect(() => {
     if (filterKey === 'this_week' && onCurrentWeekRevenueChange) {
       onCurrentWeekRevenueChange(currentWeekRevenue);
     }
   }, [currentWeekRevenue, filterKey, onCurrentWeekRevenueChange]);
 
-  // Thông báo số đơn hàng tuần hiện tại lên Dashboard
   useEffect(() => {
     if (filterKey === 'this_week' && onCurrentWeekOrdersChange) {
       onCurrentWeekOrdersChange(currentWeekOrdersCount);
     }
   }, [currentWeekOrdersCount, filterKey, onCurrentWeekOrdersChange]);
 
-  // Auto-reset: Kiểm tra mỗi giây để phát hiện thời điểm chuyển tuần
   useEffect(() => {
     const checkWeekChange = () => {
       const now = dayjs();
-      // Kiểm tra nếu vừa mới chuyển sang tuần mới (Thứ 2, 00:00:00)
       const startOfCurrentWeek = now.startOf('isoWeek');
       const isMondayMidnight = now.day() === 1 && now.hour() === 0 && now.minute() === 0;
-      
+
       if (isMondayMidnight && filterKey === 'this_week') {
-        // Reset biểu đồ về 0 vì tuần mới chưa có đơn hàng nào
         setChartData(generateEmptyWeekData());
         setCurrentWeekRevenue(0);
         setCurrentWeekOrdersCount(0);
@@ -161,12 +160,10 @@ const WeeklySalesChart = ({ onCurrentWeekRevenueChange, onCurrentWeekOrdersChang
       }
     };
 
-    // Kiểm tra mỗi giây để bắt chính xác thời điểm 00:00:00
     const interval = setInterval(checkWeekChange, 1000);
     return () => clearInterval(interval);
   }, [filterKey]);
 
-  // Cấu hình danh sách Dropdown của Ant Design
   const items = [
     { key: 'this_week', label: 'Tuần này' },
     { key: 'last_week', label: 'Tuần trước' },
@@ -181,14 +178,14 @@ const WeeklySalesChart = ({ onCurrentWeekRevenueChange, onCurrentWeekOrdersChang
           {/* Hiện thời gian động thực tế của tuần đang được chọn */}
           <p className="text-xs text-gray-400 font-medium m-0 mt-0.5">{timeLabel}</p>
         </div>
-        
-        <Dropdown 
-          menu={{ 
-            items, 
+
+        <Dropdown
+          menu={{
+            items,
             selectable: true,
             defaultSelectedKeys: ['this_week'],
-            onClick: (e) => setFilterKey(e.key) 
-          }} 
+            onClick: (e) => setFilterKey(e.key)
+          }}
           trigger={['click']}
         >
           <Button className="rounded-xl text-xs h-8 px-3 flex items-center gap-1 font-medium border-gray-300 hover:text-[#EE2C6D] hover:border-[#EE2C6D]">
@@ -204,29 +201,32 @@ const WeeklySalesChart = ({ onCurrentWeekRevenueChange, onCurrentWeekOrdersChang
         <ResponsiveContainer width="100%" height={240}>
           <AreaChart data={chartData} margin={{ top: 10, right: 15, left: -25, bottom: 0 }}>
             <CartesianGrid strokeDasharray="0" vertical={false} stroke="#F1F5F9" />
-            <XAxis 
-              dataKey="day" 
-              axisLine={false} 
-              tickLine={false} 
-              tick={{ fill: '#94A3B8', fontSize: 11, fontWeight: 500 }} 
+            <XAxis
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: '#94A3B8', fontSize: 11 }}
+              tickFormatter={(value) => `$${value}`}
             />
             {/* Mở lại hiển thị cho trục Y để Admin dễ đối chiếu các mức doanh số cao thấp */}
-            <YAxis 
-              axisLine={false} 
-              tickLine={false} 
-              tick={{ fill: '#94A3B8', fontSize: 11 }} 
+            <YAxis
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: '#94A3B8', fontSize: 11 }}
             />
-            <Tooltip 
+            <Tooltip
               contentStyle={{ backgroundColor: '#fff', borderRadius: '12px', border: '1px solid #F1F5F9' }}
-              formatter={(value) => [`${value.toLocaleString()} đ`, 'Doanh thu']}
+              formatter={(value) => [
+                `$${Number(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+                'Doanh thu'
+              ]}
             />
-            <Area 
-              type="monotone" 
-              dataKey="sales" 
-              stroke="#EE2C6D" 
+            <Area
+              type="monotone"
+              dataKey="sales"
+              stroke="#EE2C6D"
               strokeWidth={2.5}
-              fillOpacity={0.12} 
-              fill="#EE2C6D" 
+              fillOpacity={0.12}
+              fill="#EE2C6D"
             />
           </AreaChart>
         </ResponsiveContainer>
