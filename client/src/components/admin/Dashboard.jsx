@@ -93,24 +93,18 @@ const Dashboard = ({ name }) => {
         return dayjs().startOf('isoWeek');
     }, []);
 
-    // 3. Tính tổng doanh thu các tuần trước (historical revenue - Total Revenue của năm)
-    const historicalRevenueNumber = useMemo(() => {
-        return historyOrders
-            .filter(order => {
-                if (order.status !== 'Completed') return false;
-                const orderDate = dayjs(order.createdAt || order.updatedAt);
-                return orderDate.isBefore(startOfCurrentWeek); // < startOfCurrentWeek
-            })
-            .reduce((sum, order) => sum + (Number(order.sumOrders) || 0), 0);
-    }, [historyOrders, startOfCurrentWeek]);
-
-    // Hàm chuyển đổi doanh thu sang chuỗi hiển thị giao diện
     const formatCurrency = (value) => {
-        return value.toLocaleString('en-US', {
+        return (value || 0).toLocaleString('en-US', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });
     };
+
+    const historicalRevenueNumber = useMemo(() => {
+        return historyOrders
+            .filter(order => order.status === 'Completed') 
+            .reduce((sum, order) => sum + (Number(order.totalPrice || order.sumOrders) || 0), 0);
+    }, [historyOrders]);
 
     const formattedHistoricalRevenue = useMemo(() => formatCurrency(historicalRevenueNumber), [historicalRevenueNumber]);
     const formattedCurrentWeekRevenue = useMemo(() => formatCurrency(currentWeekRevenue), [currentWeekRevenue]);
@@ -197,7 +191,7 @@ const Dashboard = ({ name }) => {
         { key: '12', label: 'Last Year' },
     ];
 
-   
+
     if (loading) {
         return <div className="p-6 bg-white rounded-2xl h-80 flex items-center justify-center text-gray-400">Loading chart...</div>;
     }
@@ -261,14 +255,14 @@ const Dashboard = ({ name }) => {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                    <div className="lg:col-span-2 flex flex-col bg-white p-5 sm:p-6 rounded-xl border border-gray-100 shadow-[0_4px_12px_rgba(0,0,0,0.02)] gap-6">
+                <div className="lg:col-span-2 flex flex-col bg-white p-5 sm:p-6 rounded-xl border border-gray-100 shadow-[0_4px_12px_rgba(0,0,0,0.02)] gap-6">
 
-                        <WeeklySalesChart 
-                            onCurrentWeekRevenueChange={setCurrentWeekRevenue}
-                            onCurrentWeekOrdersChange={setCurrentWeekOrdersCount}
-                        />
+                    <WeeklySalesChart
+                        onCurrentWeekRevenueChange={setCurrentWeekRevenue}
+                        onCurrentWeekOrdersChange={setCurrentWeekOrdersCount}
+                    />
 
-                    </div>
+                </div>
 
                 <div className="right-column-scroll bg-white p-2 rounded-xl border border-gray-100 shadow-[0_4px_12px_rgba(0,0,0,0.02)] h-fit">
                     <Card

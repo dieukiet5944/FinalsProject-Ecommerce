@@ -29,21 +29,26 @@ const Customers = () => {
                 const ordersResult = resOrders.data?.data;
 
                 const mixedUsers = usersResult.map(user => {
+                    const userIdStr = user._id ? user._id.toString() : '';
 
-                    const userIdStr = user.id ? String(user.id) : '';
                     const matchingOrders = ordersResult.filter(order => {
                         if (!order.customerId) return false;
-
-                        const orderCustomerIdStr = String(order.customerId);
-
+                        const orderCustomerIdStr = order.customerId.toString();
                         return orderCustomerIdStr === userIdStr;
                     });
 
+                    const calculatedTotalPrice = matchingOrders.reduce((sum, order) => {
+                        return sum + (Number(order.totalPrice) || 0);
+                    }, 0);
+
                     return {
                         ...user,
-                        history_orders: matchingOrders
+                        history_orders: matchingOrders,
+                        totalPrice: calculatedTotalPrice
                     };
                 });
+
+                console.log("this", mixedUsers)
 
                 if (mixedUsers && Array.isArray(mixedUsers)) {
                     setdataUser(mixedUsers);
@@ -96,7 +101,7 @@ const Customers = () => {
     const handleViewProfile = (user) => {
         const bgStatus = user.status === "online" ? "rgb(237, 255, 241)" : "rgb(255, 237, 237)"
         Modal.info({
-            title: <span className="text-base sm:text-lg font-bold text-gray-800">Detailed information: {user.full_name}</span>,
+            title: <span className="text-base sm:text-lg font-bold text-gray-800">Detailed information: {user.username}</span>,
             width: 500,
             content: (
                 <div className="mt-5 text-gray-700 text-sm sm:text-base space-y-3">
@@ -195,29 +200,36 @@ const Customers = () => {
         return loyaltyMembers.length;
     }, [dataUser]);
 
-    const formatShortVND = (value) => {
-        if (!value || isNaN(value)) return "0 ₫";
+    const formatShortUSD = (value) => {
+        if (!value || isNaN(value)) return "$0";
 
-        if (value >= 1_000_000) {
-            return `${(value / 1_000_000).toFixed(1)}M ₫`;
-        } else if (value >= 1_000) {
-            return `${(value / 1_000).toFixed(0)}K ₫`;
+        const num = Number(value);
+
+        if (num >= 1_000_000) {
+            return `$${(num / 1_000_000).toFixed(1)}M`;
+        } else if (num >= 1_000) {
+            return `$${(num / 1_000).toFixed(1)}K`;
         }
 
-        return `${value} ₫`;
+        return `$${num.toFixed(2)}`;
     };
 
     const topSpender = useMemo(() => {
         if (!Array.isArray(dataUser) || dataUser.length === 0) return null;
 
         return dataUser.reduce((highest, currentUser) => {
-            const currentTotal = (currentUser.history_orders || []).reduce((sum, order) => sum + (order.totalPrice || 0), 0);
-            currentUser.totalSpent = currentTotal;
+            const currentTotal = (currentUser.history_orders || []).reduce((sum, order) => {
+                return sum + (Number(order.totalPrice) || 0);
+            }, 0);
 
-            if (!highest) return currentUser;
+            const updatedUser = {
+                ...currentUser,
+                totalSpent: currentTotal
+            };
 
-            const highestTotal = (highest.history_orders || []).reduce((sum, order) => sum + (order.totalPrice || 0), 0);
-            return currentTotal > highestTotal ? currentUser : highest;
+            if (!highest) return updatedUser;
+
+            return currentTotal > (highest.totalSpent || 0) ? updatedUser : highest;
         }, null);
     }, [dataUser]);
 
@@ -313,21 +325,24 @@ const Customers = () => {
         {
             title: 'TOTAL ORDERS',
             width: 160,
-            dataIndex: 'history_orders',
+            dataIndex: 'totalPrice',
             key: 'history_orders',
-            render: (history_orders) => {
-                const ordersCount = (history_orders || []).length;
+            render: (_, record) => {
+                const totalProductsCount = record.totalPrice * 2
 
                 let toptier = "New Member";
                 let badgeClass = "text-gray-500 bg-gray-50 border-gray-200";
 
-                if (ordersCount > 0 && ordersCount <= 30) {
-                    toptier = "Occasional";
+                if(totalProductsCount > 40 && totalProductsCount <= 100){
+                    toptier = "Cool";
+                    badgeClass = "text-blue-600 bg-blue-50 border-blue-200";
+                } else if (totalProductsCount > 100 && totalProductsCount <= 500) {
+                    toptier = "Occasional ";
                     badgeClass = "text-orange-600 bg-orange-50 border-orange-200";
-                } else if (ordersCount > 30 && ordersCount <= 60) {
+                } else if (totalProductsCount > 500 && totalProductsCount <= 1500) {
                     toptier = "High Frequency";
                     badgeClass = "text-green-600 bg-green-50 border-green-200";
-                } else if (ordersCount > 60) {
+                } else if (totalProductsCount > 1500) {
                     toptier = "Top Tier";
                     badgeClass = "text-red-600 bg-red-50 border-red-200 font-bold";
                 }
@@ -342,16 +357,24 @@ const Customers = () => {
         {
             title: 'LOYALTY POINTS',
             width: 160,
-            dataIndex: 'history_orders',
+            dataIndex: 'totalPrice',
             key: 'points',
-            render: (history_orders) => {
-                const ordersCount = (history_orders || []).length;
-                const point = ordersCount * 10;
+            render: (_, record) => {
+                if (!record.totalPrice || record.totalPrice === 0) {
+                    return (
+                        <div className="flex items-center gap-1.5 font-bold text-sm text-gray-800">
+                            <span className="text-base text-amber-500">⭐</span>
+                            <span>0</span>
+                        </div>
+                    )
+                }
+
+                const totalProductsCount = record.totalPrice * 2
 
                 return (
                     <div className="flex items-center gap-1.5 font-bold text-sm text-gray-800">
                         <span className="text-base text-amber-500">⭐</span>
-                        <span>{point}</span>
+                        <span>{totalProductsCount}</span>
                     </div>
                 );
             }
@@ -467,27 +490,21 @@ const Customers = () => {
                     </div>
                 </div>
 
-                {/* Card 3: LTV Revenue */}
                 <div className="p-5 flex items-center gap-4 bg-linear-to-br from-amber-50 to-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-amber-100 transition-all duration-300 hover:shadow-md relative overflow-hidden group">
-                    {/* Biểu tượng Vương miện / Cúp VIP thay cho nút Dollar */}
                     <div className="p-3 bg-amber-500 text-white rounded-lg flex items-center justify-center text-xl shrink-0 shadow-sm shadow-amber-200">
-                        {/* Nhế import TrophyOutlined hoặc CrownOutlined từ @ant-design/icons nha Hòa */}
                         <TrophyOutlined className="animate-bounce" style={{ animationDuration: '3s' }} />
                     </div>
 
                     <div className="min-w-0 flex-1">
-                        {/* Số tiền kỷ lục được rút gọn (Ví dụ: 2.4M ₫) */}
-                        <h2 className="text-xl sm:text-2xl font-black text-amber-600 m-0 truncate" title={new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(topSpender?.totalSpent || 0)}>
-                            {topSpender?.totalSpent ? formatShortVND(topSpender.totalSpent) : "0 ₫"}
+                        <h2 className="text-xl sm:text-2xl font-black text-amber-600 m-0 truncate" title={new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(topSpender?.totalSpent || 0)}>
+                            {topSpender?.totalSpent ? formatShortUSD(topSpender.totalSpent) : "$0.00"}
                         </h2>
 
-                        {/* Hiển thị Tên người nắm giữ kỷ lục */}
                         <p className="text-[11px] font-bold tracking-wider text-gray-500 m-0 mt-0.5 uppercase truncate">
                             👑 {topSpender?.full_name || topSpender?.username || "CHƯA CÓ VIP"}
                         </p>
                     </div>
 
-                    {/* Nhãn nhỏ góc Card tăng độ xịn xò */}
                     <span className="absolute -top-1 -right-1 bg-amber-500 text-white font-extrabold text-[8px] px-2 py-1 rounded-bl-lg uppercase tracking-widest scale-90">
                         TOP VIP
                     </span>

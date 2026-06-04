@@ -35,7 +35,6 @@ const orderController = {
         try {
             const { customerId, items } = req.body;
 
-            // 1. Kiểm tra đầu vào cơ bản
             if (!customerId || !items || items.length === 0) {
                 return res.status(400).json({
                     success: false,
@@ -45,10 +44,9 @@ const orderController = {
 
             let totalPrice = 0;
             const confirmedItems = [];
+            const productsToSave = [];
 
-            // 2. Duyệt qua mảng items để kiểm tra kho, tính tiền và trừ kho
             for (const item of items) {
-                // Tìm sản phẩm dựa trên trường _id trong MongoDB
                 const product = await ProductModel.findById(item.productId);
 
                 if (!product) {
@@ -58,7 +56,6 @@ const orderController = {
                     });
                 }
 
-                // Kiểm tra trạng thái hoặc số lượng tồn kho thực tế
                 if (product.status === "OUT OF STOCK" || product.quantity < item.qty) {
                     return res.status(400).json({
                         success: false,
@@ -66,21 +63,18 @@ const orderController = {
                     });
                 }
 
-                // Tính toán tổng tiền dựa trên giá gốc từ database nhằm bảo mật
-                totalPrice += product.price * item.qty;
+                const currentPrice = Number(product.price) || 0;
+                totalPrice += currentPrice * item.qty;
 
-                // Đẩy phần tử vào mảng khớp hoàn toàn orderItemSchema
                 confirmedItems.push({
-                    productId: product._id.toString(),
+                    productId: product._id,
                     name: product.name,
                     qty: item.qty,
-                    price: product.price
+                    price: currentPrice
                 });
 
-                // 3. Tiến hành trừ số lượng trong quantity
                 product.quantity -= item.qty;
 
-                // TỰ ĐỘNG CẬP NHẬT TRẠNG THÁI SẢN PHẨM (PRODUCT STATUS)
                 if (product.quantity === 0) {
                     product.status = "OUT OF STOCK";
                 } else if (product.quantity <= 5) {
@@ -89,22 +83,18 @@ const orderController = {
                     product.status = "IN STOCK";
                 }
 
-                // Lưu sản phẩm đã cập nhật kho và trạng thái vào DB
-                await product.save();
+                productsToSave.push(product);
             }
 
-            // 4. Tạo mã đơn hàng ngẫu nhiên duy nhất
-            const orderId = "ORD-" + crypto.randomBytes(4).toString("hex").toUpperCase();
+            await Promise.all(productsToSave.map(p => p.save()));
 
-            // 5. Tạo thực thể Order mới
             const newOrder = new OrderModel({
                 customerId,
                 items: confirmedItems,
                 totalPrice,
-                status: "Pending"
+                status: "Completed"
             });
 
-            // 6. Lưu đơn hàng thành công
             await newOrder.save();
 
             res.status(201).json({
@@ -127,13 +117,11 @@ const orderController = {
         try {
             const { orderId } = req.params;
 
-            // Bóc tách tất cả các trường có thể thay đổi của một đơn hàng từ Client gửi lên
             const {
                 status,
                 items,
             } = req.body;
 
-            // 1. Tìm đơn hàng hiện tại trong Database dựa trên _id
             const order = await OrderModel.findById(orderId);
             if (!order) {
                 return res.status(404).json({
@@ -142,7 +130,6 @@ const orderController = {
                 });
             }
 
-            // 2. Kiểm tra và cập nhật TRẠNG THÁI (Nếu client có gửi lên)
             if (status) {
                 if (!["Pending", "Processing", "Completed", "Canceled"].includes(status)) {
                     return res.status(400).json({
@@ -153,10 +140,8 @@ const orderController = {
                 order.status = status;
             }
 
-            // 3. Kiểm tra và cập nhật DANH SÁCH MÓN ĂN/SỐ LƯỢNG (Nếu sửa giỏ hàng trong đơn)
             if (items && Array.isArray(items)) {
                 order.items = items;
-                // Tính lại totalPrice nếu cần
                 let newTotal = 0;
                 for (const item of items) {
                     newTotal += (item.qty || 0) * (item.price || 0);
@@ -164,10 +149,8 @@ const orderController = {
                 order.totalPrice = newTotal;
             }
 
-            // 4. Lưu toàn bộ thay đổi vào MongoDB Atlas
             await order.save({ runValidators: true });
 
-            // 5. Phản hồi cục dữ liệu mới tinh vừa cập nhật xong về cho Client hiển thị
             res.status(200).json({
                 success: true,
                 message: `Cập nhật thông tin đơn hàng thành công!`,
@@ -188,7 +171,6 @@ const orderController = {
         try {
             const { id } = req.params;
 
-            // 1. Tìm đơn hàng trong Database và xóa
             const order = await OrderModel.findByIdAndDelete(id);
 
             if (!order) {
@@ -198,7 +180,6 @@ const orderController = {
                 });
             }
 
-            // 2. Xóa thành công
             res.status(200).json({
                 success: true,
                 message: "Xóa đơn hàng thành công!",

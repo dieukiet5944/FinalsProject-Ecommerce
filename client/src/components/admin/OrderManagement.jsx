@@ -3,6 +3,8 @@ import { Table, Tag, Avatar, Space, Button, Spin, Modal, Dropdown, message } fro
 import { MoreOutlined, EyeOutlined, CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, AuditOutlined } from '@ant-design/icons'
 import axios from 'axios';
 
+import dayjs from 'dayjs';
+
 
 const Orders = () => {
   const [filterStatus, setFilterStatus] = useState('ALL');
@@ -44,12 +46,12 @@ const Orders = () => {
       onOk: async () => {
         try {
           const response = await axios.delete(`http://localhost:8080/orders/${order._id}`);
-          
+
           if (response && response.data.success) {
             // Remove the order from the data source
             setDataSource(prevSource => prevSource.filter(item => item.id !== order._id));
             message.success(`Order ${order._id} has been successfully deleted!`);
-            
+
             // Close modal if the deleted order is currently being viewed
             if (selectedOrder && selectedOrder.id === order._id) {
               setIsModalOpen(false);
@@ -115,7 +117,7 @@ const Orders = () => {
     }
   };
 
-  
+
 
   // Done
   const categoryStats = useMemo(() => {
@@ -123,7 +125,7 @@ const Orders = () => {
 
     if (dataProducts && dataProducts.length > 0) {
       dataProducts.forEach(p => {
-        lookup[p.id] = p.category;
+        lookup[p._id] = p.category;
       });
     }
 
@@ -166,18 +168,22 @@ const Orders = () => {
         const calculatedTotal = order.items?.reduce((sum, item) => sum + (Number(item.qty || 0) * Number(item.price || 0)), 0) || 0;
 
 
-        const matchedUser = listUsers.find(u => u.id === order.customerId);
+        const matchedUser = listUsers.find(u => u._id === order.customerId);
+
+        const singleOrderTime = order.createdAt
+          ? dayjs(order.createdAt).format('HH:mm - DD/MM/YYYY')
+          : 'Không rõ thời gian';
 
         return {
           ...order,
-          key: order.id,
-          name: order.items?.map(item => item.name).join(", ").substring(0, 30) + "...",
+          key: order.id || order._id,
+          productNames: order.items?.map(item => item.name).join(", ").substring(0, 30) + "...",
           quantity: totalQty,
           sumOrders: calculatedTotal,
           status: order.status,
-
+          date: singleOrderTime,
           customer: {
-            name: matchedUser?.username || "Khách vãng lai",
+            name: matchedUser?.username || matchedUser?.name || "Khách vãng lai",
             avatar: matchedUser?.avatar || "",
             email: matchedUser?.email || "No email",
             userId: order.customerId
@@ -208,12 +214,12 @@ const Orders = () => {
   const columns = [
     {
       title: 'ORDER ID',
-      dataIndex: 'id',
-      key: 'id',
+      dataIndex: '_id',
+      key: '_id',
       width: 120,
-      render: (id) => (
+      render: (_, record) => (
         <span className="text-[#ff4d4f] font-bold text-sm sm:text-base">
-          {id}
+          {record._id}
         </span>
       ),
     },
@@ -271,7 +277,7 @@ const Orders = () => {
         let color = 'default';
         if (status === 'Processing') color = 'processing';
         if (status === 'Completed') color = 'success';
-        if (status === 'Canceled') color = 'error'; 
+        if (status === 'Canceled') color = 'error';
 
         return (
           <Tag
@@ -353,11 +359,11 @@ const Orders = () => {
 
         <div className="p-5 flex flex-col gap-2 border border-blue-100 bg-blue-50/60 rounded-xl shadow-[0_4px_12px_rgba(38,100,235,0.03)]">
           <p className="text-xs font-bold tracking-wider text-blue-700/80 m-0">COMPLETE ORDERS</p>
-          <h2 className="text-xl sm:text-2xl font-extrabold text-blue-600 m-0"><AuditOutlined/> {dataSource.reduce((init, item) => { return item.status === "Completed" ? init += 1 : init}, 0)}</h2>
+          <h2 className="text-xl sm:text-2xl font-extrabold text-blue-600 m-0"><AuditOutlined /> {dataSource.reduce((init, item) => { return item.status === "Completed" ? init += 1 : init }, 0)}</h2>
         </div>
 
         <div className="p-5 flex flex-col gap-2 bg-amber-50/60 border border-amber-100 rounded-xl shadow-[0_4px_12px_rgba(217,119,6,0.03)]">
-          <p className="text-xs font-bold tracking-wider text-amber-800 m-0">ITEMS SOLD</p> 
+          <p className="text-xs font-bold tracking-wider text-amber-800 m-0">ITEMS SOLD</p>
           <div className="flex justify-between items-center text-xs sm:text-sm text-amber-800 font-semibold mt-1">
             <span>Cakes: <b className="text-amber-600 font-bold text-base">{totalCakes}</b> units</span>
             <span>Drinks: <b className="text-amber-600 font-bold text-base">{totalDrinks}</b> units</span>
