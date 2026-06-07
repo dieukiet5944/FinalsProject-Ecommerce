@@ -13,4 +13,6 @@ productRouter.put("/:id", productController.putProductDetails);
 
 productRouter.delete("/:id", productController.deleteProduct);
 
+productRouter.delete('/expired/:productId/:batchId', productController.deleteExpiredBatch)
+
 export default productRouter

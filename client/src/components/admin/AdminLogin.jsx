@@ -3,7 +3,6 @@ import axios from 'axios'
 import { Input, Form, Card, Button, message, Spin } from 'antd';
 import { MailOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import logo from '../../assets/logo.png';
 
 const AdminLogin = () => {
 
@@ -56,7 +55,7 @@ const AdminLogin = () => {
 
                 <div className="flex flex-col justify-center items-center text-center">
                     <img
-                        src={logo}
+                        src="./logo/logo.png"
                         alt="logo"
                         className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 object-contain"
                     />

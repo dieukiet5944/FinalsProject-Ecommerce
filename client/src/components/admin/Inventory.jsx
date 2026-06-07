@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import {
-  MoreOutlined, EditOutlined, DeleteOutlined, PlusCircleOutlined, AlertOutlined, PlusOutlined, PictureOutlined, ExceptionOutlined, UserOutlined
+  EyeOutlined, MoreOutlined, EditOutlined, DeleteOutlined, PlusCircleOutlined, AlertOutlined, PlusOutlined, PictureOutlined, ExceptionOutlined, UserOutlined
 } from "@ant-design/icons";
 import {
   Table,
@@ -24,11 +24,15 @@ import {
 const Inventory = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
   const [editingProduct, setEditingProduct] = useState(null);
 
-  const [form] = Form.useForm();
-  const category = Form.useWatch('category', form);
+  const [addForm] = Form.useForm();
+  const [editForm] = Form.useForm();
+
   const [update, setUpdate] = useState(false);
 
   const API_BASE_URL = 'http://localhost:8080/products';
@@ -104,53 +108,58 @@ const Inventory = () => {
     },
     {
       title: 'STOCK LEVEL',
-      dataIndex: 'quantity',
-      key: 'quantity',
+      dataIndex: 'stockBatches',
+      key: 'stockBatches',
       width: 180,
-      render: (quantity, record) => {
-
-        if (quantity === undefined || quantity === null) {
+      render: (stockBatches, record) => {
+        if (!stockBatches || !Array.isArray(stockBatches) || stockBatches.length === 0) {
           return <span className="text-gray-400 text-sm italic">N/A</span>;
         }
 
-        const maxCapacity = 100;
-        const percentage = Math.min(Math.round((quantity / maxCapacity) * 100), 100);
+        const totalStock = stockBatches.reduce((sum, batch) => sum + (batch.quantity || 0), 0);
 
-        let strokeColor = '#52c41a'; // Xanh lá mặc định
+        const maxCapacity = 100;
+
+        const percentage = Math.min(Math.round((totalStock / maxCapacity) * 100), 100);
+
+        let strokeColor = '#52c41a';
         let textColorClass = 'text-green-600';
         let displayStatus = "IN STOCK";
 
-        if (quantity === 0) {
-          strokeColor = '#ff4d4f'; // Màu Đỏ
+        if (totalStock === 0) {
+          strokeColor = '#ff4d4f';
           textColorClass = 'text-red-500 font-bold animate-pulse';
           displayStatus = "OUT OF STOCK";
-        } else if (quantity <= 20) {
-          strokeColor = '#faad14'; // Màu Cam/Vàng
+        } else if (totalStock <= 20) {
+          strokeColor = '#faad14';
           textColorClass = 'text-amber-500 font-semibold';
           displayStatus = "LOW STOCK";
         }
 
         return (
           <div className="w-full max-w-40 bg-gray-50/50 p-2 rounded-lg border border-gray-100/80 shadow-2xs">
-
             <div className="flex justify-between items-center mb-1.5">
               <span className="text-xs font-bold text-gray-700 tracking-tight">
-                {quantity} <span className="text-gray-400 font-normal text-[11px]">/ {maxCapacity} Pcs</span>
+                {totalStock} <span className="text-gray-400 font-normal text-[11px]">/ {maxCapacity} Pcs</span>
               </span>
 
-              <span className="text-[10px] font-extrabold text-gray-400">
+              <span className={`text-[10px] font-extrabold ${textColorClass}`}>
                 {percentage}%
               </span>
             </div>
 
             <Progress
-              percent={percentage === 0 && quantity > 0 ? 8 : percentage}
+              percent={percentage}
               showInfo={false}
               strokeColor={strokeColor}
-              strokeWidth={6}
+              size={{ strokeWidth: 6 }}
               strokeLinecap="round"
               className="m-0 w-full drop-shadow-3xs"
             />
+
+            <div className="text-[10px] font-bold mt-1 text-right tracking-tight">
+              <span className={textColorClass}>{displayStatus}</span>
+            </div>
           </div>
         );
       }
@@ -168,12 +177,12 @@ const Inventory = () => {
     },
     {
       title: 'STATUS',
-      dataIndex: 'quantity',
+      dataIndex: 'stockBatches',
       key: 'status',
       width: 140,
-      render: (quantity) => {
+      render: (stockBatches) => {
 
-        const qty = quantity !== undefined && quantity !== null ? Number(quantity) : 0;
+        const qty = stockBatches[0]?.quantity !== undefined && stockBatches[0]?.quantity !== null ? Number(stockBatches[0]?.quantity) : 0;
 
         let tagColor = 'green';
         let displayStatus = 'IN STOCK';
@@ -246,7 +255,7 @@ const Inventory = () => {
 
   const lowStockCount = useMemo(() => {
     return (data || []).filter(item => {
-      const qty = item.quantity !== undefined && item.quantity !== null ? Number(item.quantity) : 0;
+      const qty = item.stockBatches[0]?.quantity !== undefined && item.stockBatches[0]?.quantity !== null ? Number(item.stockBatches[0]?.quantity) : 0;
       return qty <= 20;
     }).length;
   }, [data]);
@@ -263,8 +272,8 @@ const Inventory = () => {
 
   const handleActionRequest = () => {
     const lowStockItems = data.filter(item => {
-      const qty = item.quantity !== undefined && item.quantity !== null ? Number(item.quantity) : 0;
-      return qty <= 20; // Giữ nguyên luật gom hàng <= 20 cái
+      const totalQty = item.stockBatches?.reduce((sum, batch) => sum + (batch.quantity || 0), 0) || 0;
+      return totalQty <= 20;
     });
 
     if (lowStockItems.length === 0) {
@@ -272,8 +281,9 @@ const Inventory = () => {
       return;
     }
 
-    // Khởi tạo object lưu số lượng tạm thời
     let tempAmounts = {};
+
+    const tempExpiryDates = {};
 
     Modal.confirm({
       title: <span className="text-base sm:text-lg font-bold text-gray-800 tracking-wide">🚨 LIST OF ITEMS NEEDING URGENT SHIPPING</span>,
@@ -284,7 +294,6 @@ const Inventory = () => {
       content: (
         <div className="max-h-80 sm:max-h-100 overflow-y-auto pr-2 mt-4 space-y-1 scrollbar-thin scrollbar-thumb-gray-200">
           {lowStockItems.map((item) => (
-            /* 1. ĐỒNG BỘ SỬ DỤNG _ID LÀM KEY */
             <div key={item._id} className="flex items-center justify-between py-3.5 border-b border-gray-100 last:border-0 gap-4">
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <Avatar
@@ -296,9 +305,8 @@ const Inventory = () => {
                 <div className="min-w-0">
                   <b className="text-sm sm:text-base text-gray-800 block truncate leading-tight">{item.name}</b>
 
-                  {/* 2. ĐÃ PHẲNG HÓA GIAO DIỆN: Hiển thị trực tiếp quantity dựa trên mốc trần 100 */}
                   <span className="text-xs text-gray-400 block mt-1 font-medium">
-                    Still available: <b className="text-red-500 font-bold">{item.quantity ?? 0}</b> / 100 Units
+                    Still available: <b className="text-red-500 font-bold">{item.stockBatches?.reduce((sum, batch) => sum + (batch.quantity || 0), 0) || 0}</b> / 100 Units
                   </span>
 
                   <div className="mt-1 flex items-center">
@@ -306,13 +314,21 @@ const Inventory = () => {
                   </div>
                 </div>
               </div>
-              <div className="shrink-0 pl-1">
+              <div className="flex items-center gap-2 shrink-0 pl-1">
                 <InputNumber
                   min={0}
                   placeholder="SL"
                   className="w-20 rounded-md font-medium"
-                  /* 3. ĐỒNG BỘ: Lưu số lượng nhập vào key _id */
                   onChange={(val) => { tempAmounts[item._id] = val; }}
+                />
+                <DatePicker
+                  placeholder="Expiration date"
+                  className="w-32 rounded-md"
+                  format="YYYY-MM-DD"
+                  disabledDate={(current) => current && current.valueOf() < Date.now()}
+                  onChange={(date, dateString) => {
+                    tempExpiryDates[item._id] = dateString;
+                  }}
                 />
               </div>
             </div>
@@ -320,7 +336,6 @@ const Inventory = () => {
         </div>
       ),
       onOk: async () => {
-        // Lọc chuẩn xác theo key _id
         const itemsToUpdate = lowStockItems.filter(item => tempAmounts[item._id] > 0);
 
         if (itemsToUpdate.length === 0) {
@@ -331,39 +346,31 @@ const Inventory = () => {
         try {
           setLoading(true);
 
-          // Gửi API restock đồng loạt theo _id
-          await Promise.all(itemsToUpdate.map(async (item) => {
-            const addedAmount = tempAmounts[item._id];
-            const payload = {
-              quantityToAdd: Number(addedAmount)
-            };
-            await axios.put(`${API_BASE_URL}/${item._id}`, payload);
-          }));
-
-          // Cập nhật State giao diện thời gian thực
-          setData((prev) =>
-            prev.map((item) => {
+          const updatedItems = await Promise.all(
+            itemsToUpdate.map(async (item) => {
               const addedAmount = tempAmounts[item._id];
+              const expiryDate = tempExpiryDates[item._id];
 
-              if (addedAmount > 0) {
-                const currentQty = item.quantity || 0;
-                const newQuantity = currentQty + Number(addedAmount);
-
-                // 4. ĐỒNG BỘ LUẬT 3 MỨC MỚI (>20 In Stock, <=20 Low Stock, 0 Out of Stock)
-                let newStatus = "IN STOCK";
-                if (newQuantity === 0) {
-                  newStatus = "OUT OF STOCK";
-                } else if (newQuantity <= 20) {
-                  newStatus = "LOW STOCK";
-                }
-
-                return {
-                  ...item,
-                  quantity: newQuantity,
-                  status: newStatus
-                };
+              if (Number(addedAmount) > 0 && !expiryDate) {
+                throw new Error(`Sản phẩm ${item.name} chưa chọn hạn sử dụng!`);
               }
-              return item;
+
+              const payload = {
+                quantity: Number(addedAmount),
+                expiredAt: expiryDate
+              };
+
+              const response = await axios.put(`${API_BASE_URL}/${item._id}`, payload);
+
+              return response.data.data;
+            })
+          );
+
+          setData((prev) =>
+            prev.map((currentItem) => {
+              const matchUpdatedItem = updatedItems.find((u) => u._id === currentItem._id);
+
+              return matchUpdatedItem ? matchUpdatedItem : currentItem;
             })
           );
 
@@ -371,6 +378,7 @@ const Inventory = () => {
         } catch (error) {
           console.error("Batch restock error:", error);
           message.error("Batch restock failed! Please check connection.");
+          return Promise.reject();
         } finally {
           setLoading(false);
         }
@@ -422,35 +430,65 @@ const Inventory = () => {
   };
 
   const handleRestock = async (record) => {
-    let inputAmount = 0;
+    const maxCapacity = 100;
 
-    // 1. Phẳng hóa dữ liệu lấy từ dòng (record) được click
-    const maxCapacity = 100; // Đặt mốc trần cố định là 100 cái theo luật mới
-    const currentQty = record.quantity !== undefined && record.quantity !== null ? Number(record.quantity) : 0;
+    const currentQty = record.stockBatches?.reduce((sum, batch) => sum + (batch.quantity || 0), 0) || 0;
+
+    const batchData = {
+      quantity: 0,
+      expiredAt: ""
+    };
 
     Modal.confirm({
       title: <span className="font-bold text-gray-800">📦 Import goods for: {record.name}</span>,
+      width: 450,
+      okText: "Confirm",
+      cancelText: "Cancel",
       content: (
-        <div className="mt-2 space-y-2 text-sm text-gray-600">
+        <div className="mt-4 space-y-4 text-sm text-gray-600">
           <p>Current quantity: <span className="font-bold text-gray-800">{currentQty}</span> / {maxCapacity} Units</p>
-          <div className="flex flex-col gap-1">
-            <span>Enter additional quantity:</span>
+
+          <div className="flex flex-col gap-1.5">
+            <span className="font-semibold text-gray-700">Enter additional quantity:</span>
             <InputNumber
               min={1}
-              max={maxCapacity - currentQty} // Giới hạn tối đa chỉ được nhập thêm để đầy mốc 100 cái
+              max={maxCapacity - currentQty}
               placeholder="e.g., 20"
-              onChange={(val) => { inputAmount = Number(val || 0); }}
-              className="w-full"
+              className="w-full py-0.5 rounded-md"
+              onChange={(val) => {
+                batchData.quantity = Number(val || 0);
+              }}
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <span className="font-semibold text-gray-700">Select expiration date:</span>
+            <DatePicker
+              placeholder="YYYY-MM-DD"
+              className="w-full py-0.5 rounded-md"
+              format="YYYY-MM-DD"
+              disabledDate={(current) => current && current.valueOf() < Date.now()}
+              onChange={(date, dateString) => {
+                batchData.expiredAt = dateString; 
+              }}
             />
           </div>
         </div>
       ),
       onOk: async () => {
-        // Kiểm tra tính hợp lệ của số lượng nhập vào
-        if (inputAmount <= 0) {
-          message.warning("Please enter a quantity greater than 0.");
+        const inputAmount = batchData.quantity;
+        const expiredAt = batchData.expiredAt;
+
+        if (!inputAmount || inputAmount <= 0) {
+          message.warning("Please enter a valid quantity greater than 0! ⚠️");
+          return Promise.reject(); 
+        }
+
+        if (!expiredAt) {
+          message.warning("Please select an expiration date for this batch! 📅");
           return Promise.reject();
         }
+
         if (currentQty + inputAmount > maxCapacity) {
           message.error(`Exceeds capacity! Maximum storage is ${maxCapacity} units.`);
           return Promise.reject();
@@ -458,35 +496,29 @@ const Inventory = () => {
 
         try {
           setLoading(true);
-          const newQuantity = currentQty + inputAmount;
 
-          // 2. Tự động tính toán lại 3 mức Status mới dựa trên quantity mới
-          let newStatus = "IN STOCK";
-          if (newQuantity === 0) {
-            newStatus = "OUT OF STOCK";
-          } else if (newQuantity <= 20) {
-            newStatus = "LOW STOCK";
+          const payload = {
+            quantity: Number(inputAmount),
+            expiredAt: expiredAt
+          };
+
+          const response = await axios.put(`${API_BASE_URL}/${record._id}`, payload);
+
+          if (response.data.success) {
+            const updatedProductFromServer = response.data.data;
+
+            setData((prev) =>
+              prev.map((item) =>
+                item._id === record._id ? updatedProductFromServer : item
+              )
+            );
+
+            message.success(`Successfully imported ${inputAmount} units for ${record.name}! 🎉`);
           }
-
-          // Tạo payload phẳng gửi lên Backend
-          const payload = { quantityToAdd: inputAmount };
-
-          // Gọi API cập nhật restock theo trường _id của MongoDB
-          await axios.put(`${API_BASE_URL}/${record._id}`, payload);
-
-          // 3. Cập nhật Real-time lại State hiển thị trên Table giao diện (Cấu trúc phẳng)
-          setData((prev) =>
-            prev.map((item) =>
-              item._id === record._id
-                ? { ...item, quantity: newQuantity, status: newStatus }
-                : item
-            )
-          );
-
-          message.success(`Goods received successfully! Total stock: ${newQuantity} 🎉`);
         } catch (error) {
           console.error("Single restock error:", error);
-          message.error("Error during goods receiving!");
+          message.error(error.response?.data?.message || "Error during goods receiving!");
+          return Promise.reject();
         } finally {
           setLoading(false);
         }
@@ -494,81 +526,179 @@ const Inventory = () => {
     });
   };
 
+
+  const handleCheckExpiredItems = () => {
+    const today = new Date();
+    const expiredBatches = [];
+
+    data.forEach((product) => {
+      product.stockBatches?.forEach((batch) => {
+        if (batch.expiredAt && new Date(batch.expiredAt) < today) {
+          expiredBatches.push({
+            productId: product._id,
+            productName: product.name,
+            category: product.category,
+            image: product.image,
+            batchId: batch._id,
+            quantity: batch.quantity,
+            expiredAt: batch.expiredAt,
+          });
+        }
+      });
+    });
+
+    if (expiredBatches.length === 0) {
+      Modal.success({
+        title: "🎉 ALL GOOD!",
+        content: "No expired items found in the stock. Everything is fresh!",
+      });
+      return;
+    }
+
+    const modalRef = Modal.confirm({
+      title: <span className="text-red-600 font-bold text-lg">⚠️ EXPIRED ITEMS ALERT!</span>,
+      width: 650,
+      okText: 'Close',
+      okButtonProps: { type: 'default' },
+      cancelButtonProps: { style: { display: 'none' } },
+      content: (
+        <div className="max-h-96 overflow-y-auto pr-2 mt-4 space-y-3">
+          <p className="text-gray-500 text-sm">The following batches have expired. Please remove them from the stock:</p>
+
+          {expiredBatches.map((batch) => (
+            <div key={batch.batchId} className="flex items-center justify-between p-3 bg-red-50/50 border border-red-100 rounded-xl gap-4">
+              <div className="flex items-center gap-3 min-w-0">
+                <Avatar
+                  src={`/product/${batch.category.toLowerCase()}/${batch.image}`}
+                  shape="square"
+                  size={44}
+                  className="rounded-md shrink-0 border border-red-200"
+                />
+                <div className="min-w-0">
+                  <b className="text-sm text-gray-800 block truncate">{batch.productName}</b>
+                  <span className="text-xs text-gray-500 block mt-0.5">
+                    Expired Batch Qty: <b className="text-red-500">{batch.quantity} pcs</b>
+                  </span>
+                  <span className="text-[11px] bg-red-100 text-red-600 font-semibold px-1.5 py-0.5 rounded mt-1 inline-block">
+                    Expired on: {new Date(batch.expiredAt).toLocaleDateString('en-CA')}
+                  </span>
+                </div>
+              </div>
+
+              <Button
+                type="primary"
+                danger
+                shape="circle"
+                icon={<DeleteOutlined />}
+                onClick={async () => {
+                  try {
+                    const response = await axios.delete(`${API_BASE_URL}/expired/${batch.productId}/${batch.batchId}`);
+
+                    if (response.data.success) {
+                      message.success(`Removed expired batch of ${batch.productName}!`);
+
+                      const updatedProduct = response.data.data;
+
+                      setData((prev) =>
+                        prev.map((p) => p._id === batch.productId ? updatedProduct : p)
+                      );
+
+                      modalRef.destroy();
+                      setTimeout(() => handleCheckExpiredItems(), 300);
+                    }
+                  } catch (error) {
+                    console.error("Delete batch error:", error);
+                    message.error("Failed to delete expired batch.");
+                  }
+                }}
+              />
+            </div>
+          ))}
+        </div>
+      ),
+    });
+  };
+
   const handleAddNew = () => {
-    setEditingProduct(null);
-    form.resetFields();
-    setIsEditModalOpen(true);
+    addForm.resetFields();
+    setIsAddModalOpen(true);
   };
 
   const handleEdit = (record) => {
     setEditingProduct(record);
-    form.setFieldsValue({
-      _id: record._id,
+    editForm.setFieldsValue({
       name: record.name,
       price: record.price,
       category: record.category,
-      quantity: record.quantity,
       status: record.status,
       image: record.image
     });
     setIsEditModalOpen(true);
   };
 
-  const handleSaveEdit = async () => {
+  const handleCreateSubmit = async () => {
     try {
-      const values = await form.validateFields();
+      const values = await addForm.validateFields();
       setLoading(true);
 
-      console.log("Sản phẩm đang chuẩn bị sửa:", editingProduct);
+      const payload = {
+        name: values.name,
+        price: Number(values.price),
+        category: values.category,
+        status: values.status || "IN STOCK",
+        image: values.image || "default.jpg",
+        quantityToAdd: Number(values.quantity),
+        expiredAt: values.expiredAt ? values.expiredAt.format('YYYY-MM-DD') : null
+      };
 
-      if (editingProduct) {
-        const payload = {
-          name: values.name,
-          price: Number(values.price),
-          category: values.category,
-          quantity: Number(values.quantity),
-          status: values.status,
-          image: values.image || editingProduct.image || "default.jpg"
-        };
+      const response = await axios.post(API_BASE_URL, payload);
+      const newProd = response.data?.data;
 
-        await axios.put(`${API_BASE_URL}/${editingProduct._id}`, payload);
+      if (newProd) {
+        setData(prev => [newProd, ...prev]);
+        message.success("New product added successfully! 🎉");
+        setIsAddModalOpen(false);
+        addForm.resetFields();
+      }
+    } catch (error) {
+      console.error("Create Product Error:", error);
+      message.error(error.response?.data?.message || "Please double-check the inputs!");
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  const handleUpdateSubmit = async () => {
+    try {
+      const values = await editForm.validateFields();
+      setLoading(true);
 
-        setData(prev => prev.map(item =>
-          item._id === editingProduct._id ? { ...item, ...payload } : item
-        ));
+      const payload = {
+        name: values.name,
+        price: Number(values.price),
+        category: values.category,
+        status: values.status,
+        image: values.image || editingProduct.image || "default.jpg"
+      };
+
+      const response = await axios.put(`${API_BASE_URL}/${editingProduct._id}`, payload);
+
+      if (response.data.success) {
+        const updatedProd = response.data.data;
+        setData(prev => prev.map(item => item._id === editingProduct._id ? updatedProd : item));
 
         message.success("Product updated successfully! ❤️");
-      } else {
-        const payload = {
-          name: values.name,
-          price: Number(values.price),
-          category: values.category,
-          quantity: Number(values.quantity),
-          status: values.status || "IN STOCK",
-          image: values.image || "default.jpg"
-        };
-
-        const response = await axios.post(API_BASE_URL, payload);
-        const newProd = response.data?.data;
-
-        if (newProd) {
-          setData(prev => [newProd, ...prev]);
-          message.success("New product added successfully! 🎉");
-        } else {
-          message.error("Failed to create product");
-        }
+        setIsEditModalOpen(false);
+        editForm.resetFields();
+        setEditingProduct(null);
       }
-
-      setIsEditModalOpen(false);
-      form.resetFields();
-      setEditingProduct(null);
-
     } catch (error) {
-      console.error("Error Detail:", error);
-
-      const errorMsg = error.response?.data?.message || "Please double-check the input fields!";
-      message.error(errorMsg);
+      console.error("Update Product Error:", error);
+      if (error.errorFields) {
+        message.warning("Please fill in all required fields correctly! ⚠️");
+      } else {
+        message.error(error.response?.data?.message || "Server error, update failed!");
+      }
     } finally {
       setLoading(false);
     }
@@ -634,14 +764,25 @@ const Inventory = () => {
 
         <div className="p-5 flex flex-col gap-2 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.04)] border border-gray-100 transition-all duration-300 hover:shadow-md">
 
-          <p className="text-xs font-bold tracking-wider text-gray-400 m-0 uppercase">BAKERY FRESHNESS</p>
+          <div className="flex justify-between items-center">
+            <p className="text-xs font-bold tracking-wider text-gray-400 m-0 uppercase">BAKERY FRESHNESS</p>
+
+            <Button
+              type="link"
+              size="small"
+              danger
+              icon={<EyeOutlined />}
+              className="text-xs font-bold p-0 h-auto flex items-center gap-1 hover:underline"
+              onClick={handleCheckExpiredItems}
+            >
+              Check Expiry
+            </Button>
+          </div>
 
           <div className="flex justify-between items-center gap-3 mt-1 min-w-0">
-
             <h2 className="text-xl sm:text-2xl font-black m-0 shrink-0 transition-colors duration-300" style={{ color: getFreshnessColor(avgFreshness) }}>
               {avgFreshness}%
             </h2>
-
 
             <div className="w-full max-w-35 sm:max-w-45">
               <Progress
@@ -649,11 +790,10 @@ const Inventory = () => {
                 strokeColor={getFreshnessColor(avgFreshness)}
                 showInfo={false}
                 className="m-0 w-full"
-                strokeWidth={6}
-                strokeLinecap="round "
+                size={{ strokeWidth: 6 }}
+                strokeLinecap="round"
               />
             </div>
-
 
             <span className="text-xs font-extrabold shrink-0 px-2 py-0.5 rounded-md uppercase tracking-wider transition-colors duration-300"
               style={{
@@ -696,29 +836,27 @@ const Inventory = () => {
           />
 
           <Modal
-            title={
-              <span className="text-base sm:text-lg font-bold text-gray-800">
-                {editingProduct ? `Edit Product: ${editingProduct.name}` : "Add New Product"}
-              </span>
-            }
-            open={isEditModalOpen}
-            onCancel={() => setIsEditModalOpen(false)}
-            onOk={handleSaveEdit}
+            title={<span className="text-lg font-bold text-gray-800">✨ Add New Product</span>}
+            open={isAddModalOpen}
+            onCancel={() => { setIsAddModalOpen(false); addForm.resetFields(); }}
+            onOk={handleCreateSubmit}
             confirmLoading={loading}
-            okText={editingProduct ? "Save Changes" : "Add Product"}
+            okText="Add Product"
             cancelText="Cancel"
             width={650}
-            className="max-w-[calc(100vw-32px)] sm:max-w-162.5"
+            className="max-w-[calc(100vw-32px)]"
           >
-            <Form form={form} layout="vertical" className="mt-5">
+            <Form form={addForm} layout="vertical" className="mt-4" initialValues={{ status: "IN STOCK" }}>
+              <Form.Item name="name" label={<span className="font-semibold text-gray-600">Product Name</span>} rules={[{ required: true }]}>
+                <Input placeholder="e.g., Tiramisu" />
+              </Form.Item>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 items-start mb-4">
                 <div className="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-xl border border-dashed border-gray-200 gap-2 sm:col-span-1">
                   <Avatar
                     size={90}
                     shape="square"
-                    src={`/product/${(form.getFieldValue('category') || 'DRINK').toLowerCase()}/${form.getFieldValue('image') || ''}`}
-                    icon={<PictureOutlined />}
+                    src={`/product/${(addForm.getFieldsValue()?.category || 'DRINK').toLowerCase()}/${addForm.getFieldsValue()?.image || ''}`} icon={<PictureOutlined />}
                     className="rounded-lg! border border-gray-100 bg-white shadow-sm object-cover"
                   />
                   <span className="text-[11px] font-medium text-gray-400 uppercase tracking-wider mt-1">Image Preview</span>
@@ -741,73 +879,87 @@ const Inventory = () => {
                 </div>
               </div>
 
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1">
-
-                {editingProduct && (
-                  <Form.Item
-                    name="_id"
-                    label={<span className="font-semibold text-gray-600 text-sm">Product ID</span>}
-                  >
-                    <Input disabled className="py-2 bg-gray-100" />
-                  </Form.Item>
-                )}
-
-                <Form.Item
-                  name="name"
-                  label={<span className="font-semibold text-gray-600 text-sm">Product Name</span>}
-                  rules={[{ required: true, message: 'Product name is required!' }]}
-                >
-                  <Input placeholder="e.g., Matcha Latte" className="py-2" />
+              <div className="grid grid-cols-2 gap-4">
+                <Form.Item name="price" label={<span className="font-semibold text-gray-600">Price</span>} rules={[{ required: true }]}>
+                  <InputNumber className="w-full" min={0} />
                 </Form.Item>
-
-
-                <Form.Item
-                  name="price"
-                  label={<span className="font-semibold text-gray-600 text-sm">Price (VND)</span>}
-                  rules={[{ required: true, message: 'Price is required!' }]}
-                >
-                  <InputNumber
-                    min={0}
-                    className="w-full py-0.5 rounded-md"
-                    formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                    parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                    placeholder="e.g., 45,000"
-                  />
+                <Form.Item name="category" label={<span className="font-semibold text-gray-600">Category</span>} rules={[{ required: true }]}>
+                  <Select options={[{ value: 'CAKE', label: 'CAKE' }, { value: 'DRINK', label: 'DRINK' }]} />
                 </Form.Item>
-
-                <Form.Item
-                  name="category"
-                  label={<span className="font-semibold text-gray-600 text-sm">Category</span>}
-                  rules={[{ required: true, message: 'Category is required!' }]}
-                >
-                  <Select className="h-10 rounded-md" placeholder="Select category">
-                    <Select.Option value="DRINK">DRINK</Select.Option>
-                    <Select.Option value="CAKE">CAKE</Select.Option>
-                  </Select>
-                </Form.Item>
-
-                <Form.Item
-                  name="quantity"
-                  label={<span className="font-semibold text-gray-600 text-sm">Stock Quantity</span>}
-                  rules={[{ required: true, message: 'Quantity is required!' }]}
-                >
-                  <InputNumber min={0} max={editingProduct ? undefined : 100} placeholder="e.g., 50 (Max 100 for new product)" className="w-full py-0.5 rounded-md" />
-                </Form.Item>
-
-                <Form.Item
-                  name="status"
-                  label={<span className="font-semibold text-gray-600 text-sm">Inventory Status</span>}
-                  initialValue="IN STOCK"
-                >
-                  <Select className="h-10 rounded-md">
-                    <Select.Option value="IN STOCK">IN STOCK</Select.Option>
-                    <Select.Option value="LOW STOCK">LOW STOCK</Select.Option>
-                    <Select.Option value="OUT OF STOCK">OUT OF STOCK</Select.Option>
-                  </Select>
-                </Form.Item>
-
               </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <Form.Item name="quantity" label={<span className="font-semibold text-gray-600">Initial Quantity</span>} rules={[{ required: true }]}>
+                  <InputNumber min={1} max={100} className="w-full" />
+                </Form.Item>
+                <Form.Item name="expiredAt" label={<span className="font-semibold text-gray-600">Expiration Date</span>} rules={[{ required: true }]}>
+                  <DatePicker format="YYYY-MM-DD" className="w-full" disabledDate={(curr) => curr && curr.valueOf() < Date.now()} />
+                </Form.Item>
+              </div>
+
+              <Form.Item name="status" label={<span className="font-semibold text-gray-600">Status</span>}>
+                <Select defaultValue="IN STOCK" options={[{ value: 'IN STOCK', label: 'IN STOCK' }, { value: 'LOW STOCK', label: 'LOW STOCK' }]} />
+              </Form.Item>
+            </Form>
+          </Modal>
+
+          <Modal
+            title={<span className="text-lg font-bold text-gray-800">📝 Edit Product: {editingProduct?.name}</span>}
+            open={isEditModalOpen}
+            onCancel={() => { setIsEditModalOpen(false); editForm.resetFields(); setEditingProduct(null); }}
+            onOk={handleUpdateSubmit}
+            confirmLoading={loading}
+            okText="Save Changes"
+            cancelText="Cancel"
+            width={650}
+            className="max-w-[calc(100vw-32px)]"
+          >
+            <Form form={editForm} layout="vertical" className="mt-4">
+              <Form.Item name="name" label={<span className="font-semibold text-gray-600">Product Name</span>} rules={[{ required: true }]}>
+                <Input />
+              </Form.Item>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 items-start mb-4">
+                <div className="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-xl border border-dashed border-gray-200 gap-2 sm:col-span-1">
+                  <Avatar
+                    size={90}
+                    shape="square"
+                    src={`/product/${(editForm.getFieldsValue()?.category || 'DRINK').toLowerCase()}/${editForm.getFieldsValue()?.image || ''}`} icon={<PictureOutlined />}
+                    className="rounded-lg! border border-gray-100 bg-white shadow-sm object-cover"
+                  />
+                  <span className="text-[11px] font-medium text-gray-400 uppercase tracking-wider mt-1">Image Preview</span>
+                </div>
+
+                <div className="sm:col-span-2 w-full">
+                  <Form.Item
+                    name="image"
+                    label={<span className="font-semibold text-gray-600 text-sm">Image Filename</span>}
+                    tooltip="Enter the filename in public/product folder (e.g., cake_1.png)"
+                    rules={[{ required: true, message: 'Please enter the image filename!' }]}
+                    className="mb-0"
+                  >
+                    <Input
+                      placeholder="e.g., drink_5.png"
+                      onChange={() => setUpdate(!update)}
+                      className="py-2"
+                    />
+                  </Form.Item>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <Form.Item name="price" label={<span className="font-semibold text-gray-600">Price</span>} rules={[{ required: true }]}>
+                  <InputNumber className="w-full" min={0} />
+                </Form.Item>
+                <Form.Item name="category" label={<span className="font-semibold text-gray-600">Category</span>} rules={[{ required: true }]}>
+                  <Select options={[{ value: 'CAKE', label: 'CAKE' }, { value: 'DRINK', label: 'DRINK' }]} />
+                </Form.Item>
+              </div>
+
+
+              <Form.Item name="status" label={<span className="font-semibold text-gray-600">Status</span>}>
+                <Select options={[{ value: 'IN STOCK', label: 'IN STOCK' }, { value: 'LOW STOCK', label: 'LOW STOCK' }, { value: 'OUT OF STOCK', label: 'OUT OF STOCK' }]} />
+              </Form.Item>
             </Form>
           </Modal>
         </Spin>
