@@ -43,9 +43,6 @@ const Dashboard = ({ name }) => {
 
     const { Text: AntText } = Typography;
 
-    // ==========================================
-    // 1. CÁC HOOK LUÔN LUÔN ĐẶT Ở TRÊN CÙNG COMPONENT
-    // ==========================================
 
     useEffect(() => {
         const getAlldata = async () => {
@@ -88,7 +85,6 @@ const Dashboard = ({ name }) => {
         getAlldata();
     }, []);
 
-    // 2. Tính toán thời điểm đầu tuần hiện tại (Thứ 2, 00:00:00)
     const startOfCurrentWeek = useMemo(() => {
         return dayjs().startOf('isoWeek');
     }, []);
@@ -102,39 +98,35 @@ const Dashboard = ({ name }) => {
 
     const historicalRevenueNumber = useMemo(() => {
         return historyOrders
-            .filter(order => order.status === 'Completed') 
+            .filter(order => order.status === 'Completed')
             .reduce((sum, order) => sum + (Number(order.totalPrice || order.sumOrders) || 0), 0);
     }, [historyOrders]);
 
     const formattedHistoricalRevenue = useMemo(() => formatCurrency(historicalRevenueNumber), [historicalRevenueNumber]);
     const formattedCurrentWeekRevenue = useMemo(() => formatCurrency(currentWeekRevenue), [currentWeekRevenue]);
 
-    // 4. Tính toán số đơn hàng đang xử lý
     const pendingOrdersCount = useMemo(() => {
         return historyOrders.filter(order => order.status === 'Processing').length;
     }, [historyOrders]);
 
-    // 5. Tính toán số khách hàng online
     const activeCustomersCount = useMemo(() => {
         return dataUser.filter(user => user.status === 'online').length;
     }, [dataUser]);
 
-    // 6. Tính toán Giá trị đơn hàng trung bình (AOV) - dựa trên tuần hiện tại
-    // AOV = Doanh thu tuần này / Số đơn hàng tuần này
-    // Reset về 0 khi kết thúc tuần (không có đơn hàng nào)
+
     const calculateAOV = useMemo(() => {
         if (currentWeekOrdersCount === 0) return "0.00";
         return (currentWeekRevenue / currentWeekOrdersCount).toFixed(2);
     }, [currentWeekRevenue, currentWeekOrdersCount]);
 
-    // 8. Tính toán Top 5 sản phẩm bán chạy nhất
     const topSellingItem = useMemo(() => {
-
         const imageLookup = {};
         if (dataProduct && dataProduct.length > 0) {
             dataProduct.forEach(p => {
-                const folder = p.category ? p.category.toLowerCase() : 'unknown';
+                const folder = p.category ? p.category.toLowerCase().trim() : 'cake';
+
                 const key = p.name ? p.name.toLowerCase().trim() : '';
+
                 if (key) {
                     imageLookup[key] = `/product/${folder}/${p.image}`;
                 }
@@ -148,13 +140,18 @@ const Dashboard = ({ name }) => {
             .forEach(order => {
                 order.items?.forEach(item => {
                     if (!item.name) return;
+
+                    const cleanedKey = item.name.toLowerCase().trim();
                     const itemKey = item.name;
+
                     if (!itemCounts[itemKey]) {
+                        const finalImage = imageLookup[cleanedKey] || '/product/cake/default.jpg';
+
                         itemCounts[itemKey] = {
                             name: item.name,
                             qty: 0,
                             price: item.price || 0,
-                            image: imageLookup[item.name.toLowerCase().trim()] || ''
+                            image: finalImage
                         };
                     }
                     itemCounts[itemKey].qty += Number(item.qty || 0);

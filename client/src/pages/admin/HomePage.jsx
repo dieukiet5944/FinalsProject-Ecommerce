@@ -138,7 +138,7 @@ const HomePage = () => {
                     <div className="w-full min-h-screen p-4 sm:p-6 md:p-8 flex flex-col md:flex-row justify-center items-center gap-6 sm:gap-10 bg-gray-50/30">
                         <div className="shrink-0">
                             <img
-                                src="../src/assets/logo.png"
+                                src="/logo/logo.png"
                                 alt="logo"
                                 className="w-48 h-48 sm:w-64 sm:h-64 md:w-87.5 md:h-87.5 rounded-full object-cover shadow-md border-4 border-white"
                             />
@@ -172,7 +172,7 @@ const HomePage = () => {
             <div className="hidden md:flex flex-col w-65 lg:w-70 h-full bg-white border-r border-gray-100 shrink-0">
 
                 <div className="flex items-center gap-3 p-5 border-b border-gray-50">
-                    <img src="../src/assets/logo.png" alt="logo" className="w-14 h-14 object-contain rounded-full" />
+                    <img src="./logo/logo.png" alt="logo" className="w-14 h-14 object-contain rounded-full" />
                     <div className="min-w-0">
                         <h3 className="font-bold text-gray-800 m-0 text-base truncate">Crumb & Bean</h3>
                         <h2 className="text-[11px] font-black tracking-wider text-[#EE2C6D] m-0 mt-0.5 uppercase">ADMIN DASHBOARD</h2>

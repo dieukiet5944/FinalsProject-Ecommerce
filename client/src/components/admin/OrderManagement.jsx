@@ -125,7 +125,9 @@ const Orders = () => {
 
     if (dataProducts && dataProducts.length > 0) {
       dataProducts.forEach(p => {
-        lookup[p._id] = p.category;
+        if (p._id) {
+          lookup[p._id] = p.category;
+        }
       });
     }
 
@@ -133,12 +135,17 @@ const Orders = () => {
       .filter(order => order.status === 'Completed')
       .reduce((stats, order) => {
         order.items?.forEach(item => {
+          const pId = item.productId || item.product?._id || item._id;
+          if (!pId) return;
 
-          const category = lookup[item.productId];
+          const orderProductId = pId.toString().toLowerCase().trim();
+          const category = lookup[orderProductId];
 
-          if (category?.toLowerCase() === 'cake') {
+          const cleanCategory = category ? category.toLowerCase() : '';
+
+          if (cleanCategory === 'cake') {
             stats.cake += Number(item.qty || 0);
-          } else if (category?.toLowerCase() === 'drink') {
+          } else if (cleanCategory === 'drink') {
             stats.drink += Number(item.qty || 0);
           }
         });

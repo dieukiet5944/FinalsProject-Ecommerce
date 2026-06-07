@@ -1,33 +1,41 @@
 import mongoose from 'mongoose';
 
+const StockBatchSchema = new mongoose.Schema({
+    quantity: { 
+        type: Number, 
+        required: true,
+        min: 0
+    },
+    expiredAt: { 
+        type: Date, 
+        required: [true, 'The date is required !!! '] 
+    }
+}, { 
+    timestamps: { createdAt: true, updatedAt: false } 
+});
 
 const productSchema = new mongoose.Schema({
-    name: {
-        type: String,
-        required: true
+    name: { 
+        type: String, 
+        required: true 
     },
-    price: {
-        type: Number,
-        required: true
+    price: { 
+        type: Number, 
+        required: true 
     },
-    category: {
-        type: String,
-        required: true,
-        enum: ["CAKE", "DRINK"]
+    category: { 
+        type: String, 
+        required: true, 
+        enum: ["CAKE", "DRINK"] },
+    image: { 
+        type: String, 
+        required: true },
+    status: { 
+        type: String, 
+        enum: ["IN STOCK", "LOW STOCK", "OUT OF STOCK"], 
+        default: "OUT OF STOCK" 
     },
-    image: {
-        type: String,
-        required: true
-    },
-    quantity: {
-        type: Number,
-        required: true
-    },
-    status: {
-        type: String,
-        enum: ["IN STOCK","LOW STOCK", "OUT OF STOCK"],
-        default: "IN STOCK"
-    }
+    stockBatches: [StockBatchSchema]
 }, {
     timestamps: true
 });
