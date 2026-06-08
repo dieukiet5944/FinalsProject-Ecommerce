@@ -182,22 +182,29 @@ const Inventory = () => {
       width: 140,
       render: (stockBatches) => {
 
-        const qty = stockBatches[0]?.quantity !== undefined && stockBatches[0]?.quantity !== null ? Number(stockBatches[0]?.quantity) : 0;
-
-        let tagColor = 'green';
-        let displayStatus = 'IN STOCK';
-
-        if (qty === 0) {
-          tagColor = 'red';
-          displayStatus = 'OUT OF STOCK';
-        } else if (qty <= 20) {
-          tagColor = 'warning';
-          displayStatus = 'LOW STOCK';
+        if (!stockBatches || !Array.isArray(stockBatches) || stockBatches.length === 0) {
+          return <span className="text-gray-400 text-sm italic">N/A</span>;
         }
 
+        const totalStock = stockBatches.reduce((sum, batch) => sum + (batch.quantity || 0), 0);
+
+
+        let strokeColor = '#52c41a';
+        let tagColor = 'text-green-600';
+        let displayStatus = 'IN STOCK';
+
+        if (totalStock === 0) {
+          strokeColor = '#ff4d4f'
+          tagColor = 'text-red-500 font-bold animate-pulse';
+          displayStatus = 'OUT OF STOCK';
+        } else if (totalStock <= 20) {
+          strokeColor = '#faad14';
+          tagColor = 'text-amber-500 font-semibold';
+          displayStatus = 'LOW STOCK';
+        }
         return (
           <Tag
-            color={tagColor}
+            color={strokeColor}
             className="rounded-full font-bold px-3 py-0.5 text-[11px] tracking-wider uppercase border-none shadow-sm"
           >
             {displayStatus}
@@ -253,12 +260,17 @@ const Inventory = () => {
     },
   ];
 
-  const lowStockCount = useMemo(() => {
-    return (data || []).filter(item => {
-      const qty = item.stockBatches[0]?.quantity !== undefined && item.stockBatches[0]?.quantity !== null ? Number(item.stockBatches[0]?.quantity) : 0;
-      return qty <= 20;
-    }).length;
-  }, [data]);
+ const lowStockCount = useMemo(() => {
+  if (!Array.isArray(data)) return 0;
+
+  return data.filter(item => {
+    if (!item.stockBatches || !Array.isArray(item.stockBatches)) return false;
+
+    const totalQty = item.stockBatches.reduce((sum, batch) => sum + (batch.quantity || 0), 0);
+
+    return totalQty > 0 && totalQty <= 20;
+  }).length;
+}, [data]);
 
   const getStatusByStock = (current, all) => {
     const curr = Number(current) || 0;
@@ -393,34 +405,43 @@ const Inventory = () => {
   const avgFreshness = useMemo(() => {
     if (!Array.isArray(data) || data.length === 0) return 100;
 
-    const cakes = data.filter(item => item.category === 'CAKE' && item.createdAt);
-    if (cakes.length === 0) return 100;
+    const validProducts = data.filter(item => Array.isArray(item.stockBatches) && item.stockBatches.length > 0);
+
+    if (validProducts.length === 0) return 100;
 
     const now = new Date();
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-    const totalFreshness = cakes.reduce((sum, item) => {
+    const totalFreshness = validProducts.reduce((sum, item) => {
+      let itemFreshnessSum = 0;
+      let validBatchesCount = 0;
 
-      const createdDate = new Date(item.createdAt);
-      const createdStart = new Date(createdDate.getFullYear(), createdDate.getMonth(), createdDate.getDate());
+      item.stockBatches.forEach(batch => {
+        if (!batch.expiredAt) return;
 
-      const timeDiff = todayStart - createdStart;
+        const expiredDate = new Date(batch.expiredAt);
+        const startDate = item.createdAt ? new Date(item.createdAt) : new Date(expiredDate.getTime() - 3 * 24 * 60 * 60 * 1000);
 
-      const daysOld = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+        const totalDuration = expiredDate - startDate;
+        const timeRemaining = expiredDate - now;
 
-      let itemFreshness = 100;
-      if (daysOld === 1) {
-        itemFreshness = 70;
-      } else if (daysOld === 2) {
-        itemFreshness = 40;  // 
-      } else if (daysOld >= 3) {
-        itemFreshness = 0;
-      }
+        let batchFreshness = 100;
 
-      return sum + itemFreshness;
+        if (timeRemaining <= 0) {
+          batchFreshness = 0;
+        } else if (totalDuration > 0) {
+          batchFreshness = Math.round((timeRemaining / totalDuration) * 100);
+        }
+
+        itemFreshnessSum += batchFreshness;
+        validBatchesCount++;
+      });
+
+      const finalItemFreshness = validBatchesCount > 0 ? (itemFreshnessSum / validBatchesCount) : 100;
+
+      return sum + finalItemFreshness;
     }, 0);
 
-    return Math.round(totalFreshness / cakes.length);
+    return Math.round(totalFreshness / validProducts.length);
   }, [data]);
 
   const getFreshnessColor = (percent) => {
@@ -469,7 +490,7 @@ const Inventory = () => {
               format="YYYY-MM-DD"
               disabledDate={(current) => current && current.valueOf() < Date.now()}
               onChange={(date, dateString) => {
-                batchData.expiredAt = dateString; 
+                batchData.expiredAt = dateString;
               }}
             />
           </div>
@@ -481,7 +502,7 @@ const Inventory = () => {
 
         if (!inputAmount || inputAmount <= 0) {
           message.warning("Please enter a valid quantity greater than 0! ⚠️");
-          return Promise.reject(); 
+          return Promise.reject();
         }
 
         if (!expiredAt) {
@@ -546,6 +567,8 @@ const Inventory = () => {
         }
       });
     });
+
+    console.log("This array ", expiredBatches);
 
     if (expiredBatches.length === 0) {
       Modal.success({
@@ -647,7 +670,7 @@ const Inventory = () => {
         category: values.category,
         status: values.status || "IN STOCK",
         image: values.image || "default.jpg",
-        quantityToAdd: Number(values.quantity),
+        quantity: Number(values.quantity),
         expiredAt: values.expiredAt ? values.expiredAt.format('YYYY-MM-DD') : null
       };
 

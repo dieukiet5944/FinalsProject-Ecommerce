@@ -5,7 +5,6 @@ import axios from 'axios'
 
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
-// import {customerSource} from './data'
 
 const Customers = () => {
 
@@ -130,12 +129,12 @@ const Customers = () => {
                         </p>
                         <p className="flex items-center gap-2 m-0">
                             <span className="font-semibold text-gray-500 w-36 sm:w-40 shrink-0">🕒 Last activity:</span>
-                            <span className="text-gray-800">{user.last_active}</span>
+                            <span className="text-gray-800">{user.createdAt}</span>
                         </p>
                         <p className="flex items-center gap-2 m-0">
                             <span className="font-semibold text-gray-500 w-36 sm:w-40 shrink-0">📅 Date of participation:</span>
                             <span className="text-gray-800">
-                                {user.created_at ? new Date(user.created_at).toLocaleDateString('vi-VN') : "Chưa cập nhật"}
+                                {user.createdAt ? new Date(user.createdAt).toLocaleDateString('vi-VN') : "Chưa cập nhật"}
                             </span>
                         </p>
 
@@ -234,25 +233,20 @@ const Customers = () => {
     }, [dataUser]);
 
     const handleExportPDF = () => {
-        // 1. Khởi tạo đối tượng PDF khổ A4, đơn vị tính bằng mm
         const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
-        // 2. Thiết lập Tiêu đề chính của file báo cáo
         doc.setFontSize(18);
         doc.text("THE CRUMB & BEAN - CUSTOMER REPORT", 14, 20);
 
         doc.setFontSize(10);
         doc.text(`Exported date: ${new Date().toLocaleDateString('vi-VN')}`, 14, 26);
 
-        // 3. Định nghĩa cấu trúc Tiêu đề cột cho bảng dữ liệu trong PDF
         const tableHeaders = [["STT", "Full Name", "Email", "Status", "Total Orders", "LTV Revenue"]];
 
-        // 4. Map mảng dataUser thực tế của Hòa thành các dòng dữ liệu thô (Array of Arrays)
         const tableRows = (dataUser || []).map((user, index) => {
             const ordersCount = (user.history_orders || []).length;
             const totalRevenue = (user.history_orders || []).reduce((sum, order) => sum + (order.totalPrice || 0), 0);
 
-            // Tính toán danh hiệu hạng giống hệt bên ngoài Table Antd của bạn
             let tier = "New Member";
             if (ordersCount > 0 && ordersCount <= 30) tier = "Occasional";
             else if (ordersCount > 30 && ordersCount <= 60) tier = "High Frequency";
@@ -268,21 +262,20 @@ const Customers = () => {
             ];
         });
 
-        // 5. Sử dụng plugin autotable để tự động căn chỉnh và vẽ bảng vào file PDF
+       
         autoTable(doc, {
-            startY: 32, // Khoảng cách bắt đầu vẽ bảng dưới tiêu đề
+            startY: 32,
             head: tableHeaders,
             body: tableRows,
-            theme: 'striped', // Hiệu ứng dòng kẻ sọc xám trắng xen kẽ
-            headStyles: { fillColor: [239, 61, 120] }, // Màu hồng thương hiệu #EF3D78 của bạn
+            theme: 'striped',
+            headStyles: { fillColor: [239, 61, 120] },
             styles: { fontSize: 9, cellPadding: 3 },
             columnStyles: {
-                0: { cellWidth: 12 }, // Cột số thứ tự bóp nhỏ
-                5: { fontStyle: 'bold' } // Cột tổng tiền LTV in đậm
+                0: { cellWidth: 12 }, 
+                5: { fontStyle: 'bold' }
             }
         });
 
-        // 6. Kích hoạt trình duyệt tự động tải file xuống máy Admin
         doc.save("TheCrumbAndBean_Customer_List.pdf");
     };
 
@@ -448,7 +441,6 @@ const Customers = () => {
 
         <div className="p-4 sm:p-6 md:p-9 flex flex-col gap-6 min-h-screen bg-gray-50/50">
 
-            {/* Header Section: Title & Action Button */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h1 className="text-xl sm:text-2xl font-bold text-[#EE2B6C] m-0">Customer Directory</h1>
@@ -466,9 +458,7 @@ const Customers = () => {
                 </Button>
             </div>
 
-            {/* Stats Cards Grid: 1 cột trên phone, 2 cột trên tablet, 4 cột trên desktop */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-                {/* Card 1: Total Customers */}
                 <div className="p-5 flex items-center gap-4 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-gray-100">
                     <div className="p-3 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center text-xl border border-blue-100 shrink-0">
                         <TeamOutlined />
@@ -479,7 +469,6 @@ const Customers = () => {
                     </div>
                 </div>
 
-                {/* Card 2: Active Loyalty Members */}
                 <div className="p-5 flex items-center gap-4 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-gray-100">
                     <div className="p-3 bg-pink-50 text-[#EE2B6C] rounded-lg flex items-center justify-center text-xl border border-pink-100 shrink-0">
                         <TagOutlined />
@@ -510,7 +499,6 @@ const Customers = () => {
                     </span>
                 </div>
 
-                {/* Card 4: Retention Rate */}
                 <div className="p-5 flex items-center gap-4 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-gray-100">
                     <div className="p-3 bg-orange-50 text-orange-600 rounded-lg flex items-center justify-center text-xl border border-orange-100 shrink-0">
                         <FireOutlined />
@@ -522,7 +510,6 @@ const Customers = () => {
                 </div>
             </div>
 
-            {/* Filter Navigation Tabs */}
             <div className="flex justify-center items-center py-2">
                 <div className="inline-grid grid-cols-3 bg-gray-200/60 p-1 rounded-lg w-full max-w-[320px] sm:max-w-90">
                     <button
@@ -546,7 +533,6 @@ const Customers = () => {
                 </div>
             </div>
 
-            {/* Table List Customers Section */}
             <div className="flex flex-col gap-5 bg-white rounded-xl p-4 sm:p-6 shadow-[0_4px_12px_rgba(0,0,0,0.02)] border border-gray-100 relative">
                 <Spin spinning={loading}>
                     <Table
@@ -565,7 +551,6 @@ const Customers = () => {
                     />
                 </Spin>
 
-                {/* Bộ đếm dữ liệu vị trí tương đối chuẩn UI Antd */}
                 <div className="sm:absolute bottom-7 left-6 text-xs sm:text-sm text-gray-400 font-medium mt-2 sm:mt-0 text-center sm:text-left">
                     Showing 1 to 5 of {filteredData.length} records
                 </div>
