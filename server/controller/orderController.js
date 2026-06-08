@@ -56,10 +56,12 @@ const orderController = {
                     });
                 }
 
-                if (product.status === "OUT OF STOCK" || product.quantity < item.qty) {
+                const currentTotalQuantity = product.stockBatches.reduce((sum, batch) => sum + (batch.quantity || 0), 0);
+
+                if (product.status === "OUT OF STOCK" || currentTotalQuantity < item.qty) {
                     return res.status(400).json({
                         success: false,
-                        message: `Sản phẩm "${product.name}" đã hết hàng hoặc không đủ số lượng để cung cấp. (Hiện còn: ${product.quantity})`
+                        message: `Sản phẩm "${product.name}" đã hết hàng hoặc không đủ số lượng để cung cấp. (Hiện còn tổng : ${currentTotalQuantity})`
                     });
                 }
 
@@ -73,11 +75,32 @@ const orderController = {
                     price: currentPrice
                 });
 
-                product.quantity -= item.qty;
+                product.stockBatches.sort((a, b) => new Date(a.expiredAt) - new Date(b.expiredAt));
 
-                if (product.quantity === 0) {
+                let quantityToDecrease = item.qty;
+
+                for (let i = 0; i < product.stockBatches.length; i++) {
+                    if (quantityToDecrease <= 0) break;
+
+                    let batch = product.stockBatches[i];
+                    if (batch.quantity <= 0) continue;
+
+                    if (batch.quantity >= quantityToDecrease) {
+                        batch.quantity -= quantityToDecrease;
+                        quantityToDecrease = 0;
+                    } else {
+                        quantityToDecrease -= batch.quantity;
+                        batch.quantity = 0;
+                    }
+                }
+
+                product.stockBatches = product.stockBatches.filter(batch => batch.quantity > 0);
+
+                const newTotalQuantity = product.stockBatches.reduce((sum, batch) => sum + (batch.quantity || 0), 0);
+
+                if (newTotalQuantity === 0) {
                     product.status = "OUT OF STOCK";
-                } else if (product.quantity <= 5) {
+                } else if (newTotalQuantity <= 20) {
                     product.status = "LOW STOCK";
                 } else {
                     product.status = "IN STOCK";
@@ -86,7 +109,7 @@ const orderController = {
                 productsToSave.push(product);
             }
 
-            await Promise.all(productsToSave.map(p => p.save()));
+            await Promise.all(productsToSave.map(p => p.save({ runValidators: false })));
 
             const newOrder = new OrderModel({
                 customerId,
