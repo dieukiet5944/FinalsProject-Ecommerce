@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import ProductModel from "../model/products.js";
 import OrderModel from "../model/order.js";
 import crypto from 'crypto'
@@ -46,12 +47,19 @@ const productController = {
         try {
             const { id } = req.params
 
-            const response = await ProductModel.findOne({ id: id })
+            let response = null;
+            if (mongoose.Types.ObjectId.isValid(id)) {
+                response = await ProductModel.findById(id);
+            }
+
+            if (!response) {
+                response = await ProductModel.findOne({ id: id });
+            }
 
             if (!response) {
                 return res.status(400).send({
-                    success: true,
-                    message: "This id is not valid or disconnect "
+                    success: false,
+                    message: "This id is not valid or disconnected"
                 })
             }
 
