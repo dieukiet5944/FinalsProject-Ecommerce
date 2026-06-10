@@ -33,7 +33,6 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Scroll indicator */}
         <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center">
           <p className="mb-3 text-xs tracking-widest text-white/80">SCROLL</p>
           <div className="flex items-start justify-center w-6 h-10 p-1 border-2 border-white/70 rounded-full scroll-indicator">
@@ -42,7 +41,6 @@ const Home = () => {
         </div>
       </section>
 
-      {/* The Art of the Brew Section */}
       <section className="py-24 bg-light-surface">
         <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-16 items-center">
           <div className="space-y-8">

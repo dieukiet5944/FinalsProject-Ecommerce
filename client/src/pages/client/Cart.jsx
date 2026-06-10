@@ -4,7 +4,7 @@ import { useCart } from '../../context/CartContext';
 import CartItem from '../../components/client/CartItem';
 
 const Cart = () => {
-  const { cart, removeFromCart, updateQuantity, totalPrice } = useCart();
+  const { cart = [], removeFromCart, updateQuantity, totalPrice = 0 } = useCart();
 
   if (cart.length === 0) {
     return (
@@ -34,15 +34,14 @@ const Cart = () => {
         </h1>
 
         <div className="grid lg:grid-cols-12 gap-10">
-          {/* Product List - Scrollable */}
           <div className="lg:col-span-7">
             <div
-              className="bg-light-card border border-gray-100 rounded-3xl p-6 max-h-155 overflow-y-auto custom-scroll"
+              className="bg-light-card border border-gray-100 rounded-3xl p-6 max-h-[36rem] overflow-y-auto custom-scroll"
             >
               <div className="space-y-6 pr-2">
-                {cart.map((item) => (
+                {cart.map((item, index) => (
                   <CartItem
-                    key={item.id}
+                    key={item.id || `${item.name}-${index}`}
                     item={item}
                     onUpdateQuantity={updateQuantity}
                     onRemove={removeFromCart}

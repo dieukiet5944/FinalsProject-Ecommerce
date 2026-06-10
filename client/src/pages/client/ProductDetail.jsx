@@ -28,7 +28,6 @@ const ProductDetail = () => {
 
         setProduct(result.data);
 
-        // Mock related products
         const mockRelated = [
           { id: "BC-001", name: "Caramel Macchiato", price: 8.5, image: "caramel-macchiato.jpg", category: "DRINK" },
           { id: "BC-002", name: "Cheesecake", price: 12, image: "cheesecake.jpg", category: "CAKE" },
@@ -43,7 +42,6 @@ const ProductDetail = () => {
     fetchProduct();
   }, [id]);
 
-  // Get correct image path based on category
   const getImagePath = (prod) => {
     if (!prod || !prod.image) return 'https://picsum.photos/id/1015/600/600';
     const folder = prod.category?.toLowerCase() === 'cake' ? 'cake' : 'drink';
@@ -186,7 +184,7 @@ const ProductDetail = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {relatedProducts.map((item) => (
                 <ProductCard
-                  key={item.id}
+                  key={item.id || item.name}
                   product={item}
                   onAddToCart={addToCart}
                   showLink={true}

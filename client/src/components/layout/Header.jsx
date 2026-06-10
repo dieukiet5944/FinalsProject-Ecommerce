@@ -9,17 +9,15 @@ const Header = () => {
 
   return (
     <header className="bg-[#2a0614] border-b border-white/10 sticky top-0 z-50">
-      <div className="max-w-screen-2xl mx-auto">   {/* Tăng max-width để nội dung rộng hơn */}
-        <div className="flex items-center justify-between px-4 lg:px-8 h-20">   {/* Giảm padding mạnh */}
+      <div className="max-w-screen-2xl mx-auto">  
+        <div className="flex items-center justify-between px-4 lg:px-8 h-20">
 
-          {/* Logo - Sát trái nhất có thể */}
           <Link to="/" className="flex items-center gap-2 shrink-0">
             <span className="text-3xl font-bold tracking-wider text-white">THE CRUMB</span>
             <span className="font-light text-pink-500">&</span>
             <span className="text-3xl font-bold tracking-wider text-white">BEAN</span>
           </Link>
 
-          {/* Navigation */}
           <nav className="hidden md:flex items-center gap-10 text-sm font-medium text-white/90">
             <Link to="/" className="hover:text-white transition-colors">HOME</Link>
             <Link to="/products" className="hover:text-white transition-colors">SHOP</Link>
@@ -33,7 +31,6 @@ const Header = () => {
             </Link>
           </nav>
 
-          {/* Auth Buttons - Sát phải */}
           <div className="flex items-center gap-3 shrink-0">
             {user ? (
               <div className="flex items-center gap-4">
@@ -65,7 +62,6 @@ const Header = () => {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
           <button className="md:hidden text-2xl text-white">☰</button>
         </div>
       </div>

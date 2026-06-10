@@ -18,7 +18,6 @@ const ProductList = () => {
 
   const { addToCart } = useCart();
 
-  // Handle add to cart with toast notification
   const handleAddToCart = (product) => {
     addToCart(product);
     setToastMessage(`Added ${product.name} to cart!`);
@@ -85,7 +84,6 @@ const ProductList = () => {
         </p>
 
         <div className="flex flex-col lg:flex-row gap-10">
-          {/* Sidebar - Categories */}
           <div className="lg:w-64 shrink-0">
             <div className="sticky top-24">
               <h3 className="font-medium text-lg mb-5 tracking-wider">CATEGORIES</h3>
@@ -133,7 +131,6 @@ const ProductList = () => {
               </select>
             </div>
 
-            {/* Product Grid */}
             {filteredProducts.length === 0 ? (
               <div className="text-center py-20">
                 <p className="text-2xl text-light-text-secondary mb-4">
@@ -147,7 +144,7 @@ const ProductList = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                 {filteredProducts.map((product) => (
                   <ProductCard
-                    key={product.id}
+                    key={product.id || product._id}
                     product={product}
                     onAddToCart={handleAddToCart}
                   />

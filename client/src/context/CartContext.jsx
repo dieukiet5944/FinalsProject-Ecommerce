@@ -10,54 +10,73 @@ export const CartProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
+  const getCartItemId = (product) => {
+    return product.id || product._id || `${product.name}-${product.price}`;
+  };
+
+  const isSameCartItem = (item, id) => {
+    return item.id === id || item._id === id;
+  };
+
   const addToCart = (product) => {
+    const cartId = getCartItemId(product);
+    const quantityToAdd = Number(product.quantity) > 0 ? Number(product.quantity) : 1;
+
     setCart((prev) => {
-      const existingIndex = prev.findIndex(item => item.id === product.id);
+      const existingIndex = prev.findIndex((item) => isSameCartItem(item, cartId));
+
       if (existingIndex !== -1) {
         const updatedCart = [...prev];
+        const existingItem = updatedCart[existingIndex];
         updatedCart[existingIndex] = {
-          ...updatedCart[existingIndex],
-          quantity: (updatedCart[existingIndex].quantity || 1) + 1
+          ...existingItem,
+          id: cartId,
+          quantity: (existingItem.quantity || 1) + quantityToAdd,
         };
         return updatedCart;
-      } else {
-        return [...prev, { ...product, quantity: 1 }];
       }
+
+      return [...prev, { ...product, id: cartId, quantity: quantityToAdd }];
     });
   };
 
   const removeFromCart = (id) => {
-    setCart((prev) => prev.filter((item) => item.id !== id));
+    setCart((prev) => prev.filter((item) => !isSameCartItem(item, id)));
   };
 
   const updateQuantity = (id, newQuantity) => {
     if (newQuantity < 1) return;
     setCart((prev) =>
       prev.map((item) =>
-        item.id === id ? { ...item, quantity: newQuantity } : item
+        isSameCartItem(item, id) ? { ...item, id: getCartItemId(item), quantity: newQuantity } : item
       )
     );
   };
 
   const clearCart = () => setCart([]);
 
-  const placeOrder = async () => {
-    if (!user || !user.id) throw new Error("Bạn cần đăng nhập để đặt hàng");
+  const placeOrder = async (orderData = {}) => {
+    if (!user || !(user.id || user._id)) throw new Error("Bạn cần đăng nhập để đặt hàng");
     if (cart.length === 0) throw new Error("Giỏ hàng của bạn đang trống");
 
     setLoading(true);
     try {
-      const response = await axios.post("http://localhost:8080/api/users/history-order", {
-        userId: user.id,
-        cartItems: cart,
-      });
+      const payload = {
+        customerId: user.id || user._id,
+        items: cart.map((item) => ({
+          productId: item.id || item._id,
+          qty: item.quantity || 1,
+        })),
+        ...orderData,
+      };
 
-      const result = response.data; 
+      const response = await axios.post("http://localhost:8080/orders", payload);
+      const result = response.data;
 
       clearCart();
       return {
         success: true,
-        orderId: result.order.orderId,
+        orderId: result.data?._id || result.data?.id || result.data?.orderId,
       };
     } catch (error) {
       console.error(error);
