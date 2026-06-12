@@ -29,8 +29,6 @@ const AdminLogin = () => {
 
 
             if (result && result.data && result.data.accessToken) {
-
-                localStorage.setItem("isAdminAuthenticated", "true");
                 localStorage.setItem("token", result.data.accessToken);
                 localStorage.setItem("adminInfo", JSON.stringify(result.data.admin));
 

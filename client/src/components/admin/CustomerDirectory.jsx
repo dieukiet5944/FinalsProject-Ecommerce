@@ -487,6 +487,7 @@ const Customers = () => {
                     <div className="min-w-0 flex-1">
                         <h2 className="text-xl sm:text-2xl font-black text-amber-600 m-0 truncate" title={new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(topSpender?.totalSpent || 0)}>
                             {topSpender?.totalSpent ? formatShortUSD(topSpender.totalSpent) : "$0.00"}
+                            {console.log(topSpender)}
                         </h2>
 
                         <p className="text-[11px] font-bold tracking-wider text-gray-500 m-0 mt-0.5 uppercase truncate">

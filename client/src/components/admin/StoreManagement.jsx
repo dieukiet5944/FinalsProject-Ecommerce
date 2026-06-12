@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { Table, Button, Input, Tag, Space, Card, Modal, Form, Select, notification } from 'antd';
 import { SearchOutlined, FilterOutlined, PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 
-import { initialStores } from './mock/mockData.js';
-
 const StoreManagement = () => {
   const [stores, setStores] = useState(initialStores);
   const [searchText, setSearchText] = useState('');
@@ -11,7 +9,6 @@ const StoreManagement = () => {
   const [editingStore, setEditingStore] = useState(null);
   const [form] = Form.useForm();
 
-  // Xử lý Tìm kiếm theo tên
   const handleSearch = (e) => {
     const value = e.target.value;
     setSearchText(value);
