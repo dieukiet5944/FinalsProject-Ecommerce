@@ -8,29 +8,8 @@ import isBetween from 'dayjs/plugin/isBetween';
 
 import WeeklySalesChart from './WeeklySalesChart';
 
-// Kích hoạt plugin để tính tuần từ Thứ 2 đến Chủ Nhật (ISO Week)
 dayjs.extend(isoWeek);
 dayjs.extend(isBetween);
-
-const twoColors = {
-    '0%': '#108ee9',
-    '100%': '#87d068',
-};
-const conicColors = {
-    '0%': '#87d068',
-    '50%': '#ffe58f',
-    '100%': '#ffccc7',
-};
-
-const mockWeeklySales = [
-    { day: 'MON', sales: 1200, isPeak: false },
-    { day: 'TUE', sales: 1900, isPeak: false },
-    { day: 'WED', sales: 1500, isPeak: false },
-    { day: 'THU', sales: 2200, isPeak: false },
-    { day: 'FRI', sales: 3100, isPeak: true },
-    { day: 'SAT', sales: 2400, isPeak: false },
-    { day: 'SUN', sales: 2800, isPeak: false },
-];
 
 const Dashboard = ({ name }) => {
 

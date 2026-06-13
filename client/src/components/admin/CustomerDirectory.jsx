@@ -258,7 +258,7 @@ const Customers = () => {
                 user.email || "N/A",
                 tier.toUpperCase(),
                 `${ordersCount} Orders`,
-                new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(totalRevenue)
+                new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(totalRevenue)
             ];
         });
 
