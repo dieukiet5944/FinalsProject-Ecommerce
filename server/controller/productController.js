@@ -77,7 +77,7 @@ const productController = {
                 message: "Internal Server Error",
                 error: error.message
             })
-        }
+        }                                                                                                                                   
     },
 
     postCreateProduct: async (req, res) => {

@@ -61,12 +61,12 @@ const Inventory = () => {
     loadData();
   }, []);
 
-  const calculateStatus = (current, total) => {
-    const percentage = (current / total) * 100;
-    if (current <= 0) return "OUT OF STOCK";
-    if (percentage <= 20) return "LOW STOCK";
-    return "IN STOCK";
-  };
+  // const calculateStatus = (current, total) => {
+  //   const percentage = (current / total) * 100;
+  //   if (current <= 0) return "OUT OF STOCK";
+  //   if (percentage <= 20) return "LOW STOCK";
+  //   return "IN STOCK";
+  // };
 
   const columns = [
     {
@@ -263,6 +263,8 @@ const Inventory = () => {
  const lowStockCount = useMemo(() => {
   if (!Array.isArray(data)) return 0;
 
+  console.log("Data here", data)
+
   return data.filter(item => {
     if (!item.stockBatches || !Array.isArray(item.stockBatches)) return false;
 
@@ -272,15 +274,15 @@ const Inventory = () => {
   }).length;
 }, [data]);
 
-  const getStatusByStock = (current, all) => {
-    const curr = Number(current) || 0;
-    const total = Number(all) || 1;
-    const percent = (curr / total) * 100;
+  // const getStatusByStock = (current, all) => {
+  //   const curr = Number(current) || 0;
+  //   const total = Number(all) || 1;
+  //   const percent = (curr / total) * 100;
 
-    if (curr <= 0) return "OUT OF STOCK";
-    if (percent <= 20) return "LOW STOCK";
-    return "IN STOCK";
-  };
+  //   if (curr <= 0) return "OUT OF STOCK";
+  //   if (percent <= 20) return "LOW STOCK";
+  //   return "IN STOCK";
+  // };
 
   const handleActionRequest = () => {
     const lowStockItems = data.filter(item => {
@@ -378,7 +380,7 @@ const Inventory = () => {
             })
           );
 
-          setData((prev) =>
+          setData((prev) => 
             prev.map((currentItem) => {
               const matchUpdatedItem = updatedItems.find((u) => u._id === currentItem._id);
 

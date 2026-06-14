@@ -34,7 +34,7 @@ const Dashboard = ({ name }) => {
                 const usersArray = resUsers.data?.data || [];
                 const productsArray = resProducts.data?.data || [];
                 const ordersArray = resOrders.data?.data || [];
-
+                console.log(ordersArray)
                 if (Array.isArray(ordersArray)) {
                     const formattedOrders = ordersArray.map((order) => {
                         const itemsInOrder = order.items || [];
@@ -112,7 +112,10 @@ const Dashboard = ({ name }) => {
             });
         }
 
+
         const itemCounts = {};
+
+        console.log("History Here", historyOrders)
 
         historyOrders
             .filter(order => order.status === 'Completed')
@@ -141,31 +144,6 @@ const Dashboard = ({ name }) => {
             .sort((a, b) => b.qty - a.qty)
             .slice(0, 5);
     }, [historyOrders, dataProduct]);
-
-    const CustomLabel = (props) => {
-        const { x, y, value, payload } = props;
-        if (payload.day === 'FRI') {
-            return (
-                <g>
-                    <foreignObject x={x - 30} y={y - 45} width={65} height={26}>
-                        <div className="bg-[#1A1518] text-[9px] text-white font-black tracking-wider px-1.5 py-0.5 rounded-md flex items-center justify-center gap-0.5 shadow-sm">
-                            <span className="text-[7px]">▲</span> PEAK
-                        </div>
-                    </foreignObject>
-                    <text x={x} y={y - 8} fill="#EE2C6D" className="text-[11px] font-black" textAnchor="middle">
-                        ${(value / 1000).toFixed(1)}k
-                    </text>
-                </g>
-            );
-        }
-        return null;
-    };
-
-    const items = [
-        { key: '7', label: 'Last 7 Days' },
-        { key: '30', label: 'Last 30 Days' },
-        { key: '12', label: 'Last Year' },
-    ];
 
 
     if (loading) {

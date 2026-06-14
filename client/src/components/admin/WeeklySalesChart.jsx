@@ -7,15 +7,11 @@ import dayjs from 'dayjs';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import isBetween from 'dayjs/plugin/isBetween';
 
-// Kích hoạt plugin để tính tuần từ Thứ 2 đến Chủ Nhật (ISO Week)
 dayjs.extend(isoWeek);
 dayjs.extend(isBetween);
 
-const WeeklySalesChart = ({
-  onCurrentWeekRevenueChange,
-  onCurrentWeekOrdersChange,
-  onHistoricalRevenueChange
-}) => {
+const WeeklySalesChart = ({ onCurrentWeekRevenueChange, onCurrentWeekOrdersChange,}) => {
+
   const [chartData, setChartData] = useState([]);
   const [filterKey, setFilterKey] = useState('this_week');
   const [timeLabel, setTimeLabel] = useState('');
@@ -49,30 +45,32 @@ const WeeklySalesChart = ({
       dailySalesMap[dayName] = 0;
       currentDay = currentDay.add(1, 'day');
     }
-
+  
     let totalRevenue = 0;
     let todayRevenue = 0; 
     let totalHistoricalRevenue = 0;
-    let ordersCount = 0;
+    let ordersCount = 0;  
+
+    console.log("orders " , ordersList)
 
     ordersList.forEach(order => {
       if (!order.createdAt) return;
 
       if (order.status === 'Completed') {
-        const sales = order.totalPrice || 0;
-        const orderDate = dayjs(order.createdAt || order.updatedAt);
+        const sales = order.totalPrice || 0; 
+        const orderDate = dayjs(order.createdAt || order.updatedAt); 
 
         totalHistoricalRevenue += sales;
 
         if (orderDate.isBetween(startOfWeek, endOfWeek, null, '[]')) {
-          const dayName = getDayName(orderDate.toDate());
+          const dayName = getDayName(orderDate.toDate()); 
           dailySalesMap[dayName] = (dailySalesMap[dayName] || 0) + sales;
-          totalRevenue += sales;
-          ordersCount += 1;
+          totalRevenue += sales; 
+          ordersCount += 1; 
         }
 
         if (dayjs().isSame(orderDate, 'day')) {
-          todayRevenue += sales;
+          todayRevenue += sales; 
         }
       }
     });
@@ -106,6 +104,7 @@ const processChartData = useCallback(() => {
   if (!orders || orders.length === 0) return;
 
   const now = dayjs();
+  console.log("now", now)
   let startOfWeek, endOfWeek;
 
   if (filterKey === 'this_week') {
@@ -122,15 +121,11 @@ const processChartData = useCallback(() => {
 
   setChartData(chartData);
 
-  if (onHistoricalRevenueChange) {
-    onHistoricalRevenueChange(totalHistoricalRevenue);
-  }
-
   if (filterKey === 'this_week') {
     setCurrentWeekRevenue(todayRevenue);
     setCurrentWeekOrdersCount(ordersCount);
   }
-}, [filterKey, orders, calculateDailySales, onHistoricalRevenueChange]);
+}, [filterKey, orders, calculateDailySales]);
 
 useEffect(() => {
   fetchOrders();
@@ -179,11 +174,9 @@ const items = [
 
 return (
   <div className="w-full bg-white rounded-2xl p-5 border border-gray-100/80 shadow-sm">
-    {/* Header */}
     <div className="flex justify-between items-start mb-6">
       <div>
         <h3 className="text-base font-bold text-[#1E3A5F] m-0">Weekly Sales Performance</h3>
-        {/* Hiện thời gian động thực tế của tuần đang được chọn */}
         <p className="text-xs text-gray-400 font-medium m-0 mt-0.5">{timeLabel}</p>
       </div>
 
