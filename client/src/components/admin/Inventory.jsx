@@ -61,13 +61,6 @@ const Inventory = () => {
     loadData();
   }, []);
 
-  // const calculateStatus = (current, total) => {
-  //   const percentage = (current / total) * 100;
-  //   if (current <= 0) return "OUT OF STOCK";
-  //   if (percentage <= 20) return "LOW STOCK";
-  //   return "IN STOCK";
-  // };
-
   const columns = [
     {
       title: 'PRODUCT NAME',
@@ -274,16 +267,6 @@ const Inventory = () => {
   }).length;
 }, [data]);
 
-  // const getStatusByStock = (current, all) => {
-  //   const curr = Number(current) || 0;
-  //   const total = Number(all) || 1;
-  //   const percent = (curr / total) * 100;
-
-  //   if (curr <= 0) return "OUT OF STOCK";
-  //   if (percent <= 20) return "LOW STOCK";
-  //   return "IN STOCK";
-  // };
-
   const handleActionRequest = () => {
     const lowStockItems = data.filter(item => {
       const totalQty = item.stockBatches?.reduce((sum, batch) => sum + (batch.quantity || 0), 0) || 0;
@@ -404,6 +387,7 @@ const Inventory = () => {
 
   const countDrink = () => data.filter(item => item.category === "DRINK").length;
 
+
   const avgFreshness = useMemo(() => {
     if (!Array.isArray(data) || data.length === 0) return 100;
 
@@ -421,11 +405,11 @@ const Inventory = () => {
         if (!batch.expiredAt) return;
 
         const expiredDate = new Date(batch.expiredAt);
-        const startDate = item.createdAt ? new Date(item.createdAt) : new Date(expiredDate.getTime() - 3 * 24 * 60 * 60 * 1000);
 
+        const startDate = item.createdAt ? new Date(batch.createdAt) : new Date(expiredDate.getTime() - 3 * 24 * 60 * 60 * 1000);
+        
         const totalDuration = expiredDate - startDate;
         const timeRemaining = expiredDate - now;
-
         let batchFreshness = 100;
 
         if (timeRemaining <= 0) {
@@ -445,6 +429,7 @@ const Inventory = () => {
 
     return Math.round(totalFreshness / validProducts.length);
   }, [data]);
+
 
   const getFreshnessColor = (percent) => {
     if (percent > 70) return "#52c41a";
@@ -570,8 +555,6 @@ const Inventory = () => {
       });
     });
 
-    console.log("This array ", expiredBatches);
-
     if (expiredBatches.length === 0) {
       Modal.success({
         title: "🎉 ALL GOOD!",
@@ -696,6 +679,7 @@ const Inventory = () => {
   const handleUpdateSubmit = async () => {
     try {
       const values = await editForm.validateFields();
+
       setLoading(true);
 
       const payload = {
