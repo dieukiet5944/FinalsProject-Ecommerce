@@ -114,8 +114,7 @@ const orderController = {
             const newOrder = new OrderModel({
                 customerId,
                 items: confirmedItems,
-                totalPrice,
-                status: "Completed"
+                totalPrice,                                               
             });
 
             await newOrder.save();
@@ -130,22 +129,21 @@ const orderController = {
             console.log("Loi server khi tao order:", error.message);
             res.status(500).json({
                 success: false,
-                message: "Internal Server Error",
-                error: error.message
+                message: error.message
             });
         }
     },
 
     putUpdateOrder: async (req, res) => {
         try {
-            const { orderId } = req.params;
+            const { id } = req.params;
 
             const {
                 status,
                 items,
             } = req.body;
 
-            const order = await OrderModel.findById(orderId);
+            const order = await OrderModel.findById(id);
             if (!order) {
                 return res.status(404).json({
                     success: false,
@@ -154,17 +152,17 @@ const orderController = {
             }
 
             if (status) {
-                if (!["Pending", "Processing", "Completed", "Canceled"].includes(status)) {
+                if (!["Pending", "Completed", "Canceled"].includes(status)) {
                     return res.status(400).json({
                         success: false,
-                        message: "Trạng thái đơn hàng không hợp lệ! Chỉ chấp nhận Pending, Processing, Completed hoặc Canceled."
+                        message: "Trạng thái đơn hàng không hợp lệ! Chỉ chấp nhận Pending3, Completed hoặc Canceled."
                     });
                 }
                 order.status = status;
             }
 
             if (items && Array.isArray(items)) {
-                order.items = items;
+                order.items = items; 
                 let newTotal = 0;
                 for (const item of items) {
                     newTotal += (item.qty || 0) * (item.price || 0);
@@ -177,6 +175,38 @@ const orderController = {
             res.status(200).json({
                 success: true,
                 message: `Cập nhật thông tin đơn hàng thành công!`,
+                data: order
+            });
+
+        } catch (error) {
+            console.log("Loi server khi cap nhat thong tin don hang:", error.message);
+            res.status(500).json({
+                success: false,
+                message: "Internal Server Error",
+                error: error.message
+            });
+        }
+    },
+
+    putUpdateStateOrder: async ( req, res) => {
+        try {
+            const { id } = req.params
+
+            const order = await OrderModel.findById(id);
+            if (!order) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Không tìm thấy đơn hàng với ID này trên hệ thống."
+                });
+            }
+
+            order.status = "Completed"
+
+            await order.save({ runValidators: true });
+
+            res.status(200).json({
+                success: true,
+                message: `Chấp nhận đơn hàng thành công!`,
                 data: order
             });
 

@@ -256,8 +256,6 @@ const Inventory = () => {
  const lowStockCount = useMemo(() => {
   if (!Array.isArray(data)) return 0;
 
-  console.log("Data here", data)
-
   return data.filter(item => {
     if (!item.stockBatches || !Array.isArray(item.stockBatches)) return false;
 

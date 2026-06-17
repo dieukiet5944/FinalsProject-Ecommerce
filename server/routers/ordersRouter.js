@@ -9,6 +9,9 @@ ordersRouter.post("/", orderController.postOrder);
 
 ordersRouter.put("/:id", orderController.putUpdateOrder);
 
+ordersRouter.put("/changestate/:id", orderController.putUpdateStateOrder)
+
 ordersRouter.delete("/:id", orderController.deleteOrder);
+
 
 export default ordersRouter;

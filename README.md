@@ -23,7 +23,7 @@ Giao diện quản trị hệ thống .
 
 URL - Admin: https://finals-project-ecommerce.vercel.app/login
 
-🕸️ Email: realmarid2004@gmail.coms
+🕸️ Email: realmarid2004@gmail.com
 
 🕸️ Password: 123456
 
