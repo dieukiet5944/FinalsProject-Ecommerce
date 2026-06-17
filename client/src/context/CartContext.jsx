@@ -1,4 +1,3 @@
-// src/context/CartContext.jsx
 import { createContext, useContext, useState } from "react";
 import axios from "axios";
 import { useAuth } from "./AuthContext";
@@ -8,7 +7,7 @@ const CartContext = createContext();
 export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState([]);
   const [loading, setLoading] = useState(false);
-  const { user } = useAuth();
+  const { user } = useAuth(); // 5 : accessToken, refreshToken, email, id, name, role from [normalUser]
 
   const getCartItemId = (product) => {
     return product.id || product._id || `${product.name}-${product.price}`;
@@ -40,6 +39,8 @@ export const CartProvider = ({ children }) => {
     });
   };
 
+  console.log("cart herre", cart)
+
   const removeFromCart = (id) => {
     setCart((prev) => prev.filter((item) => !isSameCartItem(item, id)));
   };
@@ -56,27 +57,31 @@ export const CartProvider = ({ children }) => {
   const clearCart = () => setCart([]);
 
   const placeOrder = async (orderData = {}) => {
-    if (!user || !(user.id || user._id)) throw new Error("Bạn cần đăng nhập để đặt hàng");
+    if (!user || !user.id) throw new Error("Bạn cần đăng nhập để đặt hàng");
     if (cart.length === 0) throw new Error("Giỏ hàng của bạn đang trống");
 
     setLoading(true);
-    try {
+    try { 
       const payload = {
-        customerId: user.id || user._id,
+        customerId: user.id,
         items: cart.map((item) => ({
-          productId: item.id || item._id,
-          qty: item.quantity || 1,
+          productId: item._id,
+          qty: item.quantity ,
+          name: item.name,
+          price: item.price,
         })),
         ...orderData,
       };
 
+      console.log("aa", payload)
+
       const response = await axios.post("http://localhost:8080/orders", payload);
-      const result = response.data;
+      const result = response.data?.data
 
       clearCart();
       return {
         success: true,
-        orderId: result.data?._id || result.data?.id || result.data?.orderId,
+        orderId: result._id 
       };
     } catch (error) {
       console.error(error);

@@ -1,4 +1,3 @@
-// src/context/AuthContext.jsx
 import { createContext, useState, useContext, useEffect } from "react";
 import axios from "axios";
 
@@ -11,22 +10,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
 
-  // Restore user session from localStorage on mount
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
-      } catch (error) {
-        console.error("Error parsing stored user:", error);
-        localStorage.removeItem("user");
-      }
-    }
-    setAuthLoading(false);
-  }, []);
 
-  // User login (for client-side users only)
   const login = async (email, password) => {
     setLoading(true);
     try {
@@ -35,13 +19,14 @@ export const AuthProvider = ({ children }) => {
         password,
       });
 
-      const { data } = response.data;
+      const result = response.data?.data;
       const normalUser = {
-        ...data.user,
-        accessToken: data.accessToken,
-        refreshToken: data.refreshToken,
+        ...result.user,
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
         role: "user",
       };
+      console.log("here111", normalUser)
 
       setUser(normalUser);
       localStorage.setItem("user", JSON.stringify(normalUser));
@@ -55,7 +40,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Logout
   const logout = async () => {
     try {
       if (user?.id) {
@@ -81,4 +65,4 @@ export const AuthProvider = ({ children }) => {
 };
 
 // eslint-disable-next-line react-refresh/only-export-components
-export const useAuth = () => useContext(AuthContext);
+export const  useAuth = () => useContext(AuthContext);

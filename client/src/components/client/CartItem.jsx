@@ -1,4 +1,3 @@
-// Reusable cart item component
 const CartItem = ({ item, onUpdateQuantity, onRemove }) => {
     const itemTotal = (Number(item.price) * (item.quantity || 1)).toFixed(2);
 

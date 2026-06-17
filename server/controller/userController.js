@@ -77,7 +77,7 @@ const userControllers = {
                     user: {
                         id: user._id,
                         email: user.email,
-                        name: user.name
+                        name: user.username
                     }
                 }
             });

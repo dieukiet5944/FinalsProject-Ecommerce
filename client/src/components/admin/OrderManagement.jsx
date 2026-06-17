@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { Table, Tag, Avatar, Space, Button, Spin, Modal, Dropdown, message } from 'antd';
-import { MoreOutlined, EyeOutlined, CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, AuditOutlined } from '@ant-design/icons'
+import { MoreOutlined, EyeOutlined, CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, AuditOutlined, EditOutlined } from '@ant-design/icons'
 import axios from 'axios';
 
 import dayjs from 'dayjs';
@@ -48,11 +48,9 @@ const Orders = () => {
           const response = await axios.delete(`http://localhost:8080/orders/${order._id}`);
 
           if (response && response.data.success) {
-            // Remove the order from the data source
             setDataSource(prevSource => prevSource.filter(item => item.id !== order._id));
             message.success(`Order ${order._id} has been successfully deleted!`);
 
-            // Close modal if the deleted order is currently being viewed
             if (selectedOrder && selectedOrder.id === order._id) {
               setIsModalOpen(false);
               setSelectedOrder(null);
@@ -72,10 +70,9 @@ const Orders = () => {
     setFilterStatus(status);
   };
 
-  // 🕸️ Done 
   const handleUpdateStatus = async (orderId, newStatus) => {
     try {
-      const targetOrder = dataSource.find(order => order.id === orderId);
+      const targetOrder = dataSource.find(order => order._id === orderId);
 
       if (!targetOrder) {
         message.error("Không tìm thấy thông tin đơn hàng này trên giao diện!");
@@ -117,9 +114,18 @@ const Orders = () => {
     }
   };
 
+  const handleAcceptOrder = async (orderId) => {
+    try {
+      const response = await axios.put(`http://localhost:8080/orders/changestate/${orderId}`);
+
+      message.success('Order accepted successfully');
+    } catch (error) {
+      message.error('Failed to accept order');
+    }
+  };
 
 
-  // Done
+
   const categoryStats = useMemo(() => {
     const lookup = {};
 
@@ -282,7 +288,7 @@ const Orders = () => {
       width: 140,
       render: (status) => {
         let color = 'default';
-        if (status === 'Processing') color = 'processing';
+        if (status === 'Pending') color = 'blue';
         if (status === 'Completed') color = 'success';
         if (status === 'Canceled') color = 'error';
 
@@ -302,53 +308,75 @@ const Orders = () => {
       width: 80,
       align: 'center',
       render: (_, record) => {
-        const actionItems = [
-          {
-            key: 'vieworder',
-            label: <span className="font-medium text-gray-700">View Details</span>,
-            icon: <EyeOutlined className="text-gray-400" />,
-            onClick: () => handleViewOrder(record)
-          },
-          ...(record.status === 'Processing' ? [
-            {
-              key: 'accept',
-              label: <span className="font-medium text-gray-700">Accept</span>,
-              icon: <CheckCircleOutlined className="text-green-500" />,
-              onClick: () => handleUpdateStatus(record.id, 'Completed')
-            },
-            {
-              key: 'cancel',
-              label: <span className="font-medium">Reject</span>,
-              icon: <CloseCircleOutlined />,
-              danger: true,
-              onClick: () => handleUpdateStatus(record.id, 'Canceled')
-            }
-          ] : []),
-          { type: 'divider' },
-          {
-            key: 'delete',
-            label: <span className="font-medium">Delete</span>,
-            icon: <DeleteOutlined />,
-            danger: true,
-            onClick: () => handleDelete(record)
-          },
-        ];
+
+        const viewDetailsItem = {
+          key: 'vieworder',
+          label: <span className="font-medium text-gray-700">View Details</span>,
+          icon: <EyeOutlined className="text-gray-400" />,
+          onClick: () => handleViewOrder(record)
+        };
+
+        const acceptItem = {
+          key: 'accept',
+          label: <span className="font-medium text-gray-700">Accept</span>,
+          icon: <CheckCircleOutlined className="text-green-500" />,
+          onClick: () => handleAcceptOrder(record._id)
+        };
+        const rejectItem = {
+          key: 'cancel',
+          label: <span className="font-medium">Reject</span>,
+          icon: <CloseCircleOutlined />,
+          danger: true,
+          onClick: () => handleUpdateStatus(record._id, 'Canceled')
+        };
+
+        const editItem = {
+          key: 'edit',
+          label: <span className="font-medium">Edit</span>,
+          icon: <EditOutlined />,
+          danger: true,
+          onClick: () => handleUpdateStatus(record._id, 'Completed')
+        };
+
+        const deleteItem = {
+          key: 'delete',
+          label: <span className="font-medium">Delete</span>,
+          icon: <DeleteOutlined />,
+          danger: true,
+          onClick: () => handleDelete(record)
+        };
+
+        let menuItems = [viewDetailsItem];
+
+        switch (record.status) {
+          case 'Pending':
+            menuItems.push(acceptItem, rejectItem);
+            break;
+          case 'Completed':
+            menuItems
+            break;
+          case 'Canceled':
+            break;
+          default:
+            return null;
+        }
 
         return (
           <Dropdown
-            menu={{ items: actionItems }}
+            menu={{ items: menuItems }}
             trigger={['click']}
             placement="bottomRight"
-            classNames={{ root: "shadow-md rounded-lg" }}
+            overlayClassName="shadow-md rounded-lg"
           >
             <Button
               type="text"
               shape="circle"
-              className="hover:bg-gray-100! flex items-center justify-center m-auto"
-              icon={<MoreOutlined className="text-gray-500 text-xl!" />}
+              className="hover:bg-gray-100 flex items-center justify-center m-auto"
+              icon={<MoreOutlined className="text-gray-500 text-xl" />}
             />
           </Dropdown>
         );
+
       },
     }
   ];
@@ -394,9 +422,9 @@ const Orders = () => {
           </button>
           <button
             className="py-1.5 text-xs sm:text-sm font-semibold rounded-lg transition-all text-gray-600 hover:text-gray-900 focus:bg-white focus:text-blue-600 focus:shadow-sm active:bg-white active:shadow-sm"
-            onClick={() => handleFilter('Processing')}
+            onClick={() => handleFilter('Pending')}
           >
-            PROCESSING
+            PENDING
           </button>
           <button
             className="py-1.5 text-xs sm:text-sm font-semibold rounded-lg transition-all text-gray-600 hover:text-gray-900 focus:bg-white focus:text-green-600 focus:shadow-sm active:bg-white active:shadow-sm"
