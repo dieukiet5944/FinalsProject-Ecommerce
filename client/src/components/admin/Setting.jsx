@@ -34,9 +34,9 @@ const Setting = () => {
                     setdataAdmin(currentAdmin);
 
                     setEditProfile({
-                        name: currentAdmin.name || '',
-                        email: currentAdmin.email || '',
-                        avatar: currentAdmin.avatar || 'logo-admin.jpg',
+                        name: currentAdmin.name,
+                        email: currentAdmin.email,
+                        avatar: currentAdmin.avatar,
                         currentPassword: '',
                         newPassword: '',
                         confirmPassword: ''
@@ -75,6 +75,9 @@ const Setting = () => {
     const handleSaveProfile = async () => {
         try {
             const updatePayload = {};
+            console.log("edit here", editProfile)
+
+             console.log("edit here", dataAdmin)
 
             if (editProfile.avatar !== dataAdmin.avatar) {
                 updatePayload.avatar = editProfile.avatar;
@@ -106,12 +109,14 @@ const Setting = () => {
                 return message.info("Bạn chưa thay đổi thông tin nào cả! 🤔");
             }
 
+            console.log(Object.keys(updatePayload).length)
+
             const response = await axios.put(
-                `http://localhost:8080/secret-key/admin/${dataAdmin.id || dataAdmin._id}`,
+                `http://localhost:8080/secret-key/admin/${dataAdmin.id}`,
                 updatePayload
             );
 
-            if (response.data?.success || response.status === 200) {
+            if (response.data?.success) {
                 
                 const updatedAdminInfo = {
                     ...dataAdmin,

@@ -172,10 +172,8 @@ const adminController = {
                 });
             }
 
-            // Verify refresh token
             const decoded = jwtHelper.verifyRefreshToken(refreshToken);
 
-            // Find user and check if refresh token matches
             const admin = await AdminModel.findById(decoded.userId);
 
             if (!admin) {
@@ -192,7 +190,6 @@ const adminController = {
                 });
             }
 
-            // Generate new access token
             const newAccessToken = jwtHelper.generateAccessToken({
                 userId: admin._id,
                 email: admin.email
@@ -223,11 +220,20 @@ const adminController = {
             const admin = await AdminModel.findById(id);
             if (!admin) return res.status(404).json({ message: "Admin not found" });
 
-            if (updateData.currentPassword && updateData.newPassword) {
-                updateData.password = hashingPassword;
-                delete updateData.currentPassword; 
-                delete updateData.newPassword;
+            const decodePass = await bcrypt.compareSync(updateData.currentPassword, admin.password);
+
+            if(decodePass === false){
+                return message.error(" Your current password is not matching !!! ")
             }
+
+            const salt = await bcrypt.genSalt(10);
+
+            const newPass = await bcrypt.hash(updateData.newPassword, salt);
+            
+            delete updateData.currentPassword; 
+            delete updateData.newPassword;
+
+            updateData.password = newPass
 
             const updatedAdmin = await AdminModel.findByIdAndUpdate(
                 id,

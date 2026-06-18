@@ -79,7 +79,7 @@ const Inventory = () => {
               {record.name}
             </p>
             <p className="text-xs text-gray-400 m-0 mt-0.5 font-medium">
-              SKU: {record._id}
+              SKU: {`ORD-${record._id.slice(-6).toUpperCase()}`}
             </p>
           </div>
         </div>

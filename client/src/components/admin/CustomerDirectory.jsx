@@ -298,7 +298,7 @@ const Customers = () => {
                             {record.username}
                         </p>
                         <p className="text-xs text-gray-400 m-0 mt-0.5 font-medium">
-                            ID: {record._id}
+                            ID: {`ORD-${record._id.slice(-6).toUpperCase()}`}
                         </p>
                     </div>
                 </div>
