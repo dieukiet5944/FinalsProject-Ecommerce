@@ -29,7 +29,8 @@ const productSchema = new mongoose.Schema({
         enum: ["CAKE", "DRINK"] },
     image: { 
         type: String, 
-        required: true },
+        required: true 
+    },
     status: { 
         type: String, 
         enum: ["IN STOCK", "LOW STOCK", "OUT OF STOCK"], 

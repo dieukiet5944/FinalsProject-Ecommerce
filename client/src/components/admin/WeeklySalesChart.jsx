@@ -57,14 +57,14 @@ const WeeklySalesChart = ({ onCurrentWeekRevenueChange, onCurrentWeekOrdersChang
       if (!order.createdAt) return;
 
       if (order.status === 'Completed') {
-        const sales = order.totalPrice || 0; 
-        const orderDate = dayjs(order.createdAt || order.updatedAt); 
+        const sales = order.totalPrice; 
+        const orderDate = dayjs(order.createdAt); 
 
         totalHistoricalRevenue += sales;
 
         if (orderDate.isBetween(startOfWeek, endOfWeek, null, '[]')) {
           const dayName = getDayName(orderDate.toDate()); 
-          dailySalesMap[dayName] = (dailySalesMap[dayName] || 0) + sales;
+          dailySalesMap[dayName] = (dailySalesMap[dayName]) + sales;
           totalRevenue += sales; 
           ordersCount += 1; 
         }
@@ -78,7 +78,7 @@ const WeeklySalesChart = ({ onCurrentWeekRevenueChange, onCurrentWeekOrdersChang
     const dayOrder = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 
     return {
-      chartData: dayOrder.map(day => ({ day, sales: dailySalesMap[day] || 0 })),
+      chartData: dayOrder.map(day => ({ day, sales: dailySalesMap[day] })),
       totalRevenue,
       todayRevenue, 
       totalHistoricalRevenue,
@@ -90,7 +90,7 @@ const fetchOrders = async () => {
   setLoading(true);
   try {
     const response = await axios.get('http://localhost:8080/orders');
-    const ordersData = response.data?.data || [];
+    const ordersData = response.data?.data;
     setOrders(ordersData);
   } catch (error) {
     console.error('Error fetching orders:', error);
@@ -121,6 +121,8 @@ const processChartData = useCallback(() => {
 
   setChartData(chartData);
 
+  console.log("chart", chartData)
+
   if (filterKey === 'this_week') {
     setCurrentWeekRevenue(todayRevenue);
     setCurrentWeekOrdersCount(ordersCount);
@@ -135,15 +137,17 @@ useEffect(() => {
   if (orders.length > 0 || filterKey) {
     processChartData();
   }
-}, [filterKey, orders, processChartData]);
+}, [processChartData]);
 
 useEffect(() => {
+  console.log("current", currentWeekRevenue)
   if (filterKey === 'this_week' && onCurrentWeekRevenueChange) {
     onCurrentWeekRevenueChange(currentWeekRevenue);
   }
 }, [currentWeekRevenue, filterKey, onCurrentWeekRevenueChange]);
 
 useEffect(() => {
+  console.log("current111", currentWeekOrdersCount)
   if (filterKey === 'this_week' && onCurrentWeekOrdersChange) {
     onCurrentWeekOrdersChange(currentWeekOrdersCount);
   }

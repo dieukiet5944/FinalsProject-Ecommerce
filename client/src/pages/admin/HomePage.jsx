@@ -206,6 +206,7 @@ const HomePage = () => {
                             ? 'bg-[#EE2B6C]! text-white!'
                             : 'bg-transparent! text-gray-500! hover:text-[#EE2B6C]! hover:bg-pink-50/50!'
                             }`}
+                        disabled
                     >
                         <ShopOutlined className="text-lg" /> <span>Store Management</span>
                     </Button>

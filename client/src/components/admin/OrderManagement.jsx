@@ -232,7 +232,7 @@ const Orders = () => {
       width: 120,
       render: (_, record) => (
         <span className="text-[#ff4d4f] font-bold text-sm sm:text-base">
-          {record._id}
+          {`ORD-${record._id.slice(-6).toUpperCase()}`}
         </span>
       ),
     },
