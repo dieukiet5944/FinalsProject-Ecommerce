@@ -51,8 +51,6 @@ const WeeklySalesChart = ({ onCurrentWeekRevenueChange, onCurrentWeekOrdersChang
     let totalHistoricalRevenue = 0;
     let ordersCount = 0;  
 
-    console.log("orders " , ordersList)
-
     ordersList.forEach(order => {
       if (!order.createdAt) return;
 
@@ -104,7 +102,7 @@ const processChartData = useCallback(() => {
   if (!orders || orders.length === 0) return;
 
   const now = dayjs();
-  console.log("now", now)
+
   let startOfWeek, endOfWeek;
 
   if (filterKey === 'this_week') {

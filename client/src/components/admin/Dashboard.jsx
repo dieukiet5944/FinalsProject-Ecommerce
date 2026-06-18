@@ -34,7 +34,7 @@ const Dashboard = ({ name }) => {
                 const usersArray = resUsers.data?.data || [];
                 const productsArray = resProducts.data?.data || [];
                 const ordersArray = resOrders.data?.data || [];
-                console.log(ordersArray)
+                
                 if (Array.isArray(ordersArray)) {
                     const formattedOrders = ordersArray.map((order) => {
                         const itemsInOrder = order.items || [];
@@ -114,8 +114,6 @@ const Dashboard = ({ name }) => {
 
 
         const itemCounts = {};
-
-        console.log("History Here", historyOrders)
 
         historyOrders
             .filter(order => order.status === 'Completed')

@@ -171,14 +171,14 @@ const Orders = () => {
       const productsRes = await axios.get("http://localhost:8080/products");
       const ordersRes = await axios.get("http://localhost:8080/orders");
 
-      const listUsers = usersRes.data?.data || usersRes.data;
-      const listProducts = productsRes.data?.data || productsRes.data;
-      const listOrders = ordersRes.data?.data || ordersRes.data;
+      const listUsers = usersRes.data?.data;
+      const listProducts = productsRes.data?.data;
+      const listOrders = ordersRes.data?.data;
 
       const allOrders = listOrders.map(order => {
 
-        const totalQty = order.items?.reduce((sum, item) => sum + Number(item.qty || 0), 0) || 0;
-        const calculatedTotal = order.items?.reduce((sum, item) => sum + (Number(item.qty || 0) * Number(item.price || 0)), 0) || 0;
+        const totalQty = order.items?.reduce((sum, item) => sum + Number(item.qty), 0);
+        const calculatedTotal = order.items?.reduce((sum, item) => sum + (Number(item.qty) * Number(item.price)), 0);
 
 
         const matchedUser = listUsers.find(u => u._id === order.customerId);
@@ -232,7 +232,7 @@ const Orders = () => {
       width: 120,
       render: (_, record) => (
         <span className="text-[#ff4d4f] font-bold text-sm sm:text-base">
-          {record._id}
+          {`ORD-${record._id.toString().slice(2,5)}`}
         </span>
       ),
     },

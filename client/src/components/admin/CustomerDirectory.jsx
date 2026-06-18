@@ -298,7 +298,7 @@ const Customers = () => {
                             {record.username}
                         </p>
                         <p className="text-xs text-gray-400 m-0 mt-0.5 font-medium">
-                            ID: {record._id}
+                            ID: {record._id.toString().slice(0,8)}
                         </p>
                     </div>
                 </div>

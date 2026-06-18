@@ -79,7 +79,7 @@ const Inventory = () => {
               {record.name}
             </p>
             <p className="text-xs text-gray-400 m-0 mt-0.5 font-medium">
-              SKU: {record._id}
+              SKU: {record._id.toString().slice(20,24)}
             </p>
           </div>
         </div>
