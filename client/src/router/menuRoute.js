@@ -8,44 +8,44 @@ import StoreManagement from '../components/admin/StoreManagement.jsx';
 export const ADMIN_ROUTES = [
   {
     key: 'dashboard',
-    title: 'Dashboard (Bảng điều khiển)',
+    title: 'Dashboard',
     path: '/admin/dashboard',
     component: Dashboard,
-    keywords: ['thống kê', 'tổng quan', 'home', 'dashboard'] // Từ khóa phụ để tìm kiếm thông minh hơn
+    keywords: ['Dash', 'board', 'dashboard']
   },
   {
     key: 'orders',
-    title: 'Order Management (Quản lý đơn hàng)',
+    title: 'Order Management',
     path: '/admin/orders',
     component: Orders,
-    keywords: ['đơn hàng', 'hóa đơn', 'orders', 'sales']
+    keywords: ['orders', 'sales']
   },
   {
     key: 'inventory',
-    title: 'Inventory (Quản lý kho hàng)',
+    title: 'Inventory',
     path: '/admin/inventory',
     component: Inventory,
-    keywords: ['kho', 'sản phẩm', 'bánh', 'inventory', 'stock']
+    keywords: ['inventory', 'stock']
   },
   {
     key: 'customers',
-    title: 'Customer Directory (Danh mục khách hàng)',
+    title: 'Customer Directory',
     path: '/admin/customers',
     component: Customers,
-    keywords: ['khách hàng', 'user', 'customers', 'người dùng']
+    keywords: ['user', 'customers']
   },
   {
     key: 'storemanagement',
-    title: 'Store Management (Quản lý cửa hàng)',
+    title: 'Store Management',
     path: '/admin/storemanagement',
     component: StoreManagement,
-    keywords: ['cửa hàng', 'chi nhánh', 'stores', 'vùng']
+    keywords: ['stores', 'management']
   },
   {
     key: 'setting',
-    title: 'Settings (Cài đặt hệ thống)',
+    title: 'Settings',
     path: '/admin/setting',
     component: Setting,
-    keywords: ['cài đặt', 'cấu hình', 'setting', 'profile']
+    keywords: ['setting', 'profile']
   }
 ];

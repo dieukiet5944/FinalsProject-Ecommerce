@@ -208,6 +208,7 @@ const Orders = () => {
       setDataUsers(listUsers);
       setDataSource(allOrders);
 
+
     } catch (error) {
       console.error("Error loading order:", error);
       message.error("Không thể tải danh sách dữ liệu từ hệ thống!");
@@ -243,6 +244,7 @@ const Orders = () => {
       width: 250,
       render: (customer) => (
         <div className="flex items-center gap-3">
+          {console.log("Data", dataSource)}
           <Avatar
             src={`/product/avtusers/${customer.avatar}`}
             size={44}
@@ -330,13 +332,13 @@ const Orders = () => {
           onClick: () => handleUpdateStatus(record._id, 'Canceled')
         };
 
-        const editItem = {
-          key: 'edit',
-          label: <span className="font-medium">Edit</span>,
-          icon: <EditOutlined />,
-          danger: true,
-          onClick: () => handleUpdateStatus(record._id, 'Completed')
-        };
+        // const editItem = {
+        //   key: 'edit',
+        //   label: <span className="font-medium">Edit</span>,
+        //   icon: <EditOutlined />,
+        //   danger: true,
+        //   onClick: () => handleUpdateStatus(record._id, 'Completed')
+        // };
 
         const deleteItem = {
           key: 'delete',
