@@ -863,7 +863,8 @@ const Inventory = () => {
                   <Avatar
                     size={90}
                     shape="square"
-                    src={`/product/${(addForm.getFieldsValue()?.category || 'DRINK').toLowerCase()}/${addForm.getFieldsValue()?.image || ''}`} icon={<PictureOutlined />}
+                    src={`/product/${addForm.getFieldsValue()?.category?.toLowerCase() || ''}/${addForm.getFieldsValue()?.image || ''}`} 
+                    icon={<PictureOutlined />}
                     className="rounded-lg! border border-gray-100 bg-white shadow-sm object-cover"
                   />
                   <span className="text-[11px] font-medium text-gray-400 uppercase tracking-wider mt-1">Image Preview</span>

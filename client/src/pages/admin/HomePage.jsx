@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ShopOutlined, MenuUnfoldOutlined, ShoppingOutlined, InboxOutlined, TeamOutlined, StockOutlined, SettingOutlined, SearchOutlined, BellOutlined, LogoutOutlined, MenuOutlined, ArrowRightOutlined } from '@ant-design/icons'
 import { Input, Button, Modal, message, Drawer } from 'antd'
@@ -25,29 +25,27 @@ const HomePage = () => {
 
     const [searchText, setSearchText] = useState('');
 
-    const [searchResults, setSearchResults] = useState([]);
-
     const [admin, setAdmin] = useState([])
 
-    const handleSearch = (e) => {
-        const value = e.target.value;
-        setSearchText(value);
+    const searchResults = useMemo(() => {
+        if (!searchText.trim()) return [];
 
-        if (value.trim() === '') {
-            setSearchResults([]);
-        } else {
-            const filtered = ADMIN_ROUTES.filter(route =>
-                route.title.toLowerCase().includes(value.toLowerCase()) ||
-                route.keywords.some(kw => kw.toLowerCase().includes(value.toLowerCase()))
-            );
-            setSearchResults(filtered);
-        }
-    };
+        return ADMIN_ROUTES.filter(route =>
+            route.title.toLowerCase().includes(searchText.toLowerCase()) ||
+            route.keywords.some(kw =>
+                kw.toLowerCase().includes(searchText.toLowerCase())
+            )
+        );
+    }, [searchText]);
+
+
+    const handleSearch = (e) => {
+        setSearchText(e.target.value);
+    }
 
     const handleSelectPage = (pageKey) => {
         setCurrentPage(pageKey);
         setSearchText('');
-        setSearchResults([]);
     };
 
     const showModal = () => {
@@ -73,8 +71,6 @@ const HomePage = () => {
                 const response = localStorage.getItem("adminInfo")
                 if (response) {
                     const currentAdmin = JSON.parse(response);
-
-                    console.log("👉 ĐÂY LÀ OBJECT ADMIN CỦA BẠN:", currentAdmin);
 
                     setAdmin(currentAdmin);
                 }
@@ -206,6 +202,7 @@ const HomePage = () => {
                             ? 'bg-[#EE2B6C]! text-white!'
                             : 'bg-transparent! text-gray-500! hover:text-[#EE2B6C]! hover:bg-pink-50/50!'
                             }`}
+                        disabled
                     >
                         <ShopOutlined className="text-lg" /> <span>Store Management</span>
                     </Button>
@@ -243,11 +240,11 @@ const HomePage = () => {
 
                 <div className="p-4 border-t border-gray-100 bg-gray-50/50 flex items-center gap-3">
                     <img src={`/product/adminavt/${admin.avatar}`} alt="avatar" className="w-11 h-11 rounded-xl object-cover border border-gray-200" />
-                   
-                        <div key={admin.id} className="min-w-0">
-                            <h3 className="font-bold text-gray-800 text-sm m-0 truncate">{admin.name}</h3>
-                            <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider m-0 mt-0.5 truncate">{admin.role}</p>
-                        </div>
+
+                    <div key={admin.id} className="min-w-0">
+                        <h3 className="font-bold text-gray-800 text-sm m-0 truncate">{admin.name}</h3>
+                        <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider m-0 mt-0.5 truncate">{admin.role}</p>
+                    </div>
                 </div>
             </div>
 
@@ -329,7 +326,7 @@ const HomePage = () => {
             <Drawer
                 title={
                     <div className="flex items-center gap-2.5">
-                        <img src="../src/assets/logo.png" alt="logo" className="w-9 h-9 object-contain rounded-full" />
+                        <img src="./logo/logo.png" alt="logo" className="w-9 h-9 object-contain rounded-full" />
                         <span className="font-bold text-gray-800 text-base">Crumb & Bean Menu</span>
                     </div>
                 }
