@@ -53,7 +53,6 @@ const Dashboard = ({ name }) => {
 
                 setDataUser(usersArray);
                 setDataProduct(productsArray);
-                console.log("Success to get data from server");
             } catch (error) {
                 message.error("Error Server 500 !!");
             } finally {
