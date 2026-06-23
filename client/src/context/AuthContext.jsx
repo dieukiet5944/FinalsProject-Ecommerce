@@ -6,7 +6,10 @@ const AuthContext = createContext();
 const API_BASE_URL = "http://localhost:8080";
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem("user");
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
   const [loading, setLoading] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
 
@@ -42,7 +45,7 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       if (user?.id) {
-        await axios.post(`${API_BASE_URL}/users/${user.id}/logout`, {
+        await axios.post(`${API_BASE_URL}/users/${user?.id}/logout`, {
           userId: user.id,
         });
       }
@@ -54,14 +57,19 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const updateUserLocal = (newUserData) => {
+    const updated = { ...user, ...newUserData };
+    setUser(updated);
+    localStorage.setItem("user", JSON.stringify(updated));
+  };
+
   return (
     <AuthContext.Provider
-      value={{ user, login, logout, loading, authLoading }}
+      value={{ user, login, logout, loading, authLoading, updateUserLocal}}
     >
       {children}
     </AuthContext.Provider>
   );
 };
 
-// eslint-disable-next-line react-refresh/only-export-components
-export const  useAuth = () => useContext(AuthContext);
+export const useAuth = () => useContext(AuthContext);

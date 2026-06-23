@@ -78,7 +78,8 @@ const userControllers = {
                         id: user._id,
                         email: user.email,
                         name: user.username,
-                        status: user.status
+                        status: user.status,
+                        avatar: user.avatar
                     }
                 }
             });
@@ -184,6 +185,7 @@ const userControllers = {
             }
 
             return res.status(200).json({
+                success: true,
                 message: "Update success ❤️",
                 data: updatedUser
             });
