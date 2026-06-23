@@ -367,7 +367,7 @@ const Customers = () => {
                 return (
                     <div className="flex items-center gap-1.5 font-bold text-sm text-gray-800">
                         <span className="text-base text-amber-500">⭐</span>
-                        <span>{totalProductsCount}</span>
+                        <span>{totalProductsCount.toFixed(0)}</span>
                     </div>
                 );
             }
@@ -491,7 +491,7 @@ const Customers = () => {
                         </h2>
 
                         <p className="text-[11px] font-bold tracking-wider text-gray-500 m-0 mt-0.5 uppercase truncate">
-                            👑 {topSpender?.full_name || topSpender?.username || "CHƯA CÓ VIP"}
+                            👑 {topSpender?.username}
                         </p>
                     </div>
 

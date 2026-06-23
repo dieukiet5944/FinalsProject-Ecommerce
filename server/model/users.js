@@ -30,7 +30,7 @@ const userSchema = new mongoose.Schema({
     },
     avatar: { 
         type: String, 
-        default: "" 
+        default: "none-avt.png" 
     },
     refreshToken: {
         type: String,
