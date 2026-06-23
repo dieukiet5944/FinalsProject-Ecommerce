@@ -7,7 +7,7 @@ const CartContext = createContext();
 export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState([]);
   const [loading, setLoading] = useState(false);
-  const { user } = useAuth(); // 5 : accessToken, refreshToken, email, id, name, role from [normalUser]
+  const { user } = useAuth(); 
 
   const getCartItemId = (product) => {
     return product.id || product._id || `${product.name}-${product.price}`;
@@ -38,8 +38,6 @@ export const CartProvider = ({ children }) => {
       return [...prev, { ...product, id: cartId, quantity: quantityToAdd }];
     });
   };
-
-  console.log("cart herre", cart)
 
   const removeFromCart = (id) => {
     setCart((prev) => prev.filter((item) => !isSameCartItem(item, id)));

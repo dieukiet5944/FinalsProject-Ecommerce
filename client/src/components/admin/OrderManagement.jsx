@@ -332,14 +332,6 @@ const Orders = () => {
           onClick: () => handleUpdateStatus(record._id, 'Canceled')
         };
 
-        // const editItem = {
-        //   key: 'edit',
-        //   label: <span className="font-medium">Edit</span>,
-        //   icon: <EditOutlined />,
-        //   danger: true,
-        //   onClick: () => handleUpdateStatus(record._id, 'Completed')
-        // };
-
         const deleteItem = {
           key: 'delete',
           label: <span className="font-medium">Delete</span>,

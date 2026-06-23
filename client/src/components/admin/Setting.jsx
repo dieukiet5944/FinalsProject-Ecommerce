@@ -177,7 +177,6 @@ const Setting = () => {
                 </div>
             </div>
 
-            {/* KHỐI PERSONAL INFORMATION */}
             <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-xs">
                 <div className="flex items-center gap-2 text-[#EF3D78] font-bold text-base border-b border-gray-50 pb-4 mb-5">
                     <UserOutlined />

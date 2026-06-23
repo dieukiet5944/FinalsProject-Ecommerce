@@ -390,21 +390,14 @@ const HomePage = () => {
 
                 <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-100 bg-gray-50 flex items-center gap-3">
                     <img src={`/product/adminavt/${admin?.avatar}`} alt="avatar" className="w-10 h-10 rounded-xl object-cover shrink-0" />
-                    {admin && admin.length > 0 ? (
                         <div className="min-w-0 flex-1">
                             <h4 className="font-bold text-gray-800 text-sm m-0 truncate">
-                                {admin[0].userName}
+                                {admin.name}
                             </h4>
                             <p className="text-[11px] text-gray-400 font-bold uppercase m-0 mt-0.5 truncate">
-                                {admin[0].role || 'Admin'}
+                                {admin.role}
                             </p>
                         </div>
-                    ) : (
-                        <div className="min-w-0 flex-1">
-                            <h4 className="font-bold text-gray-800 text-sm m-0 truncate">Admin Account</h4>
-                            <p className="text-[11px] text-gray-400 font-bold uppercase m-0 mt-0.5 truncate">Loading...</p>
-                        </div>
-                    )}
                 </div>
             </Drawer>
 
