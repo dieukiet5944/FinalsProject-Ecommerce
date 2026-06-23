@@ -29,6 +29,7 @@ const Header = () => {
                 </span>
               )}
             </Link>
+                <Link to="/order" className="hover:text-white transition-colors">ORDER</Link>
           </nav>
 
           <div className="flex items-center gap-3 shrink-0">

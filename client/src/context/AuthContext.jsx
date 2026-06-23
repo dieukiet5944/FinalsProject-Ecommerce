@@ -25,8 +25,7 @@ export const AuthProvider = ({ children }) => {
         accessToken: result.accessToken,
         refreshToken: result.refreshToken,
         role: "user",
-      };
-      console.log("here111", normalUser)
+      }
 
       setUser(normalUser);
       localStorage.setItem("user", JSON.stringify(normalUser));

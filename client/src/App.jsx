@@ -11,6 +11,7 @@ import Cart from './pages/client/Cart';
 import Checkout from './pages/client/Checkout';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
+import Order from './pages/client/Order';
 
 import ProtectedRoute from './router/ProtectedRoute';
 
@@ -34,6 +35,7 @@ function App() {
         <Route path="/products" element={<ProductList />} />
         <Route path="/product/:id" element={<ProductDetail />} />
         <Route path="/cart" element={<Cart />} />
+        <Route path="/order" element={<Order />} />
 
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
