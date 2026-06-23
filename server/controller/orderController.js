@@ -5,7 +5,20 @@ import crypto from 'crypto'
 const orderController = {
     getOrders: async (req, res) => {
         try {
-            const response = await OrderModel.find({}).sort({ createdAt: -1 });
+            const pageNumber = Number(req.query.pageNumber)
+
+            const pageSize = Number(req.query.pageSize)
+
+            const skip = (pageNumber - 1) * pageSize;
+
+            const [response, totalItems] = await Promise.all([
+                OrderModel.find()
+                    .sort({ createdAt: -1 })
+                    .skip(skip)
+                    .limit(pageSize),
+
+                (await OrderModel.find()).length
+            ]);
 
             if (!response || response.length === 0) {
                 return res.status(200).json({
@@ -18,7 +31,11 @@ const orderController = {
             return res.status(200).json({
                 success: true,
                 message: "GET list of orders successful",
-                data: response
+                data: response,
+                totalItems,
+                totalPages: Math.ceil(totalItems / pageSize),
+                pageNumber,
+                pageSize
             });
 
         } catch (error) {
@@ -114,7 +131,7 @@ const orderController = {
             const newOrder = new OrderModel({
                 customerId,
                 items: confirmedItems,
-                totalPrice,                                               
+                totalPrice,
             });
 
             await newOrder.save();
@@ -162,7 +179,7 @@ const orderController = {
             }
 
             if (items && Array.isArray(items)) {
-                order.items = items; 
+                order.items = items;
                 let newTotal = 0;
                 for (const item of items) {
                     newTotal += (item.qty || 0) * (item.price || 0);
@@ -188,7 +205,7 @@ const orderController = {
         }
     },
 
-    putUpdateStateOrder: async ( req, res) => {
+    putUpdateStateOrder: async (req, res) => {
         try {
             const { id } = req.params
 

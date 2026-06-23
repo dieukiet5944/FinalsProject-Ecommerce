@@ -177,7 +177,7 @@ const userControllers = {
             const updatedUser = await UserModel.findByIdAndUpdate(
                 user._id,
                 { $set: cleanData },
-                { new: true, runValidators: true }
+                { returnDocument: 'after' }
             );
 
             if (!updatedUser) {
