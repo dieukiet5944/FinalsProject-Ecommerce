@@ -1,0 +1,42 @@
+import storeModel from "../model/store.js";
+import crypto from 'crypto'
+
+export const storeController = {
+    postStore: async(req, res) => {
+        try {
+            const { storeName, email, phone, address, description} = req.body
+
+            if (!storeName || !email || !phone || !address || !description) {
+                return res.status(400).send({
+                    success: false,
+                    message: "Please fill full all field !!!"
+                });
+            }
+
+            const newStore = new storeModel({
+                storeName,
+                storeCode: `Store - ${crypto.randomUUID().slice(0,5)}`,
+                email,
+                phone,
+                address,
+                description
+            })
+
+            await newStore.save()
+
+            res.status(201).send({
+                success: true,
+                message: `Create a new store "${storeName}" successful! 🎉`,
+                data: newStore
+            });
+            
+        } catch (error) {
+            console.log("Error from server:", error.message);
+            res.status(500).send({
+                success: false,
+                message: "Internal Server Error (Lỗi kết nối hoặc lưu Database)",
+                error: error.message
+            });
+        }
+    }
+}

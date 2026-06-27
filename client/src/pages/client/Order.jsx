@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { Flex, Steps, message, Modal } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons'
+import { LoadingOutlined, CheckCircleOutlined } from '@ant-design/icons'
 import axios from "axios";
+import dayjs from "dayjs";
 
-const content = 'This is a content.';
-const items = [
+
+const itemsCompleted = [
     {
         title: 'Order',
         content: 'Packaging orders',
@@ -13,11 +14,28 @@ const items = [
     {
         title: 'In Progress',
         content: 'Waiting for order confirmation',
-        subTitle: <LoadingOutlined />,
+    },
+    {
+        title: 'Completed',
+        content: "Confirmed",
+        subTitle: <CheckCircleOutlined className="text-green-400"/>,
+    },
+];
+
+const itemsPending = [
+    {
+        title: 'Order',
+        content: 'Packaging orders',
+        status: 'finish'
+    },
+    {
+        title: 'In Progress',
+        content: 'Waiting for order confirmation',
+        subTitle: <LoadingOutlined className="text-sky-500"/>,
     },
     {
         title: 'Waiting...',
-        content,
+        content: "Still waiting...",
     },
 ];
 
@@ -101,7 +119,7 @@ const Order = () => {
                                     <button onClick={() => { setSelectedOrder(item); setOpenView(true) }} className="bg-pink-500 pl-2 pr-2 rounded-xl active:bg-pink-800 ">View order</button>
                                 </div>
                                 <Flex vertical gap="large">
-                                    <Steps current={1} items={items} variant="outlined" />
+                                    { item.status === "Completed" ? <Steps current={2} status="finish" items={itemsCompleted} variant="outlined" /> : <Steps current={1} status="process" items={itemsPending} variant="outlined" />}
                                 </Flex>
                             </div>
                         )
@@ -118,28 +136,95 @@ const Order = () => {
                     footer={null}
                 >
                     {selectedOrder && (
-                        <div className='p-8'>
-                            <div className='flex flex-col gap-1'>
-                                <h2 className="text-black"><strong>ID: </strong>{selectedOrder._id}</h2>
-                                <h2><strong>Status: </strong>{selectedOrder.status}</h2>
-                                <div className="max-h-65 overflow-y-auto pr-1 space-y-3 scrollbar-thin">
-                                    {selectedOrder.items?.map((item, index) => (
-                                        <div key={index} className="flex justify-between items-center pb-2 border-b border-dashed border-gray-100 last:border-0 last:pb-0 gap-4">
-                                            <div className="flex flex-col min-w-0">
-                                                <span className="font-semibold text-gray-800 text-sm sm:text-base truncate">{item.productId}</span>
-                                                <span className="font-semibold text-gray-800 text-sm sm:text-base truncate">{item.name}</span>
-                                                <span className="text-xs text-gray-400 mt-0.5 font-medium">
-                                                    {item.qty} x ${Number(item.price).toFixed(2)}
+                        <div className="p-6 bg-white rounded-xl shadow-lg">
+                            <div className="flex flex-col gap-4">
+
+                                <div className="pb-3 border-b">
+                                    <h2 className="text-lg font-bold text-gray-800">
+                                        Order Detail
+                                    </h2>
+                                </div>
+
+                                <div className="grid gap-2 text-sm">
+                                    <p>
+                                        <span className="font-semibold text-gray-700">ID:</span>{" "}
+                                        <span className="text-gray-500 break-all">
+                                            {selectedOrder._id}
+                                        </span>
+                                    </p>
+
+                                    <p>
+                                        <span className="font-semibold text-gray-700">Status:</span>{" "}
+                                        <span className="inline-block px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold">
+                                            {selectedOrder.status}
+                                        </span>
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <h3 className="font-semibold text-gray-800 mb-3">
+                                        Order Items
+                                    </h3>
+
+                                    <div className="max-h-75 overflow-y-auto space-y-3 pr-2">
+                                        {selectedOrder.items?.map((item, index) => (
+                                            <div
+                                                key={index}
+                                                className="flex justify-between items-center p-3 rounded-lg bg-gray-50 border"
+                                            >
+                                                <div className="min-w-0">
+                                                    <p className="text-xs text-gray-400 truncate">
+                                                        {item.productId}
+                                                    </p>
+
+                                                    <p className="font-medium text-gray-800 truncate">
+                                                        {item.name}
+                                                    </p>
+
+                                                    <p className="text-sm text-gray-500">
+                                                        {item.qty} × $
+                                                        {Number(item.price).toFixed(2)}
+                                                    </p>
+                                                </div>
+
+                                                <span className="font-bold text-green-600">
+                                                    $
+                                                    {(item.qty * item.price).toFixed(2)}
                                                 </span>
                                             </div>
-                                            <b className="text-gray-800 text-sm sm:text-base shrink-0 pl-2">
-                                                ${(item.qty * item.price).toFixed(2)}
-                                            </b>
-                                        </div>
-                                    ))}</div>
-                                <h2><strong>TotalPrice: </strong>{selectedOrder.totalPrice}</h2>
-                                <h2><strong>CreateAt: </strong>{selectedOrder.createdAt}</h2>
-                                <h2><strong>UpdatedAt: </strong>{selectedOrder.updatedAt}</h2>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="border-t pt-4 space-y-2 text-sm">
+                                    <p className="flex justify-between">
+                                        <span className="font-semibold text-gray-700">
+                                            Total Price
+                                        </span>
+                                        <span className="font-bold text-lg text-green-600">
+                                            ${selectedOrder.totalPrice}
+                                        </span>
+                                    </p>
+
+                                    <p>
+                                        <span className="font-semibold text-gray-700">
+                                            Created At:
+                                        </span>{" "}
+                                        <span className="text-gray-500">
+                                            {dayjs(selectedOrder.createdAt).format("DD/MM/YYYY HH:mm")}
+                                        </span>
+                                    </p>
+
+                                    <p>
+                                        <span className="font-semibold text-gray-700">
+                                            Updated At:
+                                        </span>{" "}
+                                        <span className="text-gray-500">
+                                            {dayjs(selectedOrder.updatedAt).format("DD/MM/YYYY HH:mm")}
+                                        </span>
+                                    </p>
+                                </div>
+
                             </div>
                         </div>
 

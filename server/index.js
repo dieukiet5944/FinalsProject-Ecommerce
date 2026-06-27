@@ -8,6 +8,7 @@ import usersRouter from './routers/usersRouter.js';
 import productRouter from './routers/productsRouter.js';
 import adminRouter from './routers/adminRouter.js';
 import ordersRouter from './routers/ordersRouter.js';
+import storeRouter from './routers/storeRouter.js';
 
 const PORT = process.env.PORT || 8080;
 
@@ -38,6 +39,9 @@ app.use("/orders", ordersRouter)
 
 //ADMIN 
 app.use("/secret-key/admin", adminRouter);
+
+//ADMIN 
+app.use("/store", storeRouter);
 
 
 

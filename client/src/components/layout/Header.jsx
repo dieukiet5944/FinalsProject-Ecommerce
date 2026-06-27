@@ -42,8 +42,6 @@ const Header = () => {
     }
   }
 
-  console.log(user)
-
   return (
     <header className="bg-[#2a0614] border-b border-white/10 sticky top-0 z-50">
       <div className="max-w-screen-2xl mx-auto">
@@ -66,7 +64,8 @@ const Header = () => {
                 </span>
               )}
             </Link>
-                <Link to="/order" className="hover:text-white transition-colors">ORDER</Link>
+             
+            { user ? <Link to="/order" className="hover:text-white transition-colors">ORDER</Link> : <button onClick={() => { message.error("You need to login") }} className="hover:text-white transition-colors" >ORDER</button>}
           </nav>
 
           <div className="flex items-center gap-3 shrink-0">

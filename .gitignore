@@ -1,4 +1,4 @@
 node_modules/
-*.env*
+
 *.agents*
 WEEKLY_SALES_CHART_IMPLEMENTATION.md
