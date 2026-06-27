@@ -1,9 +1,8 @@
 import { createContext, useState, useContext, useEffect } from "react";
 import axios from "axios";
+import { API_URL } from "../config/api.js";
 
 const AuthContext = createContext();
-
-const API_BASE_URL = "http://localhost:8080";
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
@@ -17,7 +16,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     setLoading(true);
     try {
-      const response = await axios.post(`${API_BASE_URL}/users/login`, {
+      const response = await axios.post(`${API_URL}/users/login`, {
         email,
         password,
       });
@@ -45,7 +44,7 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       if (user?.id) {
-        await axios.post(`${API_BASE_URL}/users/${user?.id}/logout`, {
+        await axios.post(`${API_URL}/users/${user?.id}/logout`, {
           userId: user.id,
         });
       }

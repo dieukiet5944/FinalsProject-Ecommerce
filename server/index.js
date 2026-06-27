@@ -23,7 +23,13 @@ function myLogger(req, res, next) {
 
 app.use(myLogger);
 
-app.use(cors());
+app.use(cors({
+    origin: [
+        "http://localhost:5173",
+        "https://finals-project-ecommerce.vercel.app/"
+    ],
+    credentials: true
+}));
 
 app.use(express.json());
 

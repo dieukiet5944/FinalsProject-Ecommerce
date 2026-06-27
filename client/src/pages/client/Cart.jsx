@@ -1,4 +1,3 @@
-// src/pages/client/Cart.jsx
 import { Link } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import CartItem from '../../components/client/CartItem';
@@ -36,7 +35,7 @@ const Cart = () => {
         <div className="grid lg:grid-cols-12 gap-10">
           <div className="lg:col-span-7">
             <div
-              className="bg-light-card border border-gray-100 rounded-3xl p-6 max-h-[36rem] overflow-y-auto custom-scroll"
+              className="bg-light-card border border-gray-100 rounded-3xl p-6 max-h-144 overflow-y-auto custom-scroll"
             >
               <div className="space-y-6 pr-2">
                 {cart.map((item, index) => (

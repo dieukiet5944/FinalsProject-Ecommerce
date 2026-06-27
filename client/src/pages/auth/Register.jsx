@@ -1,7 +1,7 @@
-// src/pages/auth/Register.jsx
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { API_URL } from '../../config/api.js';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -20,7 +20,6 @@ const Register = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const navigate = useNavigate();
-  const API_BASE_URL = 'http://localhost:8080';
 
   const handleChange = (e) => {
     setFormData({
@@ -46,8 +45,7 @@ const Register = () => {
     setLoading(true);
 
     try {
-      // Register user with real database API
-      const response = await axios.post(`${API_BASE_URL}/users/register`, {
+      const response = await axios.post(`${API_URL}/users/register`, {
         username: formData.username,
         name: formData.name,
         email: formData.email,
@@ -71,7 +69,6 @@ const Register = () => {
 
   return (
     <div className="flex min-h-[90vh]">
-      {/* Left Side - Visual */}
       <div className="hidden lg:flex w-1/2 bg-[#3f0a1c] relative overflow-hidden flex-col justify-center items-center text-white p-8">
 
         <div className="relative z-10 max-w-md text-center">
@@ -89,7 +86,6 @@ const Register = () => {
         </div>
       </div>
 
-      {/* Right Side - Register Form */}
       <div className="flex justify-center flex-1 pt-8 pb-4 px-6 bg-white lg:px-8 lg:pt-10 lg:pb-6">
         <div className="w-full max-w-md">
           <h2 className="mb-2 text-4xl font-bold text-gray-900">Create Account</h2>

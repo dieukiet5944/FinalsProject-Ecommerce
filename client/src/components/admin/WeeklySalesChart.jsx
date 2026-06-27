@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { DownOutlined, CalendarOutlined } from '@ant-design/icons';
 import { Button, Dropdown } from 'antd';
+import { API_URL } from '../../config/api.js';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import isoWeek from 'dayjs/plugin/isoWeek';
@@ -87,7 +88,7 @@ const WeeklySalesChart = ({ onCurrentWeekRevenueChange, onCurrentWeekOrdersChang
 const fetchOrders = async () => {
   setLoading(true);
   try {
-    const response = await axios.get('http://localhost:8080/orders');
+    const response = await axios.get(`${API_URL}/orders`);
     const ordersData = response.data?.data || [];
     setOrders(ordersData);
   } catch (error) {

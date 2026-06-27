@@ -1,10 +1,10 @@
-// src/pages/client/ProductList.jsx
 import { useEffect, useState } from 'react';
 import { useCart } from '../../context/CartContext';
 import ProductCard from '../../components/client/ProductCard';
 import LoadingSpinner from '../../components/client/LoadingSpinner';
 import SuccessToast from '../../components/client/SuccessToast';
 import axios from 'axios';
+import { API_URL } from '../../config/api.js';
 
 const ProductList = () => {
   const [products, setProducts] = useState([]);
@@ -28,7 +28,7 @@ const ProductList = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/products');
+        const response = await axios.get(`${API_URL}/products`);
 
         const result = response.data;
 

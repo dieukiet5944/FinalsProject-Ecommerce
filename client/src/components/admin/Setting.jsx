@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { UserOutlined, LockOutlined, EditOutlined, PhoneOutlined, MailOutlined, EnvironmentOutlined } from '@ant-design/icons';
 import { message, Modal } from "antd";
 import axios from "axios";
+import { API_URL } from "../../config/api.js";
 
 const Setting = () => {
 
@@ -107,7 +108,7 @@ const Setting = () => {
             }
 
             const response = await axios.put(
-                `http://localhost:8080/secret-key/admin/${dataAdmin.id || dataAdmin._id}`,
+                `${API_URL}/secret-key/admin/${dataAdmin.id || dataAdmin._id}`,
                 updatePayload
             );
 

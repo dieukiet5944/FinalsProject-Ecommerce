@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import { EditOutlined } from '@ant-design/icons'
 import { Button, message, Modal } from 'antd'
 import axios from 'axios';
+import { API_URL } from '../../config/api.js';
 
 const Header = () => {
   const { user, logout, updateUserLocal  } = useAuth();
@@ -26,7 +27,7 @@ const Header = () => {
         avatar: pickPicture,
       };
 
-      const response = await axios.put(`http://localhost:8080/users/${user?.id}`, payload);
+      const response = await axios.put(`${API_URL}/users/${user?.id}`, payload);
 
       console.log(response)
 

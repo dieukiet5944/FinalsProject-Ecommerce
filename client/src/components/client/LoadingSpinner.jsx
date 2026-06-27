@@ -1,4 +1,3 @@
-// Simple loading spinner component
 const LoadingSpinner = () => {
   return (
     <div className="py-20 text-center">

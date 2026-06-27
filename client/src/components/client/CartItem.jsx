@@ -3,7 +3,6 @@ const CartItem = ({ item, onUpdateQuantity, onRemove }) => {
 
     return (
         <div className="flex gap-6 bg-white border border-gray-100 rounded-2xl p-5 hover:shadow-sm transition-all">
-            {/* Product Image */}
             <div className="w-28 h-28 shrink-0 overflow-hidden rounded-xl bg-gray-100">
                 <img
                     src={
@@ -19,7 +18,6 @@ const CartItem = ({ item, onUpdateQuantity, onRemove }) => {
                 />
             </div>
 
-            {/* Product Info */}
             <div className="flex-1 min-w-0">
                 <h3 className="font-medium text-lg leading-tight mb-1 line-clamp-2">
                     {item.name}
@@ -58,7 +56,6 @@ const CartItem = ({ item, onUpdateQuantity, onRemove }) => {
                 </div>
             </div>
 
-            {/* Item Total */}
             <div className="text-right shrink-0">
                 <p className="font-semibold text-lg text-warm-400">
                     ${itemTotal}
