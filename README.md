@@ -25,7 +25,7 @@ URL - Admin: https://finals-project-ecommerce.vercel.app/login
 
 🕸️ Email: realmarid2004@gmail.com
 
-🕸️ Password: 123456
+🕸️ Password: 111
 
 Tính năng: Quản lý tồn kho - render sản phẩm, duyệt đơn hàng, quản lý khách hàng, kiểm kê doanh thu - tổng doanh thu - đồ thị, Thiết lập thông tin admin
 
