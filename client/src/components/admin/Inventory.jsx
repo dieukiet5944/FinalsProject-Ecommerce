@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
+import { API_URL } from '../../config/api.js';
 import {
   EyeOutlined, MoreOutlined, EditOutlined, DeleteOutlined, PlusCircleOutlined, AlertOutlined, PlusOutlined, PictureOutlined, ExceptionOutlined, UserOutlined
 } from "@ant-design/icons";
@@ -35,12 +36,10 @@ const Inventory = () => {
 
   const [update, setUpdate] = useState(false);
 
-  const API_BASE_URL = 'http://localhost:8080/products';
-
   const loadData = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(API_BASE_URL);
+      const response = await axios.get(`${API_URL}/products`);
       const result = response.data?.data;
 
       if (result && Array.isArray(result) && result.length > 0) {
@@ -355,7 +354,7 @@ const Inventory = () => {
                 expiredAt: expiryDate
               };
 
-              const response = await axios.put(`${API_BASE_URL}/${item._id}`, payload);
+              const response = await axios.put(`${API_URL}/products/${item._id}`, payload);
 
               return response.data.data;
             })
@@ -508,7 +507,7 @@ const Inventory = () => {
             expiredAt: expiredAt
           };
 
-          const response = await axios.put(`${API_BASE_URL}/${record._id}`, payload);
+          const response = await axios.put(`${API_URL}/products/${record._id}`, payload);
 
           if (response.data.success) {
             const updatedProductFromServer = response.data.data;
@@ -598,7 +597,7 @@ const Inventory = () => {
                 icon={<DeleteOutlined />}
                 onClick={async () => {
                   try {
-                    const response = await axios.delete(`${API_BASE_URL}/expired/${batch.productId}/${batch.batchId}`);
+                    const response = await axios.delete(`${API_URL}/products/expired/${batch.productId}/${batch.batchId}`);
 
                     if (response.data.success) {
                       message.success(`Removed expired batch of ${batch.productName}!`);
@@ -657,7 +656,7 @@ const Inventory = () => {
         expiredAt: values.expiredAt ? values.expiredAt.format('YYYY-MM-DD') : null
       };
 
-      const response = await axios.post(API_BASE_URL, payload);
+      const response = await axios.post(`${API_URL}/products`, payload);
       const newProd = response.data?.data;
 
       if (newProd) {
@@ -688,7 +687,7 @@ const Inventory = () => {
         image: values.image || editingProduct.image || "default.jpg"
       };
 
-      const response = await axios.put(`${API_BASE_URL}/${editingProduct._id}`, payload);
+      const response = await axios.put(`${API_URL}/products/${editingProduct._id}`, payload);
 
       if (response.data.success) {
         const updatedProd = response.data.data;
@@ -720,7 +719,7 @@ const Inventory = () => {
       cancelText: 'Cancel',
       onOk: async () => {
         try {
-          await axios.delete(`${API_BASE_URL}/${record._id}`);
+          await axios.delete(`${API_URL}/products/${record._id}`);
           setData(prev => prev.filter(item => item._id !== record._id));
           message.success("Product disabled successfully!");
         } catch (error) {

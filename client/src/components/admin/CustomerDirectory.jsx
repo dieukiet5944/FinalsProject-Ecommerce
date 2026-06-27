@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react'
 import { DownloadOutlined, UserAddOutlined, TeamOutlined, TagOutlined, TrophyOutlined, DollarOutlined, FireOutlined, FunnelPlotOutlined, MoreOutlined, ProfileOutlined, DeleteOutlined, AuditOutlined } from '@ant-design/icons'
 import { Modal, Table, Tag, Avatar, Space, Button, Dropdown, Spin, message } from 'antd'
 import axios from 'axios'
+import { API_URL } from '../../config/api.js'
 
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -20,8 +21,8 @@ const Customers = () => {
             setLoading(true);
             try {
                 const [resUsers, resOrders] = await Promise.all([
-                    axios.get("http://localhost:8080/users"),
-                    axios.get("http://localhost:8080/orders")
+                    axios.get(`${API_URL}/users`),
+                    axios.get(`${API_URL}/orders`)
                 ]);
 
                 const usersResult = resUsers.data?.data;

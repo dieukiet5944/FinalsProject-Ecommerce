@@ -6,6 +6,7 @@ import LoadingSpinner from '../../components/client/LoadingSpinner';
 import ProductCard from '../../components/client/ProductCard';
 import SuccessToast from '../../components/client/SuccessToast';
 import axios from 'axios';
+import { API_URL } from '../../config/api.js';
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -22,7 +23,7 @@ const ProductDetail = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/products/${id}`);
+        const response = await axios.get(`${API_URL}/products/${id}`);
 
         const result = response.data
 

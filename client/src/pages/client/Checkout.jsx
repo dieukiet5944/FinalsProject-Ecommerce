@@ -1,4 +1,3 @@
-// src/pages/client/Checkout.jsx
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -88,7 +87,6 @@ const Checkout = () => {
         )}
 
         <div className="grid lg:grid-cols-12 gap-10">
-          {/* Shipping Information */}
           <div className="lg:col-span-7">
             <div className="bg-white border border-gray-200 rounded-3xl p-8">
               <h2 className="text-2xl font-semibold mb-6">Shipping Information</h2>

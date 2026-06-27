@@ -5,6 +5,7 @@ import axios from 'axios';
 import dayjs from 'dayjs';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import isBetween from 'dayjs/plugin/isBetween';
+import { API_URL } from '../../config/api.js';
 
 import WeeklySalesChart from './WeeklySalesChart';
 
@@ -27,9 +28,9 @@ const Dashboard = ({ name }) => {
         const getAlldata = async () => {
             setLoading(true);
             try {
-                const resUsers = await axios.get("http://localhost:8080/users");
-                const resProducts = await axios.get("http://localhost:8080/products");
-                const resOrders = await axios.get("http://localhost:8080/orders");
+                const resUsers = await axios.get(`${API_URL}/users`);
+                const resProducts = await axios.get(`${API_URL}/products`);
+                const resOrders = await axios.get(`${API_URL}/orders`);
 
                 const usersArray = resUsers.data?.data || [];
                 const productsArray = resProducts.data?.data || [];

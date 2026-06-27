@@ -3,6 +3,7 @@ import { Flex, Steps, message, Modal } from 'antd';
 import { LoadingOutlined, CheckCircleOutlined } from '@ant-design/icons'
 import axios from "axios";
 import dayjs from "dayjs";
+import { API_URL } from "../../config/api.js";
 
 
 const itemsCompleted = [
@@ -54,7 +55,7 @@ const Order = () => {
         const loadDataOrder = async () => {
             setLoading(true)
             try {
-                const response = await axios.get(`http://localhost:8080/orders?pageNumber=${pageNumber}&pageSize=3`);
+                const response = await axios.get(`${API_URL}/orders?pageNumber=${pageNumber}&pageSize=3`);
 
                 const result = response.data?.data;
 

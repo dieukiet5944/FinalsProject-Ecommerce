@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react'
 import { Table, Tag, Avatar, Space, Button, Spin, Modal, Dropdown, message } from 'antd';
 import { MoreOutlined, EyeOutlined, CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, AuditOutlined, EditOutlined } from '@ant-design/icons'
 import axios from 'axios';
+import { API_URL } from '../../config/api.js';
 
 import dayjs from 'dayjs';
 
@@ -45,7 +46,7 @@ const Orders = () => {
       cancelText: 'Cancel',
       onOk: async () => {
         try {
-          const response = await axios.delete(`http://localhost:8080/orders/${order._id}`);
+          const response = await axios.delete(`${API_URL}/orders/${order._id}`);
 
           if (response && response.data.success) {
             setDataSource(prevSource => prevSource.filter(item => item.id !== order._id));
@@ -81,7 +82,7 @@ const Orders = () => {
 
       const userOwner = dataUsers.find(item => item.id === targetOrder.customerId);
 
-      const response = await axios.put(`http://localhost:8080/orders/${orderId}`,
+      const response = await axios.put(`${API_URL}/orders/${orderId}`,
         { status: newStatus }
       );
 
@@ -116,7 +117,7 @@ const Orders = () => {
 
   const handleAcceptOrder = async (orderId) => {
     try {
-      const response = await axios.put(`http://localhost:8080/orders/changestate/${orderId}`);
+      const response = await axios.put(`${API_URL}/orders/changestate/${orderId}`);
 
       message.success('Order accepted successfully');
     } catch (error) {
@@ -167,9 +168,9 @@ const Orders = () => {
     setLoading(true);
     try {
 
-      const usersRes = await axios.get("http://localhost:8080/users");
-      const productsRes = await axios.get("http://localhost:8080/products");
-      const ordersRes = await axios.get("http://localhost:8080/orders");
+      const usersRes = await axios.get(`${API_URL}/users`);
+      const productsRes = await axios.get(`${API_URL}/products`);
+      const ordersRes = await axios.get(`${API_URL}/orders`);
 
       const listUsers = usersRes.data?.data;
       const listProducts = productsRes.data?.data;

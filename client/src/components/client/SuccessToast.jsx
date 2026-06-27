@@ -1,4 +1,3 @@
-// Simple success toast notification
 const SuccessToast = ({ message, isVisible }) => {
   if (!isVisible) return null;
 

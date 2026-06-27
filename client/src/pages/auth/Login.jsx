@@ -1,4 +1,3 @@
-// src/pages/auth/Login.jsx
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -30,7 +29,6 @@ const Login = () => {
 
   return (
     <div className="flex min-h-[90vh]">
-      {/* Left Side - Visual */}
       <div className="hidden lg:flex w-1/2 bg-[#3f0a1c] relative overflow-hidden flex-col justify-center items-center text-white p-12">
 
         <div className="relative z-10 max-w-md text-center">
@@ -56,7 +54,6 @@ const Login = () => {
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1600585154340-be6161a56a9c')] bg-cover bg-center opacity-20" />
       </div>
 
-      {/* Right Side - Login Form */}
       <div className="flex items-center justify-center flex-1 p-6 bg-white lg:p-12">
         <div className="w-full max-w-md">
           <div className="mb-10">

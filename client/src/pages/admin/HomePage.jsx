@@ -5,6 +5,7 @@ import { ShopOutlined, MenuUnfoldOutlined, ShoppingOutlined, InboxOutlined, Team
 import { Input, Button, Modal, message, Drawer } from 'antd'
 
 import axios from 'axios';
+import { API_URL } from '../../config/api.js';
 
 import Dashboard from '../../components/admin/Dashboard'
 import Orders from '../../components/admin/OrderManagement'
@@ -97,7 +98,7 @@ const HomePage = () => {
                     const adminId = storedAdmin?._id || storedAdmin?.id;
 
                     if (adminId) {
-                        await axios.post(`http://localhost:8080/secret-key/admin/${adminId}/logout`, { userId: adminId });
+                        await axios.post(`${API_URL}/secret-key/admin/${adminId}/logout`, { userId: adminId });
                     }
 
                     localStorage.removeItem('adminInfo');

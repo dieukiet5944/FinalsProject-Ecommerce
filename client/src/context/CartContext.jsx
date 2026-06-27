@@ -1,6 +1,7 @@
 import { createContext, useContext, useState } from "react";
 import axios from "axios";
 import { useAuth } from "./AuthContext";
+import { API_URL } from "../config/api.js";
 
 const CartContext = createContext();
 
@@ -73,7 +74,7 @@ export const CartProvider = ({ children }) => {
 
       console.log("aa", payload)
 
-      const response = await axios.post("http://localhost:8080/orders", payload);
+      const response = await axios.post(`${API_URL}/orders`, payload);
       const result = response.data?.data
 
       clearCart();

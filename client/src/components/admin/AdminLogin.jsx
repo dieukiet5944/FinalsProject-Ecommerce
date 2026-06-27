@@ -3,6 +3,7 @@ import axios from 'axios'
 import { Input, Form, Card, Button, message, Spin } from 'antd';
 import { MailOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import { API_URL } from "../../config/api.js";
 
 const AdminLogin = () => {
 
@@ -19,7 +20,7 @@ const AdminLogin = () => {
             };
 
             const response = await axios.post(
-                "http://localhost:8080/secret-key/admin/login",
+                `${API_URL}/secret-key/admin/login`,
                 loginPayload
             );
 
