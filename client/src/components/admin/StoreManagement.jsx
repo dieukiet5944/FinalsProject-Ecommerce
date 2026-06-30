@@ -1,44 +1,82 @@
-import React, { useState } from 'react';
-import { Table, Button, Input, Tag, Space, Card, Modal, Form, Select, notification } from 'antd';
-import { SearchOutlined, FilterOutlined, PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import React, { useEffect, useState, useRef } from 'react';
+import { Table, Button, Input, Tag, Card, Modal, Form, Select, notification, message, Spin, Dropdown, Descriptions } from 'antd';
+import {UserAddOutlined,MoreOutlined ,SearchOutlined, FilterOutlined, PlusOutlined, EditOutlined, DeleteOutlined, ShopOutlined } from '@ant-design/icons';
+import { API_URL } from '../../config/api.js';
+import axios from 'axios'
 
 const StoreManagement = () => {
-  // const [stores, setStores] = useState(initialStores);
+
+  const [loading, setLoading] = useState(false)
+  const [stores, setStores] = useState([]);
   const [searchText, setSearchText] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingStore, setEditingStore] = useState(null);
-  const [form] = Form.useForm();
 
-  // const handleSearch = (e) => {
-  //   const value = e.target.value;
-  //   setSearchText(value);
-  //   if (value === '') {
-  //     setStores(initialStores);
-  //   } else {
-  //     const filtered = initialStores.filter(store =>
-  //       store.name.toLowerCase().includes(value.toLowerCase())
-  //     );
-  //     setStores(filtered);
-  //   }
-  // };
+  const formValues = useRef({ storeName: '', email: '', phone: '', address: '', description: '' });
 
+  useState(() => {
+    const getData = async (req, res) => {
+      setLoading(true)
+      try {
+        const response = await axios.get(`${API_URL}/store`);
 
-  const handleSave = () => {
-    form.validateFields().then((values) => {
-      if (editingStore) {
-        setStores(stores.map(item => item.key === editingStore.key ? { ...item, ...values } : item));
-        notification.success({ message: 'Cập nhật cửa hàng thành công!' });
-      } else {
-        const newStore = {
-          key: Date.now().toString(),
-          logo: '🏪',
-          ...values
-        };
-        setStores([...stores, newStore]);
-        notification.success({ message: 'Thêm cửa hàng mới thành công!' });
+        const result = response.data?.data;
+
+        if (result === 0) {
+          setStores([])
+        }
+        else {
+          setStores(result)
+        }
+
+      } catch (error) {
+        console.log("Error from server")
+        message.error(response.message)
       }
-      setIsModalOpen(false);
-    });
+      finally {
+        setLoading(false)
+      }
+    }
+
+    getData()
+  }, [])
+ 
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    formValues.current[name] = value;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault(); 
+
+    setLoading(true);
+
+    const payload = {
+      storeName: formValues.current.storeName?.trim(),
+      email: formValues.current.email?.trim(),
+      address: formValues.current.address?.trim(),
+      phone: formValues.current.phone?.trim(),
+      description: formValues.current.description?.trim()
+    };
+
+    console.log(payload)
+    
+    try {
+      const response = await axios.post(`${API_URL}/store`, payload);
+      
+      if (response.status === 201) {
+        message.success('Successfull create new store ❤️');
+        setIsModalOpen(false);
+        
+        formValues.current = { storeName: '', email: '', phone: '', address: '', desctiption: '' }; 
+      }
+    } catch (error) {
+      console.error("Lỗi khi gọi API:", error);
+      message.error(error.response?.data?.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDelete = (key) => {
@@ -58,63 +96,96 @@ const StoreManagement = () => {
   const columns = [
     {
       title: 'STORE NAME',
-      dataIndex: 'name',
-      key: 'name',
-      render: (text, record) => (
+      key: 'storeName',
+      render: (_, record) => (
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-pink-100 flex items-center justify-center text-lg">
-            {record.logo}
+          <div className="w-10 h-10 rounded-xl bg-pink-100 flex items-center justify-center text-lg text-pink-500 ">
+            <ShopOutlined />
           </div>
-          <span className="font-bold text-gray-800">{text}</span>
+          <div className='flex flex-col p-2'>
+             <span className='text-gray-500'><strong>Name:</strong> {record.storeName}</span>
+             <span className='text-gray-500'><strong>Code:</strong> {record.storeCode}</span>
+          </div>
         </div>
       ),
     },
     {
       title: 'ADDRESS',
-      dataIndex: 'address',
       key: 'address',
-      render: (text) => <span className="text-gray-600 text-sm">{text}</span>
+      render: (_,record) => <span className="text-gray-600 text-sm">{record.address}</span>
     },
     {
       title: 'MANAGER',
-      dataIndex: 'manager',
       key: 'manager',
-      render: (text) => <span className="font-semibold text-gray-800">{text}</span>
+      render: (_,record) => 
+        (
+          <div className='flex flex-col gap-2'>
+             <span className={`${record.ownerId === "None" ? 'text-red-400 bg-red-200  text-center rounded-xl' : 'text-green-500 bg-green-300'}`}>OwnerID: {record.ownerId === "None" ? "No owner yet" : record.ownerId }</span>
+             <span className={`${record.ownerId === "None" ? 'text-red-400 bg-red-200  text-center rounded-xl' : 'text-green-500 bg-green-300'}`}>OwnerName: {record.ownerName === "None" ? "No owner yet" : record.ownerName } </span>
+          </div>
+        )
+      
     },
     {
       title: 'CONTACT',
-      dataIndex: 'contact',
       key: 'contact',
-      render: (text) => <span className="text-gray-500 text-sm whitespace-pre-line">{text}</span>
+      render: (_,record) => (
+         <div className='flex flex-col'>
+            <span className='text-gray-500'><strong>Email:</strong> {record.email}</span>
+            <span className='text-gray-500'><strong>Phone:</strong> {record.phone}</span>
+         </div>
+      )
     },
     {
       title: 'STATUS',
-      dataIndex: 'status',
       key: 'status',
-      render: (status) => (
-        <Tag className={`font-bold px-3 py-0.5 rounded-full border-none ${status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-400'
-          }`}>
-          {status}
-        </Tag>
+      render: (_,record) => (
+        <span className={`font-bold p-1 rounded-sm border-none ${record.status === 'Close' ? 'bg-red-100 text-red-400' : 'bg-green-100 text-green-400'}`}>
+          {record.status}
+        </span>
       ),
     },
     {
       title: 'ACTIONS',
       key: 'actions',
-      render: (_, record) => (
-        <Space size="middle">
-          <Button
-            type="text"
-            icon={<EditOutlined className="text-gray-500 hover:text-pink-600 transition-colors" />}
-            onClick={() => showModal(record)}
-          />
-          <Button
-            type="text"
-            icon={<DeleteOutlined className="text-gray-400 hover:text-red-500 transition-colors" />}
-            onClick={() => handleDelete(record.key)}
-          />
-        </Space>
-      ),
+      render: (_, record) =>  {
+        const actionItems = [
+          {
+            key: 'Edit',
+            label: <span className="font-medium text-gray-700">Edit</span>,
+            icon: <EditOutlined className="text-green-500" />,
+            // onClick: () => handleRestock(record)
+          },
+          {
+            key: 'Delete',
+            label: <span className="font-medium text-gray-700">Delete</span>,
+            icon: <DeleteOutlined className="text-blue-500" />,
+            // onClick: () => handleEdit(record)
+          },
+          { type: 'divider' },
+          record.ownerId === 'None' && { 
+            key: 'Owner',
+            label: <span className="font-medium text-gray-700">Add Owner</span>,
+            icon: <UserAddOutlined className="text-blue-500" />,
+          }
+        ].filter(Boolean);
+
+        return (
+          <Dropdown
+            menu={{ items: actionItems }}
+            trigger={['click']}
+            placement="bottomRight"
+            classNames={{ root: "shadow-md rounded-lg" }}
+          >
+            <Button
+              type="text"
+              shape="circle"
+              className="hover:bg-gray-100! flex items-center justify-center m-auto"
+              icon={<MoreOutlined className="text-gray-500 text-xl!" />}
+            />
+          </Dropdown>
+        );
+      }
     },
   ];
 
@@ -154,50 +225,54 @@ const StoreManagement = () => {
         </Card>
       </div>
 
-      {/* <div className="bg-white rounded-b-2xl shadow-xs overflow-hidden">
-        <Table 
-          columns={columns} 
-          dataSource={stores} 
-          pagination={{
-            placement: ['bottomRight'],
-            defaultPageSize: 4,
-            showSizeChanger: false,
-            className: "pr-6 py-4"
-          }}
-        />
-      </div> */}
+      <div className="bg-white rounded-b-2xl shadow-xs overflow-hidden">
+        <Spin spinning={loading} >
+          <Table
+            rowKey="_id"
+            columns={columns}
+            dataSource={stores}
+            pagination={{
+              placement: ['bottomRight'],
+              defaultPageSize: 4,
+              showSizeChanger: false,
+              className: "pr-6 py-4"
+            }}
+          />
+        </Spin>
+      </div>
 
       <Modal
         title={<span className="text-xl font-bold text-gray-800">{editingStore ? 'Edit Store Info' : 'Add New Store'}</span>}
         open={isModalOpen}
+        confirmLoading={loading}
         onCancel={() => setIsModalOpen(false)}
-        okText={editingStore ? "Save Changes" : "Create Store"}
+        okText="Create"
         cancelText="Cancel"
-        okButtonProps={{ className: 'bg-[#de1e60] border-none hover:bg-[#be185d]' }}
+        okButtonProps={{ htmlType: 'submit', form: 'modal-form' }}
         className="rounded-2xl overflow-hidden"
       >
-        <div className='p-5 flex flex-col gap-5'>
-            <div className=' flex flex-col gap-2'>
-               <label className="before:content-['*'] before:text-red-500 before:mr-1">Store Name</label>
-               <input className='border-2 p-1 rounded-sm outline-none' type='string' placeholder='please fill your name' required/>
-            </div>
-            <div className=' flex flex-col gap-2'>
-               <label className="before:content-['*'] before:text-red-500 before:mr-1">Email</label>
-               <input className='border-2 p-1 rounded-sm outline-none' type='email' required/>
-            </div>
-            <div className=' flex flex-col gap-2'>
-               <label className="before:content-['*'] before:text-red-500 before:mr-1">Phone</label>
-               <input className='border-2 p-1 rounded-sm outline-none' type="string" required/>
-            </div>
-            <div className=' flex flex-col gap-2'>
-               <label className="before:content-['*'] before:text-red-500 before:mr-1">Address</label>
-               <input className='border-2 p-1 rounded-sm outline-none' type='string' required/>
-            </div>
-            <div className=' flex flex-col gap-2'>
-               <label >Description</label>
-               <textarea className='border-2 p-1 rounded-sm outline-none' required/>
-            </div>
-        </div>
+        <form id='modal-form' onSubmit={handleSubmit} className='p-5 flex flex-col gap-5'>
+          <div className=' flex flex-col gap-2'>
+            <label className="before:content-['*'] before:text-red-500 before:mr-1">Store Name</label>
+            <input name='storeName' onChange={handleInputChange} className='border-2 p-2 rounded-sm outline-none' type='string' placeholder='please fill your name' required />
+          </div>
+          <div className=' flex flex-col gap-2'>
+            <label className="before:content-['*'] before:text-red-500 before:mr-1">Email</label>
+            <input type="email" name='email' onChange={handleInputChange} className='border-2 p-2 rounded-sm outline-none' type='email' required />
+          </div>
+          <div className=' flex flex-col gap-2'>
+            <label className="before:content-['*'] before:text-red-500 before:mr-1">Phone</label>
+            <input name='phone' onChange={handleInputChange} className='border-2 p-2 rounded-sm outline-none' type="string" required />
+          </div>
+          <div className=' flex flex-col gap-2'>
+            <label className="before:content-['*'] before:text-red-500 before:mr-1">Address</label>
+            <input name='address' onChange={handleInputChange} className='border-2 p-2 rounded-sm outline-none' type='string' required />
+          </div>
+          <div className=' flex flex-col gap-2'>
+            <label className="before:content-['*'] before:text-red-500 before:mr-1" >Description</label>
+            <textarea name='description' onChange={handleInputChange} className='border-2 p-2 rounded-sm outline-none' required />
+          </div>
+        </form>
       </Modal>
     </div>
   );

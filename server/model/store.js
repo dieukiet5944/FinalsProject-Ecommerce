@@ -30,16 +30,14 @@ const storeSchema = new mongoose.Schema(
             required: true
         },  
         address: {
-            province: String,
-            district: String,
-            ward: String,
-            detailAddress: String
-        },
-        logo: {
             type: String,
-            required: true,
-            default:"none.jpg"
-        },  
+            required: true
+        },
+        // logo: {
+        //     type: String,
+        //     required: true,
+        //     default:"none.jpg"
+        // },  
         // banner: {
         //     type: String,
         //     required: true

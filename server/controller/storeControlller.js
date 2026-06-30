@@ -2,6 +2,28 @@ import storeModel from "../model/store.js";
 import crypto from 'crypto'
 
 export const storeController = {
+    getStore: async(req,res) => {
+        try {
+            const getAlldata = await storeModel.find({});
+
+            if(getAlldata.length === 0) {{ return res.status(404).json({ message: "Not found data !!!"})}}
+
+            res.status(200).send({
+                success: true,
+                message: `Success to log data 🎉`,
+                data: getAlldata
+            });
+        } catch (error) {
+            console.log("Error from server:", error.message);
+            res.status(500).send({
+                success: false,
+                message: "Internal Server Error                         ",
+                error: error.message
+            });
+        }
+        
+    },
+
     postStore: async(req, res) => {
         try {
             const { storeName, email, phone, address, description} = req.body

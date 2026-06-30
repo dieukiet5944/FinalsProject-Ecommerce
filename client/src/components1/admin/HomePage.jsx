@@ -203,7 +203,6 @@ const HomePage = () => {
                             ? 'bg-[#EE2B6C]! text-white!'
                             : 'bg-transparent! text-gray-500! hover:text-[#EE2B6C]! hover:bg-pink-50/50!'
                             }`}
-                        disable
                     >
                         <ShopOutlined className="text-lg" /> <span>Store Management</span>
                     </Button>
@@ -356,6 +355,16 @@ const HomePage = () => {
                             }`}
                     >
                         <ShoppingOutlined className="text-lg" /> <span>Orders</span>
+                    </Button>
+
+                    <Button
+                        onClick={() => {setCurrentPage('storemanagement'); setIsDrawerOpen(false)}}
+                        className={`flex! items-center! gap-3! w-full! h-12! px-4! rounded-xl! text-sm! font-semibold! border-none! shadow-none! outline-none! transition-all! justify-start! ${currentPage === 'storemanagement'
+                            ? 'bg-[#EE2B6C]! text-white!'
+                            : 'bg-transparent! text-gray-500! hover:text-[#EE2B6C]! hover:bg-pink-50/50!'
+                            }`}
+                    >
+                        <ShopOutlined className="text-lg" /> <span>Store Management</span>
                     </Button>
 
                     <Button
