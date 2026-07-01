@@ -144,10 +144,6 @@ const Dashboard = ({ name }) => {
     }, [historyOrders, dataProduct]);
 
 
-    if (loading) {
-        return <div className="p-6 bg-white rounded-2xl h-80 flex items-center justify-center text-gray-400">Loading chart...</div>;
-    }
-
     return (
         <div className="p-4 sm:p-6 md:p-9 flex flex-col gap-6 min-h-screen bg-gray-50/50">
 
@@ -208,11 +204,12 @@ const Dashboard = ({ name }) => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
                 <div className="lg:col-span-2 flex flex-col bg-white p-5 sm:p-6 rounded-xl border border-gray-100 shadow-[0_4px_12px_rgba(0,0,0,0.02)] gap-6">
-
+                    <Spin spinning={loading}>
                     <WeeklySalesChart
                         onCurrentWeekRevenueChange={setCurrentWeekRevenue}
                         onCurrentWeekOrdersChange={setCurrentWeekOrdersCount}
                     />
+                    </Spin>
 
                 </div>
 
@@ -224,10 +221,11 @@ const Dashboard = ({ name }) => {
                     >
                         <div className="flex flex-col gap-4">
                             {topSellingItem.map((item, index) => (
+                                <Spin spinning={loading} key={index}>
                                 <div
                                     key={index}
                                     className="flex justify-between items-center pb-4 border-b border-gray-100 last:border-0 last:pb-0"
-                                >
+                                >   
                                     <div className="flex items-center gap-3 min-w-0">
                                         <Avatar
                                             src={item.image}
@@ -249,6 +247,7 @@ const Dashboard = ({ name }) => {
                                         ${item.price}
                                     </span>
                                 </div>
+                                </Spin>
                             ))}
                         </div>
                     </Card>

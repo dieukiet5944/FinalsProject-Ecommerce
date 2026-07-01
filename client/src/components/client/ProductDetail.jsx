@@ -2,9 +2,9 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
-import LoadingSpinner from '../../components/client/LoadingSpinner';
-import ProductCard from '../../components/client/ProductCard';
-import SuccessToast from '../../components/client/SuccessToast';
+import LoadingSpinner from '../../pages/client/LoadingSpinner';
+import ProductCard from '../../pages/client/ProductCard';
+import SuccessToast from '../../pages/client/SuccessToast';
 import axios from 'axios';
 import { API_URL } from '../../config/api.js';
 
