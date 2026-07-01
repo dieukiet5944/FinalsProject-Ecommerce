@@ -35,7 +35,7 @@ const AdminLogin = () => {
 
                 message.success("Login successful! ❤️");
 
-                navigate('/homepage');
+                navigate('/admin/dashboard');
             } else {
                 message.error(result.message || "Login failed!");
             }

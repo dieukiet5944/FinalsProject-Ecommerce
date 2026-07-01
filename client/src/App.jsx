@@ -1,36 +1,35 @@
 // src/App.jsx
 import { Routes, Route } from 'react-router-dom';
-import { Outlet } from 'react-router-dom';
 
-import UserLayout from './components/layout/UserLayout';   // hoặc './layout/UserLayout' tùy cấu trúc của bạn
-
-import Home from './pages/client/Home';
-import ProductList from './pages/client/ProductList';
-import ProductDetail from './pages/client/ProductDetail';
-import Cart from './pages/client/Cart';
-import Checkout from './pages/client/Checkout';
-import Login from './pages/auth/Login';
-import Register from './pages/auth/Register';
-import Order from './pages/client/Order';
+import CustomerLayout from './components/layouts/CustomerLayout.jsx';
+import Home from './components/client/Home';
+import ProductList from './components/client/ProductList';
+import ProductDetail from './components/client/ProductDetail';
+import Cart from './components/client/Cart';
+import Checkout from './components/client/Checkout';
+import Login from './components/auth/Login';
+import Register from './components/auth/Register';
+import Order from './components/client/Order';
 
 import ProtectedRoute from './router/ProtectedRoute';
 
 // --- PHẦN ADMIN ---
-import AdminLogin from '../src/components/admin/AdminLogin'; 
-import HomePage from '../src/pages/admin/HomePage';
-import Dashboard from '../src/components/admin/Dashboard';
-import Orders from '../src/components/admin/OrderManagement';
-import Inventory from '../src/components/admin/Inventory';
-import Customers from '../src/components/admin/CustomerDirectory';
-import Setting from '../src/components/admin/Setting';
-import AdminProtectedRoute from './router/AdminProtectedRoute';
+import AdminLogin from './pages/admin/AdminLogin.jsx';
+import AdminLayout from './components/layouts/AdminLayout.jsx';
+import Dashboard from './pages/admin/Dashboard.jsx';
+import Orders from './pages/admin/OrderManagement.jsx';
+import Inventory from './pages/admin/Inventory.jsx';
+import Customers from './pages/admin/CustomerDirectory.jsx';
+import Setting from './pages/admin/Setting.jsx';
+import StoreManagement from './pages/admin/StoreManagement.jsx';
+import AdminProtectedRoute from './router/AdminProtectedRoute.jsx';
 import './App.css';
 
 function App() {
   return (
     <Routes>
       {/* Nhóm các trang có Header + Footer */}
-      <Route element={<UserLayout />}>
+      <Route element={<CustomerLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/products" element={<ProductList />} />
         <Route path="/product/:id" element={<ProductDetail />} />
@@ -53,22 +52,17 @@ function App() {
       {/* {route admin } */}
 
       <Route path="/admin-login" element={<AdminLogin />} />
-      <Route path="/homepage" element={<HomePage />} />
 
-      <Route path="/admin" element={
-        <AdminProtectedRoute>
-          <div className="admin-wrapper">
-              <Outlet /> 
-          </div>
-        </AdminProtectedRoute>
-      }
-    >
-        <Route index element={<HomePage />} />
-        <Route path="dashboard" element={<Dashboard />} />
-        <Route path="order" element={<Orders />} />
-        <Route path="inventory" element={<Inventory />} />
-        <Route path="customer" element={<Customers />} />
-        <Route path="setting" element={<Setting/>} />
+      <Route element={<AdminProtectedRoute />}>
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="order" element={<Orders />} />
+          <Route path="store" element={<StoreManagement />} />
+          <Route path="inventory" element={<Inventory />} />
+          <Route path="customer" element={<Customers />} />
+          <Route path="setting" element={<Setting />} />
+        </Route>
       </Route>
     </Routes>
   );

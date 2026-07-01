@@ -1,4 +1,4 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate, Outlet } from 'react-router-dom';
 
 const AdminProtectedRoute = () => {
   const isAuthenticated = localStorage.getItem("isAdminAuthenticated");
@@ -7,6 +7,6 @@ const AdminProtectedRoute = () => {
     return <Navigate to="/admin-login" replace />;
   }
 
-  return children
+  return <Outlet />
 };
 export default AdminProtectedRoute;

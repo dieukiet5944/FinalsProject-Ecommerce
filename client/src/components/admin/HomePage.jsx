@@ -7,12 +7,12 @@ import { Input, Button, Modal, message, Drawer } from 'antd'
 import axios from 'axios';
 import { API_URL } from '../../config/api.js';
 
-import Dashboard from '../../components/admin/Dashboard'
-import Orders from '../../components/admin/OrderManagement'
-import Inventory from '../../components/admin/Inventory'
-import Customers from '../../components/admin/CustomerDirectory'
-import Setting from '../../components/admin/Setting'
-import StoreManagement from '../../components/admin/StoreManagement';
+import Dashboard from '../../pages/admin/Dashboard.jsx'
+import Orders from '../../pages/admin/OrderManagement.jsx'
+import Inventory from '../../pages/admin/Inventory.jsx'
+import Customers from '../../pages/admin/CustomerDirectory.jsx'
+import Setting from '../../pages/admin/Setting.jsx'
+import StoreManagement from '../../pages/admin/StoreManagement.jsx';
 
 import { ADMIN_ROUTES } from "../../router/menuRoute";
 

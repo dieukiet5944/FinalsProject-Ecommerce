@@ -1,9 +1,9 @@
-import Dashboard from '../components/admin/Dashboard.jsx';
-import Orders from '../components/admin/OrderManagement.jsx';
-import Inventory from '../components/admin/Inventory.jsx';
-import Customers from '../components/admin/CustomerDirectory.jsx';
-import Setting from '../components/admin/Setting.jsx';
-import StoreManagement from '../components/admin/StoreManagement.jsx';
+import Dashboard from '../pages/admin/Dashboard.jsx';
+import Orders from '../pages/admin/OrderManagement.jsx';
+import Inventory from '../pages/admin/Inventory.jsx';
+import Customers from '../pages/admin/CustomerDirectory.jsx';
+import Setting from '../pages/admin/Setting.jsx';
+import StoreManagement from '../pages/admin/StoreManagement.jsx';
 
 export const ADMIN_ROUTES = [
   {
