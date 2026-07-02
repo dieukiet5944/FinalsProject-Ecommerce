@@ -1,8 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Table, Button, Input, Tag, Card, Modal, Form, Select, notification, message, Spin, Dropdown, Descriptions } from 'antd';
 import {UserAddOutlined,MoreOutlined ,SearchOutlined, FilterOutlined, PlusOutlined, EditOutlined, DeleteOutlined, ShopOutlined } from '@ant-design/icons';
-import { API_URL } from '../../config/api.js';
-import axios from 'axios'
+import { createStoreApi, getStoreApi } from '../../services/storeService.js';
 
 const StoreManagement = () => {
 
@@ -18,7 +17,7 @@ const StoreManagement = () => {
     const getData = async (req, res) => {
       setLoading(true)
       try {
-        const response = await axios.get(`${API_URL}/store`);
+        const response = await getStoreApi();
 
         const result = response.data?.data;
 
@@ -63,7 +62,7 @@ const StoreManagement = () => {
     console.log(payload)
     
     try {
-      const response = await axios.post(`${API_URL}/store`, payload);
+      const response = await createStoreApi(payload);
       
       if (response.status === 201) {
         message.success('Successfull create new store ❤️');

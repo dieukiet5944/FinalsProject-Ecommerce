@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import axios from 'axios';
-import { API_URL } from '../../config/api.js';
+import { getProductsApi, putProductsApi, deleteProductsApi, createProductApi, deleteBatchsApi } from '../../services/productService.js';
 import {
   EyeOutlined, MoreOutlined, EditOutlined, DeleteOutlined, PlusCircleOutlined, AlertOutlined, PlusOutlined, PictureOutlined, ExceptionOutlined, UserOutlined
 } from "@ant-design/icons";
@@ -39,8 +38,8 @@ const Inventory = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${API_URL}/products`);
-      const result = response.data?.data;
+      const response = await getProductsApi();
+      const result = response?.data;
 
       if (result && Array.isArray(result) && result.length > 0) {
         setData(result);
@@ -78,7 +77,7 @@ const Inventory = () => {
               {record.name}
             </p>
             <p className="text-xs text-gray-400 m-0 mt-0.5 font-medium">
-              SKU: {record._id.toString().slice(20,24)}
+              SKU: {record._id.toString().slice(20, 24)}
             </p>
           </div>
         </div>
@@ -252,17 +251,17 @@ const Inventory = () => {
     },
   ];
 
- const lowStockCount = useMemo(() => {
-  if (!Array.isArray(data)) return 0;
+  const lowStockCount = useMemo(() => {
+    if (!Array.isArray(data)) return 0;
 
-  return data.filter(item => {
-    if (!item.stockBatches || !Array.isArray(item.stockBatches)) return false;
+    return data.filter(item => {
+      if (!item.stockBatches || !Array.isArray(item.stockBatches)) return false;
 
-    const totalQty = item.stockBatches.reduce((sum, batch) => sum + (batch.quantity || 0), 0);
+      const totalQty = item.stockBatches.reduce((sum, batch) => sum + (batch.quantity || 0), 0);
 
-    return totalQty > 0 && totalQty <= 20;
-  }).length;
-}, [data]);
+      return totalQty > 0 && totalQty <= 20;
+    }).length;
+  }, [data]);
 
   const handleActionRequest = () => {
     const lowStockItems = data.filter(item => {
@@ -354,13 +353,13 @@ const Inventory = () => {
                 expiredAt: expiryDate
               };
 
-              const response = await axios.put(`${API_URL}/products/${item._id}`, payload);
+              const result = await putProductsApi(payload, item._id);
 
-              return response.data.data;
+              return result?.data;
             })
           );
 
-          setData((prev) => 
+          setData((prev) =>
             prev.map((currentItem) => {
               const matchUpdatedItem = updatedItems.find((u) => u._id === currentItem._id);
 
@@ -404,7 +403,7 @@ const Inventory = () => {
         const expiredDate = new Date(batch.expiredAt);
 
         const startDate = item.createdAt ? new Date(batch.createdAt) : new Date(expiredDate.getTime() - 3 * 24 * 60 * 60 * 1000);
-        
+
         const totalDuration = expiredDate - startDate;
         const timeRemaining = expiredDate - now;
         let batchFreshness = 100;
@@ -507,10 +506,10 @@ const Inventory = () => {
             expiredAt: expiredAt
           };
 
-          const response = await axios.put(`${API_URL}/products/${record._id}`, payload);
+          const result = await putProductsApi(payload, record._id);
 
-          if (response.data.success) {
-            const updatedProductFromServer = response.data.data;
+          if (result?.success) {
+            const updatedProductFromServer = result?.data;
 
             setData((prev) =>
               prev.map((item) =>
@@ -522,7 +521,7 @@ const Inventory = () => {
           }
         } catch (error) {
           console.error("Single restock error:", error);
-          message.error(error.response?.data?.message || "Error during goods receiving!");
+          message.error(error.result?.message || "Error during goods receiving!");
           return Promise.reject();
         } finally {
           setLoading(false);
@@ -597,7 +596,7 @@ const Inventory = () => {
                 icon={<DeleteOutlined />}
                 onClick={async () => {
                   try {
-                    const response = await axios.delete(`${API_URL}/products/expired/${batch.productId}/${batch.batchId}`);
+                    const response = await deleteBatchsApi(batch.productId, batch.batchId);
 
                     if (response.data.success) {
                       message.success(`Removed expired batch of ${batch.productName}!`);
@@ -656,8 +655,9 @@ const Inventory = () => {
         expiredAt: values.expiredAt ? values.expiredAt.format('YYYY-MM-DD') : null
       };
 
-      const response = await axios.post(`${API_URL}/products`, payload);
-      const newProd = response.data?.data;
+      const result = await createProductApi(payload);
+
+      const newProd = result?.data;
 
       if (newProd) {
         setData(prev => [newProd, ...prev]);
@@ -667,7 +667,7 @@ const Inventory = () => {
       }
     } catch (error) {
       console.error("Create Product Error:", error);
-      message.error(error.response?.data?.message || "Please double-check the inputs!");
+      message.error(error.result?.message || "Please double-check the inputs!");
     } finally {
       setLoading(false);
     }
@@ -687,10 +687,10 @@ const Inventory = () => {
         image: values.image || editingProduct.image || "default.jpg"
       };
 
-      const response = await axios.put(`${API_URL}/products/${editingProduct._id}`, payload);
+      const result = await putProductsApi(payload, editingProduct._id);
 
-      if (response.data.success) {
-        const updatedProd = response.data.data;
+      if (result?.success) {
+        const updatedProd = result?.data;
         setData(prev => prev.map(item => item._id === editingProduct._id ? updatedProd : item));
 
         message.success("Product updated successfully! ❤️");
@@ -719,7 +719,7 @@ const Inventory = () => {
       cancelText: 'Cancel',
       onOk: async () => {
         try {
-          await axios.delete(`${API_URL}/products/${record._id}`);
+          await deleteProductsApi(record._id);
           setData(prev => prev.filter(item => item._id !== record._id));
           message.success("Product disabled successfully!");
         } catch (error) {
@@ -857,34 +857,48 @@ const Inventory = () => {
                 <Input placeholder="e.g., Tiramisu" />
               </Form.Item>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 items-start mb-4">
-                <div className="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-xl border border-dashed border-gray-200 gap-2 sm:col-span-1">
-                  <Avatar
-                    size={90}
-                    shape="square"
-                    src={`/product/${addForm.getFieldsValue()?.category?.toLowerCase() || ''}/${addForm.getFieldsValue()?.image || ''}`} 
-                    icon={<PictureOutlined />}
-                    className="rounded-lg! border border-gray-100 bg-white shadow-sm object-cover"
-                  />
-                  <span className="text-[11px] font-medium text-gray-400 uppercase tracking-wider mt-1">Image Preview</span>
-                </div>
+              <Form.Item
+                noStyle
+                shouldUpdate={(prevValues, currentValues) =>
+                  prevValues.category !== currentValues.category || prevValues.image !== currentValues.image
+                }
+              >
+                {({ getFieldsValue }) => {
+                  const values = getFieldsValue();
+                  const category = values?.category?.toLowerCase() || '';
+                  const image = values?.image || '';
 
-                <div className="sm:col-span-2 w-full">
-                  <Form.Item
-                    name="image"
-                    label={<span className="font-semibold text-gray-600 text-sm">Image Filename</span>}
-                    tooltip="Enter the filename in public/product folder (e.g., cake_1.png)"
-                    rules={[{ required: true, message: 'Please enter the image filename!' }]}
-                    className="mb-0"
-                  >
-                    <Input
-                      placeholder="e.g., drink_5.png"
-                      onChange={() => setUpdate(!update)}
-                      className="py-2"
-                    />
-                  </Form.Item>
-                </div>
-              </div>
+                  return (
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 items-start mb-4">
+                      <div className="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-xl border border-dashed border-gray-200 gap-2 sm:col-span-1">
+                        <Avatar
+                          size={90}
+                          shape="square"
+                          src={`/product/${category}/${image}`}
+                          icon={<PictureOutlined />}
+                          className="rounded-lg! border border-gray-100 bg-white shadow-sm object-cover"
+                        />
+                        <span className="text-[11px] font-medium text-gray-400 uppercase tracking-wider mt-1">Image Preview</span>
+                      </div>
+
+                      <div className="sm:col-span-2 w-full">
+                        <Form.Item
+                          name="image"
+                          label={<span className="font-semibold text-gray-600 text-sm">Image Filename</span>}
+                          tooltip="Enter the filename in public/product folder (e.g., cake_1.png)"
+                          rules={[{ required: true, message: 'Please enter the image filename!' }]}
+                          className="mb-0"
+                        >
+                          <Input
+                            placeholder="e.g., drink_5.png"
+                            className="py-2"
+                          />
+                        </Form.Item>
+                      </div>
+                    </div>
+                  );
+                }}
+              </Form.Item>
 
               <div className="grid grid-cols-2 gap-4">
                 <Form.Item name="price" label={<span className="font-semibold text-gray-600">Price</span>} rules={[{ required: true }]}>
@@ -926,33 +940,48 @@ const Inventory = () => {
                 <Input />
               </Form.Item>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 items-start mb-4">
-                <div className="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-xl border border-dashed border-gray-200 gap-2 sm:col-span-1">
-                  <Avatar
-                    size={90}
-                    shape="square"
-                    src={`/product/${(editForm.getFieldsValue()?.category || 'DRINK').toLowerCase()}/${editForm.getFieldsValue()?.image || ''}`} icon={<PictureOutlined />}
-                    className="rounded-lg! border border-gray-100 bg-white shadow-sm object-cover"
-                  />
-                  <span className="text-[11px] font-medium text-gray-400 uppercase tracking-wider mt-1">Image Preview</span>
-                </div>
+              <Form.Item
+                noStyle
+                shouldUpdate={(prevValues, currentValues) =>
+                  prevValues.category !== currentValues.category || prevValues.image !== currentValues.image
+                }
+              >
+                {({ getFieldsValue }) => {
+                  const values = getFieldsValue();
+                  const category = (values?.category || 'DRINK').toLowerCase();
+                  const image = values?.image || '';
 
-                <div className="sm:col-span-2 w-full">
-                  <Form.Item
-                    name="image"
-                    label={<span className="font-semibold text-gray-600 text-sm">Image Filename</span>}
-                    tooltip="Enter the filename in public/product folder (e.g., cake_1.png)"
-                    rules={[{ required: true, message: 'Please enter the image filename!' }]}
-                    className="mb-0"
-                  >
-                    <Input
-                      placeholder="e.g., drink_5.png"
-                      onChange={() => setUpdate(!update)}
-                      className="py-2"
-                    />
-                  </Form.Item>
-                </div>
-              </div>
+                  return (
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 items-start mb-4">
+                      <div className="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-xl border border-dashed border-gray-200 gap-2 sm:col-span-1">
+                        <Avatar
+                          size={90}
+                          shape="square"
+                          src={`/product/${category}/${image}`}
+                          icon={<PictureOutlined />}
+                          className="rounded-lg! border border-gray-100 bg-white shadow-sm object-cover"
+                        />
+                        <span className="text-[11px] font-medium text-gray-400 uppercase tracking-wider mt-1">Image Preview</span>
+                      </div>
+
+                      <div className="sm:col-span-2 w-full">
+                        <Form.Item
+                          name="image"
+                          label={<span className="font-semibold text-gray-600 text-sm">Image Filename</span>}
+                          tooltip="Enter the filename in public/product folder (e.g., cake_1.png)"
+                          rules={[{ required: true, message: 'Please enter the image filename!' }]}
+                          className="mb-0"
+                        >
+                          <Input
+                            placeholder="e.g., drink_5.png"
+                            className="py-2"
+                          />
+                        </Form.Item>
+                      </div>
+                    </div>
+                  );
+                }}
+              </Form.Item>
 
               <div className="grid grid-cols-2 gap-4">
                 <Form.Item name="price" label={<span className="font-semibold text-gray-600">Price</span>} rules={[{ required: true }]}>
@@ -962,7 +991,6 @@ const Inventory = () => {
                   <Select options={[{ value: 'CAKE', label: 'CAKE' }, { value: 'DRINK', label: 'DRINK' }]} />
                 </Form.Item>
               </div>
-
 
               <Form.Item name="status" label={<span className="font-semibold text-gray-600">Status</span>}>
                 <Select options={[{ value: 'IN STOCK', label: 'IN STOCK' }, { value: 'LOW STOCK', label: 'LOW STOCK' }, { value: 'OUT OF STOCK', label: 'OUT OF STOCK' }]} />

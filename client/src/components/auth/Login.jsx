@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth.js';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -9,8 +9,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const { login } = useAuth();
-  const navigate = useNavigate();
+  const { loginUser } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -18,8 +17,8 @@ const Login = () => {
     setLoading(true);
 
     try {
-      await login(email, password);
-      navigate('/');
+      await loginUser(email, password);
+      window.location.href = "/";
     } catch (err) {
       setError(err.message || "Invalid email or password");
     } finally {

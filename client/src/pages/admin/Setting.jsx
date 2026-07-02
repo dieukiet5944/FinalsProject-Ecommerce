@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { UserOutlined, LockOutlined, EditOutlined, PhoneOutlined, MailOutlined, EnvironmentOutlined } from '@ant-design/icons';
 import { message, Modal } from "antd";
-import axios from "axios";
-import { API_URL } from "../../config/api.js";
+import { loginAdminApi, putAdminApi } from "../../services/authService.js";
 
 const Setting = () => {
 
@@ -107,10 +106,7 @@ const Setting = () => {
                 return message.info("Bạn chưa thay đổi thông tin nào cả! 🤔");
             }
 
-            const response = await axios.put(
-                `${API_URL}/secret-key/admin/${dataAdmin.id || dataAdmin._id}`,
-                updatePayload
-            );
+            const response = await putAdminApi(dataAdmin._id, updatePayload);
 
             if (response.data?.success || response.status === 200) {
                 
