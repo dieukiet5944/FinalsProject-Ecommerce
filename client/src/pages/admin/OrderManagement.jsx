@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { Table, Tag, Avatar, Space, Button, Spin, Modal, Dropdown, message } from 'antd';
 import { MoreOutlined, EyeOutlined, CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, AuditOutlined, EditOutlined } from '@ant-design/icons'
-import axios from 'axios';
-import { API_URL } from '../../config/api.js';
-
+import { deleteOrdersApi, putOrderApi, putStatusOrderApi, getOrdersApi} from '../../services/orderService.js';
+import { getUsersApi } from '../../services/userService.js';
+import { getProductsApi } from '../../services/productService.js';
 import dayjs from 'dayjs';
 
 
@@ -46,7 +46,7 @@ const Orders = () => {
       cancelText: 'Cancel',
       onOk: async () => {
         try {
-          const response = await axios.delete(`${API_URL}/orders/${order._id}`);
+          const response = await deleteOrderApi(order._id);
 
           if (response && response.data.success) {
             setDataSource(prevSource => prevSource.filter(item => item.id !== order._id));
@@ -82,9 +82,7 @@ const Orders = () => {
 
       const userOwner = dataUsers.find(item => item.id === targetOrder.customerId);
 
-      const response = await axios.put(`${API_URL}/orders/${orderId}`,
-        { status: newStatus }
-      );
+      const response = await putOrderApi(orderId, newStatus);
 
       if (response && response.data.success) {
 
@@ -117,7 +115,7 @@ const Orders = () => {
 
   const handleAcceptOrder = async (orderId) => {
     try {
-      const response = await axios.put(`${API_URL}/orders/changestate/${orderId}`);
+      const response = await putStatusOrderApi(orderId);
 
       message.success('Order accepted successfully');
     } catch (error) {
@@ -168,13 +166,15 @@ const Orders = () => {
     setLoading(true);
     try {
 
-      const usersRes = await axios.get(`${API_URL}/users`);
-      const productsRes = await axios.get(`${API_URL}/products`);
-      const ordersRes = await axios.get(`${API_URL}/orders`);
+      const [usersRes, productsRes, ordersRes] = await Promise.all([
+        getUsersApi(),
+        getProductsApi(),
+        getOrdersApi()
+      ]);
 
-      const listUsers = usersRes.data?.data;
-      const listProducts = productsRes.data?.data;
-      const listOrders = ordersRes.data?.data;
+      const listUsers = usersRes?.data;
+      const listProducts = productsRes?.data;
+      const listOrders = ordersRes?.data;
 
       const allOrders = listOrders.map(order => {
 
@@ -245,7 +245,6 @@ const Orders = () => {
       width: 250,
       render: (customer) => (
         <div className="flex items-center gap-3">
-          {console.log("Data", dataSource)}
           <Avatar
             src={`/product/avtusers/${customer.avatar}`}
             size={44}

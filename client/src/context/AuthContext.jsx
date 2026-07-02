@@ -1,74 +1,115 @@
 import { createContext, useState, useContext, useEffect } from "react";
-import axios from "axios";
-import { API_URL } from "../config/api.js";
+import { loginUserApi, logoutUserApi, loginAdminApi, logoutAdminApi } from '../services/authService.js';
 
-const AuthContext = createContext();
+export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem("user");
     return savedUser ? JSON.parse(savedUser) : null;
   });
+
+  const [admin, setAdmin] = useState(() => {
+    const savedAdmin = localStorage.getItem("admin");
+    return savedAdmin ? JSON.parse(savedAdmin) : null;
+  });
+
   const [loading, setLoading] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
 
+  useEffect(() => {
+    setAuthLoading(false);
+  }, []);
 
-  const login = async (email, password) => {
+  
+  const loginUser = async (email, password) => {
     setLoading(true);
     try {
-      const response = await axios.post(`${API_URL}/users/login`, {
-        email,
-        password,
-      });
+      const response = await loginUserApi(email, password);
+      const result = response?.data?.data || response?.data || response;
+      
+      const userData = result.user || result;
+      
+      setUser(userData);
+      localStorage.setItem("user", JSON.stringify(userData));
+      if (result.accessToken) localStorage.setItem("token", result.accessToken);
+      if (result.refreshToken) localStorage.setItem("refreshToken", result.refreshToken);
 
-      const result = response.data?.data;
-      const normalUser = {
-        ...result.user,
-        accessToken: result.accessToken,
-        refreshToken: result.refreshToken,
-        role: "user",
-      }
-
-      setUser(normalUser);
-      localStorage.setItem("user", JSON.stringify(normalUser));
-      return { success: true, user: normalUser };
+      return { success: true, user: userData };
     } catch (error) {
-      const errorMessage =
-        error.response?.data?.message || error.message || "Login failed";
-      throw new Error(errorMessage);
+      throw new Error(error.response?.data?.message || error.message || "Login failed");
     } finally {
       setLoading(false);
     }
   };
 
-  const logout = async () => {
+  
+  const loginAdmin = async (email, password) => {
+    setLoading(true);
     try {
-      if (user?.id) {
-        await axios.post(`${API_URL}/users/${user?.id}/logout`, {
-          userId: user.id,
-        });
-      }
+      const response = await loginAdminApi(email, password);
+      const result = response?.data?.data || response?.data || response;
+      
+      const adminData = result.admin || result;
+
+      setAdmin(adminData);
+      localStorage.setItem("admin", JSON.stringify(adminData));
+      if (result.accessToken) localStorage.setItem("token", result.accessToken);
+      if (result.refreshToken) localStorage.setItem("refreshToken", result.refreshToken);
+
+      return { success: true, admin: adminData };
     } catch (error) {
-      console.error("Logout error:", error.message);
+      throw new Error(error.response?.data?.message || error.message || "Admin login failed");
     } finally {
-      setUser(null);
-      localStorage.removeItem("user");
+      setLoading(false);
     }
   };
 
-  const updateUserLocal = (newUserData) => {
-    const updated = { ...user, ...newUserData };
-    setUser(updated);
-    localStorage.setItem("user", JSON.stringify(updated));
+  
+  const logoutUser = async () => {
+    const targetId = user?._id || user?.id;
+    setUser(null);
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
+
+    try {
+      if (targetId) await logoutUserApi(targetId);
+    } catch (error) {
+      console.error("User logout backend error:", error.message);
+    } finally {
+      window.location.href = "/login";
+    }
+  };
+
+  
+  const logoutAdmin = async () => {
+    const targetId = admin?._id || admin?.id;
+    setAdmin(null);
+    localStorage.removeItem("admin"); 
+    localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
+
+    try {
+      if (targetId) await logoutAdminApi(targetId);
+    } catch (error) {
+      console.error("Admin logout backend error:", error.message);
+    } finally {
+      window.location.href = "/admin-login";
+    }
   };
 
   return (
     <AuthContext.Provider
-      value={{ user, login, logout, loading, authLoading, updateUserLocal}}
+      value={{ 
+        user, admin, 
+        loginUser, loginAdmin, 
+        logoutUser, logoutAdmin, 
+        loading, authLoading 
+      }}
     >
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => useContext(AuthContext);

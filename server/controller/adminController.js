@@ -79,10 +79,6 @@ const adminController = {
         try {
             const { id } = req.params;
 
-            if (!id || id === 'undefined') {
-                id = req.body.userId;
-            }
-
             if (!id) {
                 return res.status(400).send({
                     success: false,

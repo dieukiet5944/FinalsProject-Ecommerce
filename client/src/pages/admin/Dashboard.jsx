@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { PoundCircleOutlined, ShoppingCartOutlined, UserAddOutlined, ThunderboltOutlined, ArrowRightOutlined, ExceptionOutlined, DollarOutlined, UserOutlined, DownOutlined } from '@ant-design/icons'
 import { Cascader, Row, Col, Progress, Space, DatePicker, Spin, message, Avatar, Typography, Card, Flex, Button, Dropdown } from 'antd'
-import axios from 'axios';
 import dayjs from 'dayjs';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import isBetween from 'dayjs/plugin/isBetween';
-import { API_URL } from '../../config/api.js';
+import {getOrdersApi} from '../../services/orderService.js'
+import {getUsersApi} from '../../services/userService.js'
+import {getProductsApi} from '../../services/productService.js'
 
 import WeeklySalesChart from './WeeklySalesChart';
 
@@ -28,14 +29,17 @@ const Dashboard = ({ name }) => {
         const getAlldata = async () => {
             setLoading(true);
             try {
-                const resUsers = await axios.get(`${API_URL}/users`);
-                const resProducts = await axios.get(`${API_URL}/products`);
-                const resOrders = await axios.get(`${API_URL}/orders`);
 
-                const usersArray = resUsers.data?.data || [];
-                const productsArray = resProducts.data?.data || [];
-                const ordersArray = resOrders.data?.data || [];
-                
+                const [resUsers, resProducts, resOrders] = await Promise.all([
+                    getUsersApi(),
+                    getProductsApi(),
+                    getOrdersApi()
+                ]);
+
+                const usersArray = resUsers?.data || [];
+                const productsArray = resProducts?.data || [];
+                const ordersArray = resOrders?.data || [];
+
                 if (Array.isArray(ordersArray)) {
                     const formattedOrders = ordersArray.map((order) => {
                         const itemsInOrder = order.items || [];
@@ -125,7 +129,7 @@ const Dashboard = ({ name }) => {
                     const itemKey = item.name;
 
                     if (!itemCounts[itemKey]) {
-                        const finalImage = imageLookup[cleanedKey] || '/product/cake/default.jpg';
+                        const finalImage = imageLookup[cleanedKey];
 
                         itemCounts[itemKey] = {
                             name: item.name,
@@ -205,10 +209,10 @@ const Dashboard = ({ name }) => {
 
                 <div className="lg:col-span-2 flex flex-col bg-white p-5 sm:p-6 rounded-xl border border-gray-100 shadow-[0_4px_12px_rgba(0,0,0,0.02)] gap-6">
                     <Spin spinning={loading}>
-                    <WeeklySalesChart
-                        onCurrentWeekRevenueChange={setCurrentWeekRevenue}
-                        onCurrentWeekOrdersChange={setCurrentWeekOrdersCount}
-                    />
+                        <WeeklySalesChart
+                            onCurrentWeekRevenueChange={setCurrentWeekRevenue}
+                            onCurrentWeekOrdersChange={setCurrentWeekOrdersCount}
+                        />
                     </Spin>
 
                 </div>
@@ -222,31 +226,31 @@ const Dashboard = ({ name }) => {
                         <div className="flex flex-col gap-4">
                             {topSellingItem.map((item, index) => (
                                 <Spin spinning={loading} key={index}>
-                                <div
-                                    key={index}
-                                    className="flex justify-between items-center pb-4 border-b border-gray-100 last:border-0 last:pb-0"
-                                >   
-                                    <div className="flex items-center gap-3 min-w-0">
-                                        <Avatar
-                                            src={item.image}
-                                            shape="square"
-                                            size={42}
-                                            className="rounded-lg border border-gray-100 shrink-0 object-cover"
-                                        />
-                                        <div className="min-w-0">
-                                            <p className="text-sm font-semibold text-gray-800 m-0 truncate">
-                                                {item.name}
-                                            </p>
-                                            <p className="text-xs text-gray-400 m-0 mt-0.5">
-                                                {item.qty} sales
-                                            </p>
+                                    <div
+                                        key={index}
+                                        className="flex justify-between items-center pb-4 border-b border-gray-100 last:border-0 last:pb-0"
+                                    >
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <Avatar
+                                                src={item.image}
+                                                shape="square"
+                                                size={42}
+                                                className="rounded-lg border border-gray-100 shrink-0 object-cover"
+                                            />
+                                            <div className="min-w-0">
+                                                <p className="text-sm font-semibold text-gray-800 m-0 truncate">
+                                                    {item.name}
+                                                </p>
+                                                <p className="text-xs text-gray-400 m-0 mt-0.5">
+                                                    {item.qty} sales
+                                                </p>
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    <span className="text-base font-bold text-red-500 shrink-0 pl-2">
-                                        ${item.price}
-                                    </span>
-                                </div>
+                                        <span className="text-base font-bold text-red-500 shrink-0 pl-2">
+                                            ${item.price}
+                                        </span>
+                                    </div>
                                 </Spin>
                             ))}
                         </div>

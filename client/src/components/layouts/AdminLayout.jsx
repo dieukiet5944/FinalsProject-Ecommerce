@@ -4,8 +4,7 @@ import { ShopOutlined, MenuUnfoldOutlined, ShoppingOutlined, InboxOutlined, Team
 import { Input, Button, Modal, message, Drawer } from 'antd'
 import { Outlet, Link } from 'react-router-dom';
 
-import axios from 'axios';
-import { API_URL } from '../../config/api.js';
+import {logoutAdminApi} from '../../services/authService.js';
 
 import Dashboard from '../../pages/admin/Dashboard.jsx'
 import Orders from '../../pages/admin/OrderManagement.jsx'
@@ -67,7 +66,7 @@ function AdminLayout() {
     useEffect(() => {
         const getData = async () => {
             try {
-                const response = localStorage.getItem("adminInfo")
+                const response = localStorage.getItem("admin")
                 if (response) {
                     const currentAdmin = JSON.parse(response);
 
@@ -91,18 +90,19 @@ function AdminLayout() {
             centered: true,
             onOk: async () => {
                 try {
-                    const storedAdmin = JSON.parse(localStorage.getItem('adminInfo'));
+                    const storedAdmin = JSON.parse(localStorage.getItem('admin'));
 
-                    const adminId = storedAdmin?._id || storedAdmin?.id;
+                    const adminId = storedAdmin?.id;
 
                     if (adminId) {
-                        await axios.post(`${API_URL}/secret-key/admin/${adminId}/logout`, { userId: adminId });
+                        await logoutAdminApi(adminId);
                     }
 
-                    localStorage.removeItem('adminInfo');
+                    localStorage.removeItem('admin');
                     localStorage.removeItem('token');
 
                     message.success("Logged out successfully! See you again. 👋");
+                    
 
                     navigate('/login');
 

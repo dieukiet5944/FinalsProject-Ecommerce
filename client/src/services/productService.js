@@ -1,9 +1,25 @@
-import axios from 'axios';
+import Axios from '../config/axios.js';
 
-const API_BASE = "http://localhost:8080";
+export const getProductsApi = () => Axios.get('/products');
 
+export const getProductsIdApi = (productId) => {
+    return Axios.get(`/products/${productId}`)
+}
 
-export const fetchProductsFromBackend = async () => {
-    const response = await axios.get(`${API_BASE}/products`);
-    return response.data; 
-};
+export const putProductsApi = async (payload, productId) => { 
+   const response = await Axios.put(`/products/${productId}`, payload);
+   return response.data; 
+}
+
+export const createProductApi = async (productPayload) => {
+  const response = await Axios.post('/products', productPayload);
+  return response.data
+}; 
+
+export const deleteProductsApi = (productId) => {
+    return Axios.delete(`/products/${productId}`);
+}
+
+export const deleteBatchsApi = (productId, batchId) => {
+    return Axios.delete(`/products/${productId}/${batchId}`);
+}

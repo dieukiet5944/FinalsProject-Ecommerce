@@ -1,48 +1,28 @@
 import React, { useState } from "react";
-import axios from 'axios'
 import { Input, Form, Card, Button, message, Spin } from 'antd';
 import { MailOutlined, LockOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
-import { API_URL } from "../../config/api.js";
+import { loginAdminApi } from "../../services/authService.js";
+import { useAuth } from "../../hooks/useAuth.js";
+
 
 const AdminLogin = () => {
 
-    const navigate = useNavigate();
+    const {loginAdmin} = useAuth();
     const [loading, setLoading] = useState(false);
+
 
     const onFinish = async (values) => {
         try {
             setLoading(true);
+            const res = await loginAdmin(values.email, values.password);
+            
+            console.log("Kết quả trả về từ hàm loginAdmin của Context:", res);
+            console.log("Kiểm tra xem ổ cứng có gì chưa:", localStorage.getItem("admin"));
 
-            const loginPayload = {
-                email: values.email,
-                password: values.password
-            };
-
-            const response = await axios.post(
-                `${API_URL}/secret-key/admin/login`,
-                loginPayload
-            );
-
-            console.log("This error", response)
-
-            const result = response.data;
-
-
-            if (result && result.data && result.data.accessToken) {
-                localStorage.setItem("token", result.data.accessToken);
-                localStorage.setItem("adminInfo", JSON.stringify(result.data.admin));
-
-                message.success("Login successful! ❤️");
-
-                navigate('/admin/dashboard');
-            } else {
-                message.error(result.message || "Login failed!");
-            }
+            message.success("Login successful! ❤️");
+            window.location.href = '/admin/dashboard';
         } catch (error) {
-            console.error("Login error:", error);
-            const errorMsg = error.response?.data?.message || 'Incorrect account or password!';
-            message.error(errorMsg);
+            message.error(error.message || 'Incorrect account or password!');
         } finally {
             setLoading(false);
         }

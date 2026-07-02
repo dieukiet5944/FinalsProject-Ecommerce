@@ -2,14 +2,14 @@
 import { Routes, Route } from 'react-router-dom';
 
 import CustomerLayout from './components/layouts/CustomerLayout.jsx';
-import Home from './components/client/Home';
-import ProductList from './components/client/ProductList';
-import ProductDetail from './components/client/ProductDetail';
-import Cart from './components/client/Cart';
-import Checkout from './components/client/Checkout';
-import Login from './components/auth/Login';
+import Home from './pages/client/Home.jsx';
+import ProductList from './pages/client/ProductList';
+import ProductDetail from './pages/client/ProductDetail';
+import Cart from './pages/client/Cart.jsx';
+import Checkout from './pages/client/Checkout';
+import Login from './components/auth/Login.jsx';
 import Register from './components/auth/Register';
-import Order from './components/client/Order';
+import Order from './pages/client/Order';
 
 import ProtectedRoute from './router/ProtectedRoute';
 

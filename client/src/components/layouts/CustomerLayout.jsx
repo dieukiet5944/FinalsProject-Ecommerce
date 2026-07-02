@@ -1,23 +1,22 @@
 import { useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../hooks/useAuth.js';
 import { useCart } from '../../context/CartContext';
 import { useEffect } from 'react';
 import { EditOutlined } from '@ant-design/icons'
 import { Button, message, Modal } from 'antd'
 import { Outlet, Link } from 'react-router-dom';
-import axios from 'axios';
-import { API_URL } from '../../config/api.js';
+import { putUsersApi} from '../../services/userService.js';
+
 
 function CustomerLayout() {
 
-    const { user, logout, updateUserLocal } = useAuth();
+    const { user, logoutUser, updateUserLocal } = useAuth();
     const { cart } = useCart();
 
     const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
     const [openLogo, setOpenLogo] = useState(false)
     const [pickPicture, setPickPicture] = useState('')
 
-    console.log(pickPicture)
 
     const sampleAvatars = ['none-avt.png', 'carrick.jpg', 'davidbeckham.png', 'edwin.jpg', 'evra.jpg'];
 
@@ -28,9 +27,7 @@ function CustomerLayout() {
                 avatar: pickPicture,
             };
 
-            const response = await axios.put(`${API_URL}/users/${user?.id}`, payload);
-
-            console.log(response)
+            const response = await putUserApi(user.id, payload);
 
             if (response.data.success) {
                 updateUserLocal({ avatar: pickPicture });
@@ -82,8 +79,8 @@ function CustomerLayout() {
                                     </button>
 
                                     <button
-                                        onClick={logout}
-                                        className="px-5 py-2 text-sm border border-white/30 hover:border-white/60 rounded-full transition-colors"
+                                        onClick={logoutUser}
+                                        className="px-5 py-2 text-sm text-amber-50 border border-white/30 hover:border-white/60 rounded-full transition-colors"
                                     >
                                         Logout
                                     </button>
@@ -168,7 +165,7 @@ function CustomerLayout() {
                 </div>
             </header>
 
-            <main className="grow container mx-auto">
+            <main className="grow w-full">
                 <Outlet />
             </main>
 

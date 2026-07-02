@@ -20,19 +20,11 @@ const jwtHelper = {
   },
 
   verifyAccessToken: (token) => {
-    try {
-      return jwt.verify(token, JWT_SECRET);
-    } catch (error) {
-      throw new Error('Invalid or expired access token');
-    }
+    return jwt.verify(token, JWT_SECRET);
   },
 
   verifyRefreshToken: (token) => {
-    try {
-      return jwt.verify(token, JWT_REFRESH_SECRET);
-    } catch (error) {
-      throw new Error('Invalid or expired refresh token');
-    }
+    return jwt.verify(token, JWT_REFRESH_SECRET);
   },
 
   getAccessTokenExpiresIn: () => ACCESS_TOKEN_EXPIRES_IN,

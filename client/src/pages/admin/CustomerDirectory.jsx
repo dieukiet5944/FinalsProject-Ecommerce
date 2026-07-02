@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { DownloadOutlined, UserAddOutlined, TeamOutlined, TagOutlined, TrophyOutlined, DollarOutlined, FireOutlined, FunnelPlotOutlined, MoreOutlined, ProfileOutlined, DeleteOutlined, AuditOutlined } from '@ant-design/icons'
 import { Modal, Table, Tag, Avatar, Space, Button, Dropdown, Spin, message } from 'antd'
-import axios from 'axios'
-import { API_URL } from '../../config/api.js'
+import { getOrdersApi } from '../../services/orderService.js'
+import { getUsersApi, deleteUserApi } from '../../services/userService.js'
 
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -21,12 +21,12 @@ const Customers = () => {
             setLoading(true);
             try {
                 const [resUsers, resOrders] = await Promise.all([
-                    axios.get(`${API_URL}/users`),
-                    axios.get(`${API_URL}/orders`)
+                    getUsersApi(),
+                    getOrdersApi()
                 ]);
 
-                const usersResult = resUsers.data?.data;
-                const ordersResult = resOrders.data?.data;
+                const usersResult = resUsers?.data;
+                const ordersResult = resOrders?.data;
 
                 const mixedUsers = usersResult.map(user => {
                     const userIdStr = user._id ? user._id.toString() : '';
@@ -48,7 +48,6 @@ const Customers = () => {
                     };
                 });
 
-                console.log("this", mixedUsers)
 
                 if (mixedUsers && Array.isArray(mixedUsers)) {
                     setdataUser(mixedUsers);
@@ -169,7 +168,7 @@ const Customers = () => {
             onOk: async () => {
                 try {
                     setLoading(true);
-                    const response = await axios.delete(`http://localhost:8080/users/${record._id}`);
+                    const response = await deleteUserApi(record._id);
 
                     if (response.data?.success || response.status === 200) {
 
@@ -488,7 +487,6 @@ const Customers = () => {
                     <div className="min-w-0 flex-1">
                         <h2 className="text-xl sm:text-2xl font-black text-amber-600 m-0 truncate" title={new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(topSpender?.totalSpent || 0)}>
                             {topSpender?.totalSpent ? formatShortUSD(topSpender.totalSpent) : "$0.00"}
-                            {console.log(topSpender)}
                         </h2>
 
                         <p className="text-[11px] font-bold tracking-wider text-gray-500 m-0 mt-0.5 uppercase truncate">
