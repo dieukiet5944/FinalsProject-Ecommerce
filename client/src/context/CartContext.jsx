@@ -55,8 +55,8 @@ export const CartProvider = ({ children }) => {
   const clearCart = () => setCart([]);
 
   const placeOrder = async (orderData = {}) => {
-    if (!user || !user.id) throw new Error("Bạn cần đăng nhập để đặt hàng");
-    if (cart.length === 0) throw new Error("Giỏ hàng của bạn đang trống");
+    if (!user || !user.id) throw new Error("You need to log in to place an order");
+    if (cart.length === 0) throw new Error("Your shopping cart is empty");
 
     setLoading(true);
     try { 
@@ -72,7 +72,7 @@ export const CartProvider = ({ children }) => {
       };
 
       const response = await createOrderApi(payload);
-      const result = response.data?.data
+      const result = response?.data
 
       clearCart();
       return {
@@ -81,7 +81,7 @@ export const CartProvider = ({ children }) => {
       };
     } catch (error) {
       console.error(error);
-      const errorMsg = error.response?.data?.message || "Đặt hàng thất bại";
+      const errorMsg = error.response?.data?.message || "Order failed. Please try again.";
       throw new Error(errorMsg);
     } finally {
       setLoading(false);

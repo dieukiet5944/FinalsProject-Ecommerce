@@ -27,9 +27,9 @@ function CustomerLayout() {
                 avatar: pickPicture,
             };
 
-            const response = await putUserApi(user.id, payload);
-
-            if (response.data.success) {
+            const response = await putUsersApi(user.id, payload);
+            
+            if (response?.success || response?.data?.success) {
                 updateUserLocal({ avatar: pickPicture });
 
                 message.success("Product updated successfully! ❤️");

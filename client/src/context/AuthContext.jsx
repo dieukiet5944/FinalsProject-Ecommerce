@@ -99,13 +99,35 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const updateUserLocal = (newUserData) => {
+    try {
+     
+      const currentLocalUser = localStorage.getItem("user");
+      
+      if (currentLocalUser) {
+        const parsedUser = JSON.parse(currentLocalUser);
+        
+        const updatedUser = { ...parsedUser, ...newUserData };
+        
+        setUser(updatedUser);
+        
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        
+      } else {
+        setUser(prev => ({ ...prev, ...newUserData }));
+      }
+    } catch (error) {
+      console.error("Error updating local user information:", error);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{ 
         user, admin, 
         loginUser, loginAdmin, 
         logoutUser, logoutAdmin, 
-        loading, authLoading 
+        loading, authLoading, updateUserLocal
       }}
     >
       {children}

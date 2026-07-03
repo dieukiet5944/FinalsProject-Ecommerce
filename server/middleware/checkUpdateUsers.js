@@ -25,7 +25,7 @@ export const checkUpdateUsers = async (req, res, next) => {
     const updateFields = { username, email, phone, status, avatar };
 
     Object.keys(updateFields).forEach((key) => {
-        if (updateFields[key] === undefined) {
+        if (updateFields[key] === undefined || updateFields[key] === null || updateFields[key] === "") {
             delete updateFields[key];
         }
     });

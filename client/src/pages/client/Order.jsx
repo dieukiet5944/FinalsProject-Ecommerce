@@ -55,12 +55,12 @@ const Order = () => {
             try {
                 const response = await getOrderBreakPageApi(pageNumber, 3);
 
-                const result = response.data?.data;
+                const result = response?.data;
 
-                if (response.data?.success) {
+                if (response?.success) {
                     setListOrder(result)
-                    setTotalPages(response.data?.totalPages);
-                    setTotalItems(response.data?.totalItems);
+                    setTotalPages(response?.totalPages);
+                    setTotalItems(response?.totalItems);
                 } else {
                     message.error("Error to get Data ")
                 }
@@ -84,7 +84,7 @@ const Order = () => {
                     <button
                         disabled={pageNumber === totalPages}
                         onClick={() => setPageNumber(prev => prev + 1)}
-                        className="text-light-300 pl-3 pr-3 rounded-3xl bg-pink-700"
+                        className="text-amber-50 pl-3 pr-3 rounded-3xl bg-pink-700"
                     >
                         Next
                     </button>
@@ -97,7 +97,7 @@ const Order = () => {
                     <button
                         disabled={pageNumber === 1}
                         onClick={() => setPageNumber(prev => prev - 1)}
-                        className="text-light-300 pl-3 pr-3 rounded-3xl  bg-pink-700 "
+                        className="text-amber-50 pl-3 pr-3 rounded-3xl  bg-pink-700 "
                     >
                         Prev
                     </button>
@@ -113,7 +113,7 @@ const Order = () => {
                             <div key={item._id} className="shadow-xl/30 border-solid border-20 p-5 rounded-md flex flex-col gap-8">
                                 <div className="flex flex-start gap-4">
                                     <h1 className="text-black">ID: {item._id}</h1>
-                                    <button onClick={() => { setSelectedOrder(item); setOpenView(true) }} className="bg-pink-500 pl-2 pr-2 rounded-xl active:bg-pink-800 ">View order</button>
+                                    <button onClick={() => { setSelectedOrder(item); setOpenView(true) }} className="bg-pink-500 pl-2 pr-2 rounded-xl active:bg-pink-800 text-amber-50 ">View order</button>
                                 </div>
                                 <Flex vertical gap="large">
                                     { item.status === "Completed" ? <Steps current={2} status="finish" items={itemsCompleted} variant="outlined" /> : <Steps current={1} status="process" items={itemsPending} variant="outlined" />}

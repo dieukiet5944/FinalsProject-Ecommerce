@@ -70,10 +70,11 @@ const Checkout = () => {
     }
   };
 
-  if (cart.length === 0) {
-    navigate('/cart');
-    return null;
-  }
+  useEffect(() => {
+    if (!user) {
+      navigate('/cart');
+    }
+  }, [user, navigate]);
 
   return (
     <div className="min-h-screen bg-light-bg py-12">

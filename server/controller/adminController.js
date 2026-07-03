@@ -82,7 +82,7 @@ const adminController = {
             if (!id) {
                 return res.status(400).send({
                     success: false,
-                    message: "Không nhận diện được ID của Admin để thực hiện đăng xuất."
+                    message: "The administrator's ID could not be recognized to log out."
                 });
             }
 
@@ -91,13 +91,13 @@ const adminController = {
             if (!updatedAdmin) {
                 return res.status(404).send({
                     success: false,
-                    message: "Tài khoản Admin không tồn tại trong hệ thống."
+                    message: "The Admin account does not exist in the system."
                 });
             }
 
             res.status(200).send({
                 success: true,
-                message: "Đăng xuất thành công!"
+                message: "Logout successful!"
             });
         } catch (error) {
             res.status(500).send({ success: false, message: error.message });
@@ -168,10 +168,8 @@ const adminController = {
                 });
             }
 
-            // Verify refresh token
             const decoded = jwtHelper.verifyRefreshToken(refreshToken);
 
-            // Find user and check if refresh token matches
             const admin = await AdminModel.findById(decoded.userId);
 
             if (!admin) {
@@ -188,7 +186,6 @@ const adminController = {
                 });
             }
 
-            // Generate new access token
             const newAccessToken = jwtHelper.generateAccessToken({
                 userId: admin._id,
                 email: admin.email
@@ -233,13 +230,13 @@ const adminController = {
 
             return res.status(200).json({
                 success: true,
-                message: "Cập nhật thành công!",
+                message: "Update successful!",
                 data: updatedAdmin
             });
 
         } catch (error) {
             return res.status(500).json({
-                message: "Lỗi xử lý cập nhật trên Server",
+                message: "Server update processing error",
                 error: error.message
             });
         }

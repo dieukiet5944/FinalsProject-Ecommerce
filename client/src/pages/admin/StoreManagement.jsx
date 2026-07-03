@@ -19,7 +19,7 @@ const StoreManagement = () => {
       try {
         const response = await getStoreApi();
 
-        const result = response.data?.data;
+        const result = response?.data;
 
         if (result === 0) {
           setStores([])
@@ -58,21 +58,19 @@ const StoreManagement = () => {
       phone: formValues.current.phone?.trim(),
       description: formValues.current.description?.trim()
     };
-
-    console.log(payload)
     
     try {
       const response = await createStoreApi(payload);
       
-      if (response.status === 201) {
+      if (response?.status === 201) {
         message.success('Successfull create new store ❤️');
         setIsModalOpen(false);
         
-        formValues.current = { storeName: '', email: '', phone: '', address: '', desctiption: '' }; 
+        formValues.current = { storeName: '', email: '', phone: '', address: '', description: '' }; 
       }
     } catch (error) {
-      console.error("Lỗi khi gọi API:", error);
-      message.error(error.response?.data?.message);
+      console.error("Error when calling API:", error);
+      message.error(error.response?.message);
     } finally {
       setLoading(false);
     }
@@ -80,14 +78,14 @@ const StoreManagement = () => {
 
   const handleDelete = (key) => {
     Modal.confirm({
-      title: 'Bạn có chắc chắn muốn xóa cửa hàng này?',
-      content: 'Hành động này không thể hoàn tác.',
-      okText: 'Xóa',
+      title: 'Are you sure you want to delete this store?',
+      content: 'This action cannot be undone.',
+      okText: 'Delete',
       okType: 'danger',
-      cancelText: 'Hủy',
+      cancelText: 'Cancel',
       onOk() {
         setStores(stores.filter(item => item.key !== key));
-        notification.success({ message: 'Đã xóa cửa hàng.' });
+        notification.success({ message: 'The store has been deleted.' });
       }
     });
   };
@@ -153,13 +151,11 @@ const StoreManagement = () => {
             key: 'Edit',
             label: <span className="font-medium text-gray-700">Edit</span>,
             icon: <EditOutlined className="text-green-500" />,
-            // onClick: () => handleRestock(record)
           },
           {
             key: 'Delete',
             label: <span className="font-medium text-gray-700">Delete</span>,
             icon: <DeleteOutlined className="text-blue-500" />,
-            // onClick: () => handleEdit(record)
           },
           { type: 'divider' },
           record.ownerId === 'None' && { 
@@ -189,21 +185,21 @@ const StoreManagement = () => {
   ];
 
   return (
-    <div className="p-8 bg-[#f9fafc] min-h-screen">
+    <div className="p-4 sm:p-6 md:p-9 flex flex-col gap-6 min-h-screen bg-gray-50/50">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-[#EE2B6C] m-0">Store Management</h1>
           <p className="text-gray-500 text-sm mt-1">Manage and monitor all your pâtisserie locations globally.</p>
         </div>
-        <button
-          type="primary"
-          size="large"
-          className="bg-[#de1e60] text-amber-50 hover:bg-[#be185d] border-none font-bold rounded-xl px-5 h-12 flex items-center shadow-md shadow-pink-100"
+        <Button
+          color="pink"
+          variant="solid"
+          icon={<PlusOutlined />}
+          className="w-full sm:w-auto h-10 font-semibold shadow-sm flex items-center justify-center gap-1.5"
           onClick={() => setIsModalOpen(true)}
         >
-          <PlusOutlined className='mr-3' />
           Add New Store
-        </button>
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

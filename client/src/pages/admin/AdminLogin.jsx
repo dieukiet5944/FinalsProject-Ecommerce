@@ -15,9 +15,6 @@ const AdminLogin = () => {
         try {
             setLoading(true);
             const res = await loginAdmin(values.email, values.password);
-            
-            console.log("Kết quả trả về từ hàm loginAdmin của Context:", res);
-            console.log("Kiểm tra xem ổ cứng có gì chưa:", localStorage.getItem("admin"));
 
             message.success("Login successful! ❤️");
             window.location.href = '/admin/dashboard';

@@ -159,7 +159,7 @@ const userControllers = {
 
         }
         catch (error) {
-            console.log("Loi server", error.message)
+            console.log("Error server", error.message)
             res.status(500).send({
                 success: false,
                 message: "Internal Server Error",
