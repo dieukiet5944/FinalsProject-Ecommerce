@@ -1,4 +1,3 @@
-// src/App.jsx
 import { Routes, Route } from 'react-router-dom';
 
 import CustomerLayout from './components/layouts/CustomerLayout.jsx';

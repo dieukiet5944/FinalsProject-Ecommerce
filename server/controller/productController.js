@@ -89,7 +89,7 @@ const productController = {
             if (!name || price === undefined || !category || !image || quantity === undefined || !expiredAt) {
                 return res.status(400).send({
                     success: false,
-                    message: "Vui lòng nhập đầy đủ các thông tin bắt buộc: Tên, Giá, Danh mục, Hình ảnh và Số lượng tồn kho."
+                    message: "Please fill in all required information: Name, Price, Category, Image, and Stock Quantity."
                 });
             }
 
@@ -97,7 +97,7 @@ const productController = {
             if (!["CAKE", "DRINK"].includes(category)) {
                 return res.status(400).send({
                     success: false,
-                    message: "Danh mục sản phẩm không hợp lệ. Chỉ chấp nhận 'CAKE' hoặc 'DRINK'."
+                    message: "Invalid product category. Only 'CAKE' or 'DRINK' will be accepted."
                 });
             }
 
@@ -108,7 +108,7 @@ const productController = {
             if (productQuantity > 100) {
                 return res.status(400).send({
                     success: false,
-                    message: "Số lượng sản phẩm khi tạo mới không được vượt quá tối đa 100!"
+                    message: "The number of products created must not exceed 100!"
                 });
             }
 
@@ -137,15 +137,15 @@ const productController = {
 
             res.status(201).send({
                 success: true,
-                message: `Thêm mới sản phẩm "${name}" thành công! 🎉`,
+                message: `New product "${name}" added successfully! 🎉`,
                 data: newProduct
             });
 
         } catch (error) {
-            console.log("Lỗi Server khi tạo sản phẩm mới:", error.message);
+            console.log("Server error when creating a new product:", error.message);
             res.status(500).send({
                 success: false,
-                message: "Internal Server Error (Lỗi kết nối hoặc lưu Database)",
+                message: "Internal Server Error (Database connection or saving error)",
                 error: error.message
             });
         }
@@ -160,7 +160,7 @@ const productController = {
             if (!product) {
                 return res.status(404).send({
                     success: false,
-                    message: "Không tìm thấy sản phẩm với ID này."
+                    message: "No products were found matching this ID."
                 });
             }
 
@@ -186,7 +186,7 @@ const productController = {
             if (totalQuantity > 100) {
                 return res.status(400).send({
                     success: false,
-                    message: "Vượt quá sức chứa kho cho phép (Tối đa 100)!"
+                    message: "Exceeded warehouse capacity (Maximum 100)!"
                 });
             }
 
@@ -204,7 +204,7 @@ const productController = {
 
             res.status(200).send({
                 success: true,
-                message: `Nhập kho sản phẩm "${product.name}" thành công!`,
+                message: `Product "${product.name}" has been successfully received into inventory!`,
                 data: {
                     ...product.toObject(),
                     quantity: totalQuantity 
@@ -212,10 +212,10 @@ const productController = {
             });
 
         } catch (error) {
-            console.log("Lỗi Server khi cập nhật sản phẩm:", error.message);
+            console.log("Server error when updating products:", error.message);
             res.status(500).send({
                 success: false,
-                message: "Internal Server Error (Lỗi cập nhật Database)",
+                message: "Internal Server Error (Database Update Error)",
                 error: error.message
             });
         }
@@ -229,7 +229,7 @@ const productController = {
             if (!product) {
                 return res.status(404).send({
                     success: false,
-                    message: "Không tìm thấy sản phẩm này trên hệ thống."
+                    message: "This product could not be found on the system."
                 });
             }
 
@@ -240,7 +240,7 @@ const productController = {
             if (isProductInOrder) {
                 return res.status(400).send({
                     success: false,
-                    message: `Không thể xóa sản phẩm "${product.name}" vì sản phẩm này đã tồn tại trong lịch sử đơn hàng của hệ thống. Bạn nên cập nhật số lượng về 0 (OUT OF STOCK) thay vì xóa.`
+                    message: `The product "${product.name}" cannot be deleted because it already exists in the system's order history. You should update the quantity to 0 (OUT OF STOCK) instead of deleting it.`
                 });
             }
 
@@ -248,11 +248,11 @@ const productController = {
 
             res.status(200).send({
                 success: true,
-                message: `Đã xóa thành công sản phẩm "${product.name}" khỏi hệ thống.`
+                message: `The product "${product.name}" has been successfully removed from the system.`
             });
 
         } catch (error) {
-            console.log("Lỗi Server khi xóa sản phẩm:", error.message);
+            console.log("Server error when deleting a product:", error.message);
             res.status(500).send({
                 success: false,
                 message: "Internal Server Error",
@@ -272,7 +272,7 @@ const productController = {
             );
 
             if (!product) {
-                return res.status(404).send({ success: false, message: "Không tìm thấy sản phẩm." });
+                return res.status(404).send({ success: false, message: "No product found." });
             }
 
             const totalQuantity = product.stockBatches.reduce((total, batch) => total + batch.quantity, 0);
@@ -289,7 +289,7 @@ const productController = {
 
             res.status(200).send({
                 success: true,
-                message: "Đã hủy bỏ lô hàng hết hạn thành công!",
+                message: "The expired shipment has been successfully cancelled!",
                 data: {
                     ...product.toObject(),
                     quantity: totalQuantity
@@ -297,8 +297,8 @@ const productController = {
             });
 
         } catch (error) {
-            console.error("Lỗi xóa lô hết hạn:", error);
-            res.status(500).send({ success: false, message: "Lỗi hệ thống khi xóa lô hàng." });
+            console.error("Error deleting expired batches:", error);
+            res.status(500).send({ success: false, message: "System error while deleting a shipment." });
         }
     }
 }

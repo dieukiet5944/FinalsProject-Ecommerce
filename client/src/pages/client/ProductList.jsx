@@ -29,7 +29,7 @@ const ProductList = () => {
       try {
         const response = await getProductsApi();
 
-        const result = response.data?.data;
+        const result = response?.data;
 
         setProducts(result);
         setFilteredProducts(result);
@@ -104,7 +104,6 @@ const ProductList = () => {
             </div>
           </div>
 
-          {/* Main Content */}
           <div className="flex-1">
             <div className="flex flex-col md:flex-row gap-4 mb-10">
               <div className="flex-1 relative">

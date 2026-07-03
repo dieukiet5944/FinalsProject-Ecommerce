@@ -24,7 +24,7 @@ const ProductDetail = () => {
       try {
         const response = await getProductsIdApi(id);
 
-        const result = response.data?.data
+        const result = response?.data
 
         setProduct(result);
 

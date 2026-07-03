@@ -26,7 +26,7 @@ const Setting = () => {
         setLoading(true);
         const loadDataAdmin = async () => {
             try {
-                const savedAdminInfo = localStorage.getItem("adminInfo");
+                const savedAdminInfo = localStorage.getItem("admin");
 
                 if (savedAdminInfo) {
                     const currentAdmin = JSON.parse(savedAdminInfo);
@@ -42,15 +42,13 @@ const Setting = () => {
                         confirmPassword: ''
                     });
 
-                    console.log("Đã lấy thông tin Admin đăng nhập từ localStorage:", currentAdmin);
                 } else {
-                    console.warn("Không tìm thấy dữ liệu adminInfo trong localStorage!");
+                    console.warn("Admin data not found in localStorage!");
                 }
 
-                console.log("Tải toàn bộ dữ liệu admin và đơn hàng thành công!");
             } catch (error) {
-                console.error("Lỗi kết nối hệ thống:", error);
-                message.error("Không thể kết nối đến máy chủ dữ liệu!");
+                console.error("System connection error:", error);
+                message.error("Unable to connect to the data server!");
 
                 setdataAdmin([])
             }
@@ -69,7 +67,7 @@ const Setting = () => {
 
     const handleDiscard = () => {
         loadDataAdmin();
-        message.info("Đã hủy bỏ các thay đổi thô 🔄");
+        message.info("Raw changes have been cancelled 🔄");
     };
 
     const handleSaveProfile = async () => {
@@ -81,43 +79,41 @@ const Setting = () => {
             }
 
             if (editProfile.name !== dataAdmin.name) {
-                if (!editProfile.name) return message.error("Tên không được để trống!");
+                if (!editProfile.name) return message.error("The name cannot be left blank!");
                 updatePayload.name = editProfile.name;
             }
 
             if (editProfile.email !== dataAdmin.email) {
-                if (!editProfile.email) return message.error("Email không được để trống!");
+                if (!editProfile.email) return message.error("The email address cannot be left blank!");
                 updatePayload.email = editProfile.email;
             }
 
             const hasTypedPassword = editProfile.currentPassword || editProfile.newPassword || editProfile.confirmPassword;
             if (hasTypedPassword) {
                 if (!editProfile.currentPassword || !editProfile.newPassword) {
-                    return message.error("Vui lòng nhập đầy đủ Mật khẩu hiện tại và Mật khẩu mới!");
+                    return message.error("Please enter both your current password and your new password!");
                 }
                 if (editProfile.newPassword !== editProfile.confirmPassword) {
-                    return message.error("Mật khẩu mới và Xác nhận mật khẩu không trùng khớp! ❌");
+                    return message.error("The new password and the Confirm password do not match!");
                 }
                 updatePayload.currentPassword = editProfile.currentPassword;
                 updatePayload.newPassword = editProfile.newPassword;
             }
 
             if (Object.keys(updatePayload).length === 0) {
-                return message.info("Bạn chưa thay đổi thông tin nào cả! 🤔");
+                return message.info("You haven't changed any information!");
             }
-
-            const response = await putAdminApi(dataAdmin._id, updatePayload);
-
-            if (response.data?.success || response.status === 200) {
+            const response = await putAdminApi(dataAdmin.id, updatePayload);
+            if (response?.success || response?.status === 200) {
                 
                 const updatedAdminInfo = {
                     ...dataAdmin,
                     ...updatePayload 
                 };
 
-                localStorage.setItem("adminInfo", JSON.stringify(updatedAdminInfo));
+                localStorage.setItem("admin", JSON.stringify(updatedAdminInfo));
                 setdataAdmin(updatedAdminInfo);
-
+                                                                                    
                 setEditProfile(prev => ({
                     ...prev,
                     currentPassword: '',
@@ -125,12 +121,12 @@ const Setting = () => {
                     confirmPassword: ''
                 }));
 
-                message.success("Cập nhật dữ liệu thành công! ❤️");
+                message.success("Data update successful!");
             }
 
         } catch (error) {
             console.error("Update error:", error);
-            message.error(error.response?.data?.message || "Mật khẩu hiện tại không chính xác hoặc trùng Email!");
+            message.error(error.response?.message || "The current password is incorrect or already taken with an email address!");
         }
     };
 
@@ -265,7 +261,7 @@ const Setting = () => {
                             onClick={() => {
                                 setEditProfile(prev => ({ ...prev, avatar: avtName }));
                                 setIsAvatarModalOpen(false);
-                                message.success(`Đã chọn tạm hình ảnh ${avtName}, nhấn Save để lưu lưu!`);
+                                message.success(`The image ${avtName} has been temporarily selected; press Save to save it!`);
                             }}
                             className={`cursor-pointer border-2 p-1 rounded-xl transition-all overflow-hidden bg-slate-800 hover:border-[#EF3D78] ${editProfile.avatar === avtName ? 'border-[#EF3D78] scale-95 shadow-md' : 'border-transparent'}`}
                         >

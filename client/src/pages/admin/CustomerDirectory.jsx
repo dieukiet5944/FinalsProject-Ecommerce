@@ -25,8 +25,12 @@ const Customers = () => {
                     getOrdersApi()
                 ]);
 
+
                 const usersResult = resUsers?.data;
+
                 const ordersResult = resOrders?.data;
+
+
 
                 const mixedUsers = usersResult.map(user => {
                     const userIdStr = user._id ? user._id.toString() : '';
@@ -52,29 +56,27 @@ const Customers = () => {
                 if (mixedUsers && Array.isArray(mixedUsers)) {
                     setdataUser(mixedUsers);
                 } else {
-                    console.log("Cấu trúc dữ liệu dataUser  không hợp lệ!");
+                    console.log("The data User data structure is invalid!");
                     setdataUser([]);
                 }
 
                 if (usersResult && Array.isArray(usersResult)) {
                     setData(usersResult);
                 } else {
-                    console.log("Cấu trúc dữ liệu User không hợp lệ!");
+                    console.log("The User data structure is invalid!");
                     setData([]);
                 }
 
                 if (ordersResult && Array.isArray(ordersResult)) {
                     setdataOrder(ordersResult);
                 } else {
-                    console.log("Cấu trúc dữ liệu Order không hợp lệ!");
+                    console.log("The Order data structure is invalid!");
                     setdataOrder([]);
                 }
 
-                console.log("Tải toàn bộ dữ liệu người dùng và đơn hàng thành công!");
-
             } catch (error) {
-                console.error("Lỗi kết nối hệ thống:", error);
-                message.error("Không thể kết nối đến máy chủ dữ liệu!");
+                console.error("System connection error:", error);
+                message.error("Unable to connect to the data server! Please try again later.");
 
                 setData([]);
                 setdataUser([]);
@@ -151,7 +153,7 @@ const Customers = () => {
                     </div>
                 </div>
             ),
-            okText: 'Đóng',
+            okText: 'Close',
             className: "max-w-[calc(100vw-32px)] sm:max-w-[500px]",
         });
     };
@@ -159,28 +161,28 @@ const Customers = () => {
 
     const handleDeleteUser = (record) => {
         Modal.confirm({
-            title: 'Xác nhận xóa người dùng?',
-            content: 'Dữ liệu của người dùng này sẽ bị xóa vĩnh viễn khỏi hệ thống MongoDB.',
-            okText: 'Xóa ngay lập tức',
+            title: 'Confirm user disabling?',
+            content: 'This user is data will be invalidated due to some system breach.',
+            okText: 'Disable immediately',
             okType: 'danger',
-            cancelText: 'Hủy bỏ',
+            cancelText: 'Cancel',
             centered: true,
             onOk: async () => {
                 try {
                     setLoading(true);
                     const response = await deleteUserApi(record._id);
 
-                    if (response.data?.success || response.status === 200) {
+                    if (response?.success || response?.data) {
 
                         setdataUser(prev => prev.filter(item => item._id !== record._id));
 
-                        message.success("Xóa người dùng thành công!");
+                        message.success("Disabled user successfully!");
                     } else {
-                        throw new Error("Xóa thất bại từ phía Server");
+                        throw new Error("Disabling user failed! Please try again later.");
                     }
                 } catch (error) {
-                    console.error("Lỗi xóa người dùng:", error);
-                    message.error(error.response?.data?.message || "Không thể xóa người dùng này!");
+                    console.error("Error disable user:", error);
+                    message.error(error.response?.data?.message || "Cannot disable user! Please try again later.");
                 } finally {
                     setLoading(false);
                 }
@@ -232,6 +234,30 @@ const Customers = () => {
         }, null);
     }, [dataUser]);
 
+    const calculateRetentionRate = useMemo(() => {
+        if (!Array.isArray(dataOrder) || dataOrder.length === 0) return 0;
+
+        const customerOrderCounts = {};
+
+        dataOrder.forEach(order => {
+            if (order.customerId && order.status === 'Completed') {
+                const customerIdStr = order.customerId.toString();
+
+                customerOrderCounts[customerIdStr] = (customerOrderCounts[customerIdStr] || 0) + 1;
+            }
+        });
+
+        const countsArray = Object.values(customerOrderCounts);
+
+        const totalCustomersOrdered = countsArray.length;
+
+        const totalCustomerMoreThanOnce = countsArray.filter(count => count >= 2).length;
+
+        const retentionRate = totalCustomersOrdered === 0 ? 0 : (totalCustomerMoreThanOnce / totalCustomersOrdered) * 100;
+
+        return retentionRate.toFixed(0);
+    }, [dataOrder]);
+
     const handleExportPDF = () => {
         const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
@@ -262,7 +288,7 @@ const Customers = () => {
             ];
         });
 
-       
+
         autoTable(doc, {
             startY: 32,
             head: tableHeaders,
@@ -271,7 +297,7 @@ const Customers = () => {
             headStyles: { fillColor: [239, 61, 120] },
             styles: { fontSize: 9, cellPadding: 3 },
             columnStyles: {
-                0: { cellWidth: 12 }, 
+                0: { cellWidth: 12 },
                 5: { fontStyle: 'bold' }
             }
         });
@@ -298,7 +324,7 @@ const Customers = () => {
                             {record.username}
                         </p>
                         <p className="text-xs text-gray-400 m-0 mt-0.5 font-medium">
-                            ID: {record._id.toString().slice(0,8)}
+                            ID: {record._id.toString().slice(0, 8)}
                         </p>
                     </div>
                 </div>
@@ -326,7 +352,7 @@ const Customers = () => {
                 let toptier = "New Member";
                 let badgeClass = "text-gray-500 bg-gray-50 border-gray-200";
 
-                if(totalProductsCount > 40 && totalProductsCount <= 100){
+                if (totalProductsCount > 40 && totalProductsCount <= 100) {
                     toptier = "Cool";
                     badgeClass = "text-blue-600 bg-blue-50 border-blue-200";
                 } else if (totalProductsCount > 100 && totalProductsCount <= 500) {
@@ -388,7 +414,6 @@ const Customers = () => {
                         className={`rounded-full px-3 py-0.5 font-bold uppercase text-[11px] tracking-wider border-none shadow-xs ${isOnline ? 'animate-pulse' : ''
                             }`}
                     >
-                        {/* Thêm một dấu chấm tròn nhỏ tinh tế trước chữ */}
                         <span className="inline-block w-1.5 h-1.5 rounded-full mr-1.5 bg-current" />
                         {currentStatus}
                     </Tag>
@@ -410,7 +435,7 @@ const Customers = () => {
                     },
                     {
                         key: 'delete',
-                        label: <span className="font-medium">Delete User</span>,
+                        label: <span className="font-medium">Disable</span>,
                         icon: <DeleteOutlined />,
                         danger: true,
                         onClick: () => handleDeleteUser(record)
@@ -504,7 +529,7 @@ const Customers = () => {
                         <FireOutlined />
                     </div>
                     <div>
-                        <h2 className="text-xl sm:text-2xl font-bold text-gray-800 m-0">92%</h2>
+                        <h2 className="text-xl sm:text-2xl font-bold text-gray-800 m-0">{calculateRetentionRate}%</h2>
                         <p className="text-[11px] font-bold tracking-wider text-gray-400 m-0 mt-0.5">RETENTION RATE</p>
                     </div>
                 </div>
@@ -538,7 +563,7 @@ const Customers = () => {
                     <Table
                         rowClassName={(record) => record.disabled ? 'row-disabled' : ''}
                         columns={columns}
-                        rowKey="id"
+                        rowKey="_id"
                         dataSource={filteredData}
                         scroll={{ x: 800 }}
                         pagination={{

@@ -222,6 +222,7 @@ function AdminLayout() {
                                 </div>
 
                                 {searchResults.length > 0 && (
+                                    console.log("=== 4. KẾT QUẢ TÌM KIẾM ===", searchResults),
                                     <div className="absolute top-full left-0 right-0 mt-1.5 bg-white rounded-xl shadow-xl border border-slate-100 z-50 max-h-60 overflow-y-auto p-1.5 flex flex-col gap-1">
                                         {searchResults.map((item) => (
                                             <button
@@ -234,7 +235,7 @@ function AdminLayout() {
                                                     <span className="text-sm font-semibold block group-hover:text-[#EE2C6D] transition-colors">
                                                         {item.title}
                                                     </span>
-                                                    <span className="text-xs text-slate-400">Chức năng quản trị</span>
+                                                    <span className="text-xs text-slate-400">Administration functions</span>
                                                 </div>
                                                 <span className="text-[10px] uppercase font-bold tracking-wider bg-slate-100 text-slate-400 px-2 py-0.5 rounded-md group-hover:bg-pink-100 group-hover:text-[#EE2C6D]">
                                                     <ArrowRightOutlined />

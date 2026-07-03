@@ -50,7 +50,6 @@ const Cart = () => {
             </div>
           </div>
 
-          {/* Order Summary - Sticky */}
           <div className="lg:col-span-5">
             <div className="bg-light-card border border-gray-100 rounded-3xl p-8 sticky top-28">
               <h2 className="text-2xl font-semibold mb-8">Order Summary</h2>

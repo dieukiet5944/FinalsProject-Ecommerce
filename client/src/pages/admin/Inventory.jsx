@@ -3,23 +3,7 @@ import { getProductsApi, putProductsApi, deleteProductsApi, createProductApi, de
 import {
   EyeOutlined, MoreOutlined, EditOutlined, DeleteOutlined, PlusCircleOutlined, AlertOutlined, PlusOutlined, PictureOutlined, ExceptionOutlined, UserOutlined
 } from "@ant-design/icons";
-import {
-  Table,
-  Tag,
-  Avatar,
-  Button,
-  Progress,
-  Spin,
-  Modal,
-  Badge,
-  message,
-  InputNumber,
-  Dropdown,
-  Form,
-  Input,
-  Select,
-  DatePicker
-} from 'antd';
+import {Table,Tag,Avatar,Button,Progress,Spin,Modal,Badge,message,InputNumber,Dropdown,Form,Input,Select,DatePicker} from 'antd';
 
 const Inventory = () => {
   const [data, setData] = useState([]);
@@ -345,7 +329,7 @@ const Inventory = () => {
               const expiryDate = tempExpiryDates[item._id];
 
               if (Number(addedAmount) > 0 && !expiryDate) {
-                throw new Error(`Sản phẩm ${item.name} chưa chọn hạn sử dụng!`);
+                throw new Error(`Product ${item.name} has not had an expiration date selected!`);
               }
 
               const payload = {
@@ -355,9 +339,13 @@ const Inventory = () => {
 
               const result = await putProductsApi(payload, item._id);
 
-              return result?.data;
+              console.log("Updated items after restock:", result);
+
+              return result;
             })
           );
+
+
 
           setData((prev) =>
             prev.map((currentItem) => {
@@ -388,42 +376,48 @@ const Inventory = () => {
     if (!Array.isArray(data) || data.length === 0) return 100;
 
     const validProducts = data.filter(item => Array.isArray(item.stockBatches) && item.stockBatches.length > 0);
-
     if (validProducts.length === 0) return 100;
 
     const now = new Date();
+    let totalAllBatchesFreshness = 0;
+    let totalActiveBatchesCount = 0;
 
-    const totalFreshness = validProducts.reduce((sum, item) => {
-      let itemFreshnessSum = 0;
-      let validBatchesCount = 0;
+    data.forEach(item => {
+      if (!Array.isArray(item.stockBatches)) return;
 
       item.stockBatches.forEach(batch => {
-        if (!batch.expiredAt) return;
+        if (!batch.expiredAt || batch.stock === 0) return;
 
         const expiredDate = new Date(batch.expiredAt);
 
-        const startDate = item.createdAt ? new Date(batch.createdAt) : new Date(expiredDate.getTime() - 3 * 24 * 60 * 60 * 1000);
+        const batchCreateTime = batch.createdAt || item.createdAt;
+        const startDate = batchCreateTime
+          ? new Date(batchCreateTime)
+          : new Date(expiredDate.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-        const totalDuration = expiredDate - startDate;
-        const timeRemaining = expiredDate - now;
+        const totalDuration = expiredDate.getTime() - startDate.getTime();
+        const timeRemaining = expiredDate.getTime() - now.getTime();
         let batchFreshness = 100;
 
         if (timeRemaining <= 0) {
           batchFreshness = 0;
         } else if (totalDuration > 0) {
           batchFreshness = Math.round((timeRemaining / totalDuration) * 100);
+
+          batchFreshness = Math.max(0, Math.min(100, batchFreshness));
         }
 
-        itemFreshnessSum += batchFreshness;
-        validBatchesCount++;
+        totalAllBatchesFreshness += batchFreshness;
+        totalActiveBatchesCount++;
       });
+    });
 
-      const finalItemFreshness = validBatchesCount > 0 ? (itemFreshnessSum / validBatchesCount) : 100;
+    if (totalActiveBatchesCount === 0) {
+      return 100;
+    }
 
-      return sum + finalItemFreshness;
-    }, 0);
-
-    return Math.round(totalFreshness / validProducts.length);
+    const finalResult = Math.round(totalAllBatchesFreshness / totalActiveBatchesCount);
+    return finalResult;
   }, [data]);
 
 
@@ -596,12 +590,15 @@ const Inventory = () => {
                 icon={<DeleteOutlined />}
                 onClick={async () => {
                   try {
+                    console.log(`Attempting to delete expired batch: Product ID ${batch.productId}, Batch ID ${batch.batchId}`);
                     const response = await deleteBatchsApi(batch.productId, batch.batchId);
 
-                    if (response.data.success) {
+
+
+                    if (response?.success) {
                       message.success(`Removed expired batch of ${batch.productName}!`);
 
-                      const updatedProduct = response.data.data;
+                      const updatedProduct = response?.data;
 
                       setData((prev) =>
                         prev.map((p) => p._id === batch.productId ? updatedProduct : p)

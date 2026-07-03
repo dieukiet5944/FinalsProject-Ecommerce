@@ -40,7 +40,7 @@ const ProductCard = ({ product, onAddToCart, showLink = true }) => {
   const productKey = product.id || product._id;
 
   const card = (
-    <div className="product-card bg-light-card border border-gray-100 rounded-3xl overflow-hidden hover:shadow-xl transition-all group">
+    <div className="product-card bg-light-card border border-gray-100 rounded-3xl ease-out overflow-hidden hover:-translate-y-2 hover:shadow-xl hover:border-primary-100/50 transition-all group">
       <div className="relative h-64 overflow-hidden bg-gray-100">
         <img
           src={imagePath}

@@ -39,7 +39,7 @@ const orderController = {
             });
 
         } catch (error) {
-            console.error("Lỗi tại getOrders Controller:", error);
+            console.error("Error at getOrders Controller:", error);
             return res.status(500).json({
                 success: false,
                 message: error.message,
@@ -55,7 +55,7 @@ const orderController = {
             if (!customerId || !items || items.length === 0) {
                 return res.status(400).json({
                     success: false,
-                    message: "Vui lòng cung cấp customerId và danh sách sản phẩm (items)."
+                    message: "Please provide the customer ID and a list of products (items)."
                 });
             }
 
@@ -69,7 +69,7 @@ const orderController = {
                 if (!product) {
                     return res.status(404).json({
                         success: false,
-                        message: `Sản phẩm với ID ${item.productId} không tồn tại trên hệ thống.`
+                        message: `The product with ID ${item.productId} does not exist in the system.`
                     });
                 }
 
@@ -78,7 +78,7 @@ const orderController = {
                 if (product.status === "OUT OF STOCK" || currentTotalQuantity < item.qty) {
                     return res.status(400).json({
                         success: false,
-                        message: `Sản phẩm "${product.name}" đã hết hàng hoặc không đủ số lượng để cung cấp. (Hiện còn tổng : ${currentTotalQuantity})`
+                        message: `The product "${product.name}" is out of stock or there is insufficient stock available. (Current total quantity: ${currentTotalQuantity})`
                     });
                 }
 
@@ -138,12 +138,12 @@ const orderController = {
 
             res.status(201).json({
                 success: true,
-                message: "Đặt hàng thành công! Kho đã được cập nhật và đồng bộ trạng thái.",
+                message: "Order successful! Inventory has been updated and status synchronized.",
                 data: newOrder
             });
 
         } catch (error) {
-            console.log("Loi server khi tao order:", error.message);
+            console.log("Server error when I place an order:", error.message);
             res.status(500).json({
                 success: false,
                 message: error.message
@@ -164,7 +164,7 @@ const orderController = {
             if (!order) {
                 return res.status(404).json({
                     success: false,
-                    message: "Không tìm thấy đơn hàng với ID này trên hệ thống."
+                    message: "No orders with this ID were found in the system."
                 });
             }
 
@@ -172,7 +172,7 @@ const orderController = {
                 if (!["Pending", "Completed", "Canceled"].includes(status)) {
                     return res.status(400).json({
                         success: false,
-                        message: "Trạng thái đơn hàng không hợp lệ! Chỉ chấp nhận Pending3, Completed hoặc Canceled."
+                        message: "Invalid order status! Only Pending, Completed, or Canceled will be accepted."
                     });
                 }
                 order.status = status;
@@ -191,12 +191,12 @@ const orderController = {
 
             res.status(200).json({
                 success: true,
-                message: `Cập nhật thông tin đơn hàng thành công!`,
+                message: `Order information successfully updated!`,
                 data: order
             });
 
         } catch (error) {
-            console.log("Loi server khi cap nhat thong tin don hang:", error.message);
+            console.log("Server error when updating order information:", error.message);
             res.status(500).json({
                 success: false,
                 message: "Internal Server Error",
@@ -213,7 +213,7 @@ const orderController = {
             if (!order) {
                 return res.status(404).json({
                     success: false,
-                    message: "Không tìm thấy đơn hàng với ID này trên hệ thống."
+                    message: "No orders with this ID were found in the system."
                 });
             }
 
@@ -223,12 +223,12 @@ const orderController = {
 
             res.status(200).json({
                 success: true,
-                message: `Chấp nhận đơn hàng thành công!`,
+                message: `Order accepted!`,
                 data: order
             });
 
         } catch (error) {
-            console.log("Loi server khi cap nhat thong tin don hang:", error.message);
+            console.log("Server error when updating order information:", error.message);
             res.status(500).json({
                 success: false,
                 message: "Internal Server Error",
@@ -246,18 +246,18 @@ const orderController = {
             if (!order) {
                 return res.status(404).json({
                     success: false,
-                    message: "Không tìm thấy đơn hàng với ID này trên hệ thống."
+                    message: "No orders with this ID were found in the system."
                 });
             }
 
             res.status(200).json({
                 success: true,
-                message: "Xóa đơn hàng thành công!",
+                message: "Order deleted successfully!",
                 data: order
             });
 
         } catch (error) {
-            console.log("Loi server khi xoa don hang:", error.message);
+            console.log("Server error when deleting an order:", error.message);
             res.status(500).json({
                 success: false,
                 message: "Internal Server Error",

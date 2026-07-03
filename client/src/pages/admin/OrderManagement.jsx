@@ -48,7 +48,7 @@ const Orders = () => {
         try {
           const response = await deleteOrderApi(order._id);
 
-          if (response && response.data.success) {
+          if (response && response?.success) {
             setDataSource(prevSource => prevSource.filter(item => item.id !== order._id));
             message.success(`Order ${order._id} has been successfully deleted!`);
 
@@ -61,7 +61,7 @@ const Orders = () => {
           }
         } catch (error) {
           console.error("Delete Error:", error);
-          message.error(error.response?.data?.message || "The order cannot be deleted!");
+          message.error(error.response?.message || "The order cannot be deleted!");
         }
       },
     });
@@ -84,7 +84,7 @@ const Orders = () => {
 
       const response = await putOrderApi(orderId, newStatus);
 
-      if (response && response.data.success) {
+      if (response && response?.success) {
 
         setDataSource(prevSource =>
           prevSource.map(order =>
@@ -109,7 +109,7 @@ const Orders = () => {
       }
     } catch (error) {
       console.error("Update Error:", error);
-      message.error(error.response?.data?.message || "Update the failure status!");
+      message.error(error.response?.message || "Update the failure status!");
     }
   };
 
@@ -186,7 +186,7 @@ const Orders = () => {
 
         const singleOrderTime = order.createdAt
           ? dayjs(order.createdAt).format('HH:mm - DD/MM/YYYY')
-          : 'Không rõ thời gian';
+          : 'Time unknown';
 
         return {
           ...order,
@@ -197,9 +197,9 @@ const Orders = () => {
           status: order.status,
           date: singleOrderTime,
           customer: {
-            name: matchedUser?.username || matchedUser?.name || "Khách vãng lai",
+            name: matchedUser?.username || matchedUser?.name,
             avatar: matchedUser?.avatar || "",
-            email: matchedUser?.email || "No email",
+            email: matchedUser?.email,
             userId: order.customerId
           }
         };
@@ -212,7 +212,7 @@ const Orders = () => {
 
     } catch (error) {
       console.error("Error loading order:", error);
-      message.error("Không thể tải danh sách dữ liệu từ hệ thống!");
+      message.error("Unable to load the data list from the system!");
     } finally {
       setLoading(false);
     }
@@ -360,7 +360,7 @@ const Orders = () => {
             menu={{ items: menuItems }}
             trigger={['click']}
             placement="bottomRight"
-            overlayClassName="shadow-md rounded-lg"
+            className="shadow-md rounded-lg"
           >
             <Button
               type="text"

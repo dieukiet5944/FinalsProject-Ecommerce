@@ -9,14 +9,14 @@ export const cartController = {
             if (!userId) {
                 return res.status(400).json({
                     success: false,
-                    message: "Vui lòng cung cấp userId"
+                    message: "Please provide your user ID"
                 });
             }
 
             if (!items || !Array.isArray(items) || items.length === 0) {
                 return res.status(400).json({
                     success: false,
-                    message: "Vui lòng cung cấp danh sách items (productId, quantity)"
+                    message: "Please provide a list of items (product ID, quantity)."
                 });
             }
 
@@ -25,7 +25,7 @@ export const cartController = {
                 if (!product) {
                     return res.status(404).json({
                         success: false,
-                        message: `Sản phẩm với ID ${item.productId} không tồn tại`
+                        message: `The product with ID ${item.productId} does not exist.`
                     });
                 }
             }
@@ -58,12 +58,12 @@ export const cartController = {
 
             return res.status(200).json({
                 success: true,
-                message: "Thêm sản phẩm vào giỏ hàng thành công",
+                message: "Product added to cart successfully.",
                 data: cart
             });
 
         } catch (error) {
-            console.error("Lỗi tại addToCart Controller:", error);
+            console.error("Error at add To Cart Controller:", error);
             return res.status(500).json({
                 success: false,
                 message: error.message
@@ -78,7 +78,7 @@ export const cartController = {
             if (!userId) {
                 return res.status(400).json({
                     success: false,
-                    message: "Vui lòng cung cấp userId"
+                    message: "Please provide your user ID"
                 });
             }
 
@@ -87,19 +87,19 @@ export const cartController = {
             if (!cart) {
                 return res.status(200).json({
                     success: true,
-                    message: "Giỏ hàng trống",
+                    message: "Shopping cart is empty.",
                     data: { customerId: userId, items: [] }
                 });
             }
 
             return res.status(200).json({
                 success: true,
-                message: "Lấy giỏ hàng thành công",
+                message: "Shopping cart successfully retrieved",
                 data: cart
             });
 
         } catch (error) {
-            console.error("Lỗi tại getCart Controller:", error);
+            console.error("Error at getCart Controller:", error);
             return res.status(500).json({
                 success: false,
                 message: error.message

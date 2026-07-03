@@ -6,14 +6,12 @@ export const getProductsIdApi = (productId) => {
     return Axios.get(`/products/${productId}`)
 }
 
-export const putProductsApi = async (payload, productId) => { 
-   const response = await Axios.put(`/products/${productId}`, payload);
-   return response.data; 
+export const putProductsApi =  (payload, productId) => { 
+   return Axios.put(`/products/${productId}`, payload); 
 }
 
-export const createProductApi = async (productPayload) => {
-  const response = await Axios.post('/products', productPayload);
-  return response.data
+export const createProductApi =  (productPayload) => {
+  return Axios.post('/products', productPayload);
 }; 
 
 export const deleteProductsApi = (productId) => {
@@ -21,5 +19,5 @@ export const deleteProductsApi = (productId) => {
 }
 
 export const deleteBatchsApi = (productId, batchId) => {
-    return Axios.delete(`/products/${productId}/${batchId}`);
+    return Axios.delete(`/products/expired/${productId}/${batchId}`);
 }
