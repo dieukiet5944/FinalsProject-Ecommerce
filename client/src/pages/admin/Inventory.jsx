@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { getProductsApi, putProductsApi, deleteProductsApi, createProductApi, deleteBatchsApi } from '../../services/productService.js';
 import {
-  EyeOutlined, MoreOutlined, EditOutlined, DeleteOutlined, PlusCircleOutlined, AlertOutlined, PlusOutlined, PictureOutlined, ExceptionOutlined, UserOutlined
+  WarningFilled, EyeOutlined, MoreOutlined, EditOutlined, DeleteOutlined, PlusCircleOutlined, AlertOutlined, PlusOutlined, PictureOutlined, ExceptionOutlined, UserOutlined
 } from "@ant-design/icons";
-import {Table,Tag,Avatar,Button,Progress,Spin,Modal,Badge,message,InputNumber,Dropdown,Form,Input,Select,DatePicker} from 'antd';
+import { Table, Tag, Avatar, Button, Progress, Spin, Modal, Badge, message, InputNumber, Dropdown, Form, Input, Select, DatePicker } from 'antd';
 
 const Inventory = () => {
   const [data, setData] = useState([]);
@@ -47,21 +47,21 @@ const Inventory = () => {
     {
       title: 'PRODUCT NAME',
       key: 'product',
-      width: 220,
+      width: 240,
       render: (_, record) => (
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 py-0.5">
           <Avatar
             src={`/product/${record.category?.toLowerCase()}/${record.image}`}
-            size={44}
+            size={42}
             shape="square"
-            className="rounded-lg border border-gray-100 shrink-0 object-cover"
+            className="rounded-xl border border-gray-100 shadow-3xs shrink-0 object-cover bg-gray-50"
           />
           <div className="min-w-0">
-            <p className="font-bold text-gray-800 m-0 truncate text-sm sm:text-base leading-snug">
+            <p className="font-bold text-gray-800 m-0 truncate text-sm leading-tight">
               {record.name}
             </p>
-            <p className="text-xs text-gray-400 m-0 mt-0.5 font-medium">
-              SKU: {record._id.toString().slice(20, 24)}
+            <p className="text-[11px] font-mono text-gray-400 m-0 mt-1 uppercase tracking-wider">
+              SKU: {String(record._id).slice(-6).toUpperCase()}
             </p>
           </div>
         </div>
@@ -71,70 +71,62 @@ const Inventory = () => {
       title: 'CATEGORY',
       dataIndex: 'category',
       key: 'category',
-      width: 130,
-      render: (cat) => (
-        <Tag
-          color={cat === 'DRINK' ? 'blue' : 'orange'}
-          className="rounded-md px-2.5 py-0.5 font-medium tracking-wide uppercase text-[11px]"
-        >
-          {cat}
-        </Tag>
-      )
+      width: 120,
+      render: (cat) => {
+        const isDrink = cat === 'DRINK';
+        return (
+          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-[10px] font-bold tracking-wider border ${isDrink
+            ? 'bg-blue-50 text-blue-600 border-blue-100'
+            : 'bg-amber-50 text-amber-600 border-amber-100'
+            }`}>
+            {cat}
+          </span>
+        );
+      }
     },
     {
       title: 'STOCK LEVEL',
       dataIndex: 'stockBatches',
       key: 'stockBatches',
-      width: 180,
-      render: (stockBatches, record) => {
+      width: 190,
+      render: (stockBatches) => {
         if (!stockBatches || !Array.isArray(stockBatches) || stockBatches.length === 0) {
-          return <span className="text-gray-400 text-sm italic">N/A</span>;
+          return <span className="text-gray-400 text-xs italic font-medium">N/A</span>;
         }
 
         const totalStock = stockBatches.reduce((sum, batch) => sum + (batch.quantity || 0), 0);
-
         const maxCapacity = 100;
-
         const percentage = Math.min(Math.round((totalStock / maxCapacity) * 100), 100);
 
-        let strokeColor = '#52c41a';
+        let strokeColor = '#10b981';
         let textColorClass = 'text-green-600';
-        let displayStatus = "IN STOCK";
 
         if (totalStock === 0) {
-          strokeColor = '#ff4d4f';
-          textColorClass = 'text-red-500 font-bold animate-pulse';
-          displayStatus = "OUT OF STOCK";
+          strokeColor = '#ef4444';
+          textColorClass = 'text-red-500 font-bold';
         } else if (totalStock <= 20) {
-          strokeColor = '#faad14';
+          strokeColor = '#f59e0b';
           textColorClass = 'text-amber-500 font-semibold';
-          displayStatus = "LOW STOCK";
         }
 
         return (
-          <div className="w-full max-w-40 bg-gray-50/50 p-2 rounded-lg border border-gray-100/80 shadow-2xs">
-            <div className="flex justify-between items-center mb-1.5">
-              <span className="text-xs font-bold text-gray-700 tracking-tight">
-                {totalStock} <span className="text-gray-400 font-normal text-[11px]">/ {maxCapacity} Pcs</span>
+          <div className="w-full max-w-37.5 flex flex-col gap-1.5 py-1">
+            <div className="flex justify-between items-baseline text-xs">
+              <span className="font-bold text-gray-700 font-mono">
+                {totalStock} <span className="text-gray-400 font-normal text-[10px]">/ {maxCapacity}</span>
               </span>
-
-              <span className={`text-[10px] font-extrabold ${textColorClass}`}>
+              <span className={`text-[10px] font-mono font-bold ${textColorClass}`}>
                 {percentage}%
               </span>
             </div>
-
             <Progress
               percent={percentage}
               showInfo={false}
               strokeColor={strokeColor}
-              size={{ strokeWidth: 6 }}
+              strokeWidth={5}
               strokeLinecap="round"
-              className="m-0 w-full drop-shadow-3xs"
+              className="m-0 w-full"
             />
-
-            <div className="text-[10px] font-bold mt-1 text-right tracking-tight">
-              <span className={textColorClass}>{displayStatus}</span>
-            </div>
           </div>
         );
       }
@@ -145,7 +137,7 @@ const Inventory = () => {
       key: 'price',
       width: 110,
       render: (price) => (
-        <span className="font-bold text-gray-800 text-sm sm:text-base">
+        <span className="font-bold text-gray-800 text-sm font-mono">
           ${Number(price).toFixed(2)}
         </span>
       ),
@@ -154,80 +146,67 @@ const Inventory = () => {
       title: 'STATUS',
       dataIndex: 'stockBatches',
       key: 'status',
-      width: 140,
+      width: 130,
       render: (stockBatches) => {
-
         if (!stockBatches || !Array.isArray(stockBatches) || stockBatches.length === 0) {
-          return <span className="text-gray-400 text-sm italic">N/A</span>;
+          return <span className="text-gray-400 text-xs italic">N/A</span>;
         }
 
         const totalStock = stockBatches.reduce((sum, batch) => sum + (batch.quantity || 0), 0);
-
-
-        let strokeColor = '#52c41a';
-        let tagColor = 'text-green-600';
+        let badgeStyle = 'bg-green-50 text-green-600 border-green-100';
         let displayStatus = 'IN STOCK';
 
         if (totalStock === 0) {
-          strokeColor = '#ff4d4f'
-          tagColor = 'text-red-500 font-bold animate-pulse';
+          badgeStyle = 'bg-red-50 text-red-600 border-red-100 font-bold';
           displayStatus = 'OUT OF STOCK';
         } else if (totalStock <= 20) {
-          strokeColor = '#faad14';
-          tagColor = 'text-amber-500 font-semibold';
+          badgeStyle = 'bg-amber-50 text-amber-600 border-amber-100 font-semibold';
           displayStatus = 'LOW STOCK';
         }
+
         return (
-          <Tag
-            color={strokeColor}
-            className="rounded-full font-bold px-3 py-0.5 text-[11px] tracking-wider uppercase border-none shadow-sm"
-          >
+          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase border ${badgeStyle}`}>
             {displayStatus}
-          </Tag>
+          </span>
         );
       },
     },
     {
-      title: 'ACTIONS',
+      title: '',
       key: 'action',
-      width: 80,
+      width: 60,
       align: 'center',
       render: (_, record) => {
         const actionItems = [
           {
             key: 'restock',
-            label: <span className="font-medium text-gray-700">Restock</span>,
-            icon: <PlusCircleOutlined className="text-green-500" />,
+            label: <span className="text-sm text-gray-700 font-medium">Restock</span>,
+            icon: <PlusCircleOutlined className="text-green-500 text-sm" />,
             onClick: () => handleRestock(record)
           },
           {
             key: 'edit',
-            label: <span className="font-medium text-gray-700">Edit Product</span>,
-            icon: <EditOutlined className="text-blue-500" />,
+            label: <span className="text-sm text-gray-700 font-medium">Edit Product</span>,
+            icon: <EditOutlined className="text-primary-500 text-sm" />,
             onClick: () => handleEdit(record)
           },
           { type: 'divider' },
           {
             key: 'delete',
-            label: <span className="font-medium">Disable</span>,
-            icon: <DeleteOutlined />,
+            label: <span className="text-sm text-red-600 font-medium">{record.disabled ? 'Enable' : 'Disable'}</span>,
+            icon: <DeleteOutlined className="text-red-400 text-sm" />,
             danger: true,
             onClick: () => handleDelete(record)
           },
         ];
 
         return (
-          <Dropdown
-            menu={{ items: actionItems }}
-            trigger={['click']}
-            placement="bottomRight"
-            classNames={{ root: "shadow-md rounded-lg" }}
-          >
+          <Dropdown menu={{ items: actionItems }} trigger={['click']} placement="bottomRight">
             <Button
               type="text"
               shape="circle"
-              className="hover:bg-gray-100! flex items-center justify-center m-auto"
-              icon={<MoreOutlined className="text-gray-500 text-xl!" />}
+              className="flex items-center justify-center hover:bg-gray-100! text-gray-400 hover:text-gray-600 transition-colors"
+              icon={<MoreOutlined className="text-lg" />}
             />
           </Dropdown>
         );
@@ -263,53 +242,78 @@ const Inventory = () => {
     const tempExpiryDates = {};
 
     Modal.confirm({
-      title: <span className="text-base sm:text-lg font-bold text-gray-800 tracking-wide">🚨 LIST OF ITEMS NEEDING URGENT SHIPPING</span>,
-      width: 700,
-      okText: 'Complete',
+      title: (
+        <div className="flex flex-col gap-0.5">
+          <span className="text-[11px] font-bold text-amber-500 uppercase tracking-wider">Inventory Alert</span>
+          <span className="text-base font-bold text-gray-800 flex items-center gap-1.5">
+            🚨 Restock Required Immediately
+          </span>
+        </div>
+      ),
+      width: 540, 
+      okText: 'Complete Restock',
       cancelText: 'Close',
-      className: "max-w-[calc(100vw-32px)] sm:max-w-[700px]",
+      centered: true,
+      okButtonProps: {
+        className: "bg-primary-500 hover:bg-primary-600! font-semibold px-4 rounded-xl shadow-sm cursor-pointer"
+      },
+      cancelButtonProps: {
+        className: "rounded-xl font-medium"
+      },
       content: (
-        <div className="max-h-80 sm:max-h-100 overflow-y-auto pr-2 mt-4 space-y-1 scrollbar-thin scrollbar-thumb-gray-200">
-          {lowStockItems.map((item) => (
-            <div key={item._id} className="flex items-center justify-between py-3.5 border-b border-gray-100 last:border-0 gap-4">
-              <div className="flex items-center gap-3 flex-1 min-w-0">
-                <Avatar
-                  src={`/product/${item.category.toLowerCase()}/${item.image}`}
-                  shape="square"
-                  size={48}
-                  className="rounded-lg border border-gray-100 shrink-0 object-cover"
-                />
-                <div className="min-w-0">
-                  <b className="text-sm sm:text-base text-gray-800 block truncate leading-tight">{item.name}</b>
+        <div className="max-h-80 sm:max-h-96 overflow-y-auto pr-1 mt-4 space-y-3 scrollbar-none">
+          <p className="text-gray-400 text-xs leading-relaxed">
+            The following items have dropped below safety thresholds. Please input the shipping quantity and expiration date to update inventory:
+          </p>
 
-                  <span className="text-xs text-gray-400 block mt-1 font-medium">
-                    Still available: <b className="text-red-500 font-bold">{item.stockBatches?.reduce((sum, batch) => sum + (batch.quantity || 0), 0) || 0}</b> / 100 Units
-                  </span>
+          {lowStockItems.map((item) => {
+            const currentQty = item.stockBatches?.reduce((sum, batch) => sum + (batch.quantity || 0), 0) || 0;
 
-                  <div className="mt-1 flex items-center">
-                    <Badge status="error" text={<span className="text-[11px] font-bold text-red-400 uppercase tracking-wider">Alert!</span>} />
+            return (
+              <div
+                key={item._id}
+                className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 bg-gray-50/50 border border-gray-100 rounded-2xl gap-3 transition-colors hover:bg-gray-50"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <Avatar
+                    src={`/product/${item.category.toLowerCase()}/${item.image}`}
+                    shape="square"
+                    size={42}
+                    className="rounded-xl border border-gray-100 shrink-0 object-cover bg-white shadow-3xs"
+                  />
+                  <div className="min-w-0">
+                    <b className="text-sm text-gray-800 block truncate leading-tight">
+                      {item.name}
+                    </b>
+                    <span className="text-xs text-gray-400 block mt-1 font-medium">
+                      Available: <b className="text-red-500 font-semibold font-mono">{currentQty}</b> / 100 U
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-red-500 bg-red-50 border border-red-100 px-1.5 py-0.2 mt-1 rounded uppercase tracking-wider animate-pulse">
+                      Critical
+                    </span>
                   </div>
                 </div>
+
+                <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto [&_.ant-input-number]:rounded-xl [&_.ant-picker]:rounded-xl">
+                  <InputNumber
+                    min={0}
+                    placeholder="Qty"
+                    className="w-20 font-semibold text-center font-mono py-0.5"
+                    onChange={(val) => { tempAmounts[item._id] = val; }}
+                  />
+                  <DatePicker
+                    placeholder="Expiry Date"
+                    className="flex-1 sm:w-32 py-2 text-xs"
+                    format="YYYY-MM-DD"
+                    disabledDate={(current) => current && current.valueOf() < Date.now()}
+                    onChange={(date, dateString) => {
+                      tempExpiryDates[item._id] = dateString;
+                    }}
+                  />
+                </div>
               </div>
-              <div className="flex items-center gap-2 shrink-0 pl-1">
-                <InputNumber
-                  min={0}
-                  placeholder="SL"
-                  className="w-20 rounded-md font-medium"
-                  onChange={(val) => { tempAmounts[item._id] = val; }}
-                />
-                <DatePicker
-                  placeholder="Expiration date"
-                  className="w-32 rounded-md"
-                  format="YYYY-MM-DD"
-                  disabledDate={(current) => current && current.valueOf() < Date.now()}
-                  onChange={(date, dateString) => {
-                    tempExpiryDates[item._id] = dateString;
-                  }}
-                />
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ),
       onOk: async () => {
@@ -438,7 +442,7 @@ const Inventory = () => {
     };
 
     Modal.confirm({
-      title: <span className="font-bold text-gray-800">📦 Import goods for: {record.name}</span>,
+      title: <span className="font-bold text-gray-800"> Import goods for: {record.name}</span>,
       width: 450,
       okText: "Confirm",
       cancelText: "Cancel",
@@ -554,31 +558,52 @@ const Inventory = () => {
     }
 
     const modalRef = Modal.confirm({
-      title: <span className="text-red-600 font-bold text-lg">⚠️ EXPIRED ITEMS ALERT!</span>,
-      width: 650,
-      okText: 'Close',
-      okButtonProps: { type: 'default' },
+      title: (
+        <div className="flex flex-col gap-0.5">
+          <span className="text-[11px] font-bold text-red-500 uppercase tracking-wider">System Alert</span>
+          <div className="flex items-center gap-2">
+            <span className="text-base font-bold text-red-500 flex items-center gap-1.5"> <WarningFilled /> </span>
+            <span className="text-base font-bold text-gray-800 flex items-center gap-1.5">
+              Expired Batches Detected
+            </span>
+          </div>
+        </div>
+      ),
+      width: 460,
+      okText: 'Close Alert',
+      okButtonProps: {
+        type: 'default',
+        className: "rounded-xl font-semibold border-gray-200 hover:bg-gray-50 transition-colors"
+      },
       cancelButtonProps: { style: { display: 'none' } },
+      centered: true,
       content: (
-        <div className="max-h-96 overflow-y-auto pr-2 mt-4 space-y-3">
-          <p className="text-gray-500 text-sm">The following batches have expired. Please remove them from the stock:</p>
+        <div className="max-h-80 overflow-y-auto pr-1 mt-3 space-y-2.5 text-sm scrollbar-none">
+          <p className="text-gray-400 text-xs leading-relaxed">
+            The following batches have reached their expiration dates. Please remove them from active stock immediately:
+          </p>
 
           {expiredBatches.map((batch) => (
-            <div key={batch.batchId} className="flex items-center justify-between p-3 bg-red-50/50 border border-red-100 rounded-xl gap-4">
+            <div
+              key={batch.batchId}
+              className="flex items-center justify-between p-3 bg-red-50/40 border border-red-100 rounded-xl gap-4 hover:bg-red-50/70 transition-colors"
+            >
               <div className="flex items-center gap-3 min-w-0">
                 <Avatar
                   src={`/product/${batch.category.toLowerCase()}/${batch.image}`}
                   shape="square"
-                  size={44}
-                  className="rounded-md shrink-0 border border-red-200"
+                  size={40}
+                  className="rounded-xl shrink-0 border border-red-200/60 object-cover bg-white"
                 />
-                <div className="min-w-0">
-                  <b className="text-sm text-gray-800 block truncate">{batch.productName}</b>
-                  <span className="text-xs text-gray-500 block mt-0.5">
-                    Expired Batch Qty: <b className="text-red-500">{batch.quantity} pcs</b>
+                <div className="min-w-0 flex flex-col">
+                  <b className="text-xs sm:text-sm text-gray-800 truncate">
+                    {batch.productName}
+                  </b>
+                  <span className="text-[11px] text-gray-400 font-medium mt-0.5">
+                    Qty: <b className="text-red-500 font-bold">{batch.quantity} pcs</b>
                   </span>
-                  <span className="text-[11px] bg-red-100 text-red-600 font-semibold px-1.5 py-0.5 rounded mt-1 inline-block">
-                    Expired on: {new Date(batch.expiredAt).toLocaleDateString('en-CA')}
+                  <span className="text-[10px] font-bold text-red-600 bg-red-100/60 px-2 py-0.5 rounded-md mt-1 w-fit tracking-wide uppercase">
+                    EXP: {new Date(batch.expiredAt).toLocaleDateString('en-CA')}
                   </span>
                 </div>
               </div>
@@ -587,13 +612,13 @@ const Inventory = () => {
                 type="primary"
                 danger
                 shape="circle"
-                icon={<DeleteOutlined />}
+                size="middle"
+                className="flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 transition-transform shadow-2xs shrink-0"
+                icon={<DeleteOutlined className="text-sm" />}
                 onClick={async () => {
                   try {
                     console.log(`Attempting to delete expired batch: Product ID ${batch.productId}, Batch ID ${batch.batchId}`);
                     const response = await deleteBatchsApi(batch.productId, batch.batchId);
-
-
 
                     if (response?.success) {
                       message.success(`Removed expired batch of ${batch.productName}!`);
@@ -821,187 +846,184 @@ const Inventory = () => {
 
       </div>
 
-      <div className="bg-white rounded-xl p-4 sm:p-6 shadow-[0_4px_12px_rgba(0,0,0,0.02)] border border-gray-100 relative flex flex-col gap-5">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
         <Spin spinning={loading}>
           <Table
             rowKey="_id"
-            rowClassName={(record) => record.disabled ? 'row-disabled' : ''}
+            rowClassName={(record) => record.disabled ? 'opacity-40 bg-gray-50/50 pointer-events-none' : ''}
             columns={columns}
             dataSource={data}
             scroll={{ x: 800 }}
+            size="middle"
             pagination={{
               total: data.length,
               pageSize: 5,
               showSizeChanger: false,
-              placement: 'bottomRight',
+              placement: ['bottomRight'],
+              className: "px-6 py-4 border-t border-gray-50 !m-0"
             }}
-            className="w-full"
+            className="w-full [&_.ant-table-thead_th]:bg-transparent [&_.ant-table-thead_th]:text-gray-400 [&_.ant-table-thead_th]:text-[11px] [&_.ant-table-thead_th]:font-bold [&_.ant-table-thead_th]:tracking-wider [&_.ant-table-thead_th]:uppercase"
           />
-
-          <Modal
-            title={<span className="text-lg font-bold text-gray-800">✨ Add New Product</span>}
-            open={isAddModalOpen}
-            onCancel={() => { setIsAddModalOpen(false); addForm.resetFields(); }}
-            onOk={handleCreateSubmit}
-            confirmLoading={loading}
-            okText="Add Product"
-            cancelText="Cancel"
-            width={650}
-            className="max-w-[calc(100vw-32px)]"
-          >
-            <Form form={addForm} layout="vertical" className="mt-4" initialValues={{ status: "IN STOCK" }}>
-              <Form.Item name="name" label={<span className="font-semibold text-gray-600">Product Name</span>} rules={[{ required: true }]}>
-                <Input placeholder="e.g., Tiramisu" />
-              </Form.Item>
-
-              <Form.Item
-                noStyle
-                shouldUpdate={(prevValues, currentValues) =>
-                  prevValues.category !== currentValues.category || prevValues.image !== currentValues.image
-                }
-              >
-                {({ getFieldsValue }) => {
-                  const values = getFieldsValue();
-                  const category = values?.category?.toLowerCase() || '';
-                  const image = values?.image || '';
-
-                  return (
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 items-start mb-4">
-                      <div className="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-xl border border-dashed border-gray-200 gap-2 sm:col-span-1">
-                        <Avatar
-                          size={90}
-                          shape="square"
-                          src={`/product/${category}/${image}`}
-                          icon={<PictureOutlined />}
-                          className="rounded-lg! border border-gray-100 bg-white shadow-sm object-cover"
-                        />
-                        <span className="text-[11px] font-medium text-gray-400 uppercase tracking-wider mt-1">Image Preview</span>
-                      </div>
-
-                      <div className="sm:col-span-2 w-full">
-                        <Form.Item
-                          name="image"
-                          label={<span className="font-semibold text-gray-600 text-sm">Image Filename</span>}
-                          tooltip="Enter the filename in public/product folder (e.g., cake_1.png)"
-                          rules={[{ required: true, message: 'Please enter the image filename!' }]}
-                          className="mb-0"
-                        >
-                          <Input
-                            placeholder="e.g., drink_5.png"
-                            className="py-2"
-                          />
-                        </Form.Item>
-                      </div>
-                    </div>
-                  );
-                }}
-              </Form.Item>
-
-              <div className="grid grid-cols-2 gap-4">
-                <Form.Item name="price" label={<span className="font-semibold text-gray-600">Price</span>} rules={[{ required: true }]}>
-                  <InputNumber className="w-full" min={0} />
-                </Form.Item>
-                <Form.Item name="category" label={<span className="font-semibold text-gray-600">Category</span>} rules={[{ required: true }]}>
-                  <Select options={[{ value: 'CAKE', label: 'CAKE' }, { value: 'DRINK', label: 'DRINK' }]} />
-                </Form.Item>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <Form.Item name="quantity" label={<span className="font-semibold text-gray-600">Initial Quantity</span>} rules={[{ required: true }]}>
-                  <InputNumber min={1} max={100} className="w-full" />
-                </Form.Item>
-                <Form.Item name="expiredAt" label={<span className="font-semibold text-gray-600">Expiration Date</span>} rules={[{ required: true }]}>
-                  <DatePicker format="YYYY-MM-DD" className="w-full" disabledDate={(curr) => curr && curr.valueOf() < Date.now()} />
-                </Form.Item>
-              </div>
-
-              <Form.Item name="status" label={<span className="font-semibold text-gray-600">Status</span>}>
-                <Select defaultValue="IN STOCK" options={[{ value: 'IN STOCK', label: 'IN STOCK' }, { value: 'LOW STOCK', label: 'LOW STOCK' }]} />
-              </Form.Item>
-            </Form>
-          </Modal>
-
-          <Modal
-            title={<span className="text-lg font-bold text-gray-800">📝 Edit Product: {editingProduct?.name}</span>}
-            open={isEditModalOpen}
-            onCancel={() => { setIsEditModalOpen(false); editForm.resetFields(); setEditingProduct(null); }}
-            onOk={handleUpdateSubmit}
-            confirmLoading={loading}
-            okText="Save Changes"
-            cancelText="Cancel"
-            width={650}
-            className="max-w-[calc(100vw-32px)]"
-          >
-            <Form form={editForm} layout="vertical" className="mt-4">
-              <Form.Item name="name" label={<span className="font-semibold text-gray-600">Product Name</span>} rules={[{ required: true }]}>
-                <Input />
-              </Form.Item>
-
-              <Form.Item
-                noStyle
-                shouldUpdate={(prevValues, currentValues) =>
-                  prevValues.category !== currentValues.category || prevValues.image !== currentValues.image
-                }
-              >
-                {({ getFieldsValue }) => {
-                  const values = getFieldsValue();
-                  const category = (values?.category || 'DRINK').toLowerCase();
-                  const image = values?.image || '';
-
-                  return (
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 items-start mb-4">
-                      <div className="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-xl border border-dashed border-gray-200 gap-2 sm:col-span-1">
-                        <Avatar
-                          size={90}
-                          shape="square"
-                          src={`/product/${category}/${image}`}
-                          icon={<PictureOutlined />}
-                          className="rounded-lg! border border-gray-100 bg-white shadow-sm object-cover"
-                        />
-                        <span className="text-[11px] font-medium text-gray-400 uppercase tracking-wider mt-1">Image Preview</span>
-                      </div>
-
-                      <div className="sm:col-span-2 w-full">
-                        <Form.Item
-                          name="image"
-                          label={<span className="font-semibold text-gray-600 text-sm">Image Filename</span>}
-                          tooltip="Enter the filename in public/product folder (e.g., cake_1.png)"
-                          rules={[{ required: true, message: 'Please enter the image filename!' }]}
-                          className="mb-0"
-                        >
-                          <Input
-                            placeholder="e.g., drink_5.png"
-                            className="py-2"
-                          />
-                        </Form.Item>
-                      </div>
-                    </div>
-                  );
-                }}
-              </Form.Item>
-
-              <div className="grid grid-cols-2 gap-4">
-                <Form.Item name="price" label={<span className="font-semibold text-gray-600">Price</span>} rules={[{ required: true }]}>
-                  <InputNumber className="w-full" min={0} />
-                </Form.Item>
-                <Form.Item name="category" label={<span className="font-semibold text-gray-600">Category</span>} rules={[{ required: true }]}>
-                  <Select options={[{ value: 'CAKE', label: 'CAKE' }, { value: 'DRINK', label: 'DRINK' }]} />
-                </Form.Item>
-              </div>
-
-              <Form.Item name="status" label={<span className="font-semibold text-gray-600">Status</span>}>
-                <Select options={[{ value: 'IN STOCK', label: 'IN STOCK' }, { value: 'LOW STOCK', label: 'LOW STOCK' }, { value: 'OUT OF STOCK', label: 'OUT OF STOCK' }]} />
-              </Form.Item>
-            </Form>
-          </Modal>
         </Spin>
 
-        <div className="sm:absolute bottom-7 left-6 text-xs sm:text-sm text-gray-400 font-medium mt-2 sm:mt-0 text-center sm:text-left">
-          Showing 1 to 5 of {data.length} records
+        <div className="px-6 py-4 border-t border-gray-50 bg-gray-50/40 flex items-center">
+          <div className="text-xs text-gray-400 font-medium">
+            Showing <span className="font-semibold text-gray-600">1</span> to{' '}
+            <span className="font-semibold text-gray-600">{Math.min(5, data.length)}</span> of{' '}
+            <span className="font-semibold text-gray-600">{data.length}</span> records
+          </div>
         </div>
+
+        <Modal
+          title={<span className="text-base font-bold font-heading text-gray-800">Add New Product</span>}
+          open={isAddModalOpen}
+          onCancel={() => { setIsAddModalOpen(false); addForm.resetFields(); }}
+          onOk={handleCreateSubmit}
+          confirmLoading={loading}
+          okText="Add Product"
+          cancelText="Cancel"
+          width={460}
+          className="rounded-2xl"
+          okButtonProps={{ className: "bg-primary-500 hover:bg-primary-600! font-semibold px-4 rounded-xl shadow-sm cursor-pointer" }}
+          cancelButtonProps={{ className: "rounded-xl font-medium" }}
+          centered
+        >
+          <Form
+            form={addForm}
+            layout="vertical"
+            className="mt-4 text-sm flex flex-col gap-3.5 [&_.ant-input]:rounded-xl [&_.ant-input-number]:rounded-xl [&_.ant-select-selector]:rounded-xl! [&_.ant-picker]:rounded-xl"
+            initialValues={{ status: "IN STOCK" }}
+          >
+            <Form.Item name="name" label={<span className="font-semibold text-gray-700">Product Name</span>} rules={[{ required: true }]} className="mb-0">
+              <Input placeholder="e.g., Tiramisu" className="py-2" />
+            </Form.Item>
+
+            <Form.Item name="category" label={<span className="font-semibold text-gray-700">Category</span>} rules={[{ required: true }]} className="mb-0">
+              <Select placeholder="Select type" className="h-9" options={[{ value: 'CAKE', label: 'CAKE' }, { value: 'DRINK', label: 'DRINK' }]} />
+            </Form.Item>
+
+            <Form.Item noStyle shouldUpdate={(prev, curr) => prev.category !== curr.category || prev.image !== curr.image}>
+              {({ getFieldsValue }) => {
+                const values = getFieldsValue();
+                const category = values?.category?.toLowerCase() || 'drink';
+                const image = values?.image || '';
+
+                return (
+                  <div className="flex flex-col gap-2.5 bg-gray-50 p-3.5 rounded-xl border border-gray-100">
+                    <Form.Item
+                      name="image"
+                      label={<span className="font-semibold text-gray-700 text-xs">Image Filename</span>}
+                      tooltip="File must exist in public/product/[category]/ folder"
+                      rules={[{ required: true, message: 'Please enter filename!' }]}
+                      className="mb-0"
+                    >
+                      <Input placeholder="e.g., cake_1.png" className="py-2" />
+                    </Form.Item>
+
+                    <div className="flex items-center gap-3 bg-white p-2 rounded-lg border border-gray-200/60">
+                      <Avatar
+                        size={44}
+                        shape="square"
+                        src={`/product/${category}/${image}`}
+                        icon={<PictureOutlined />}
+                        className="rounded-lg! border border-gray-100 bg-gray-50 shadow-3xs object-cover"
+                      />
+                      <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Image Preview</span>
+                    </div>
+                  </div>
+                );
+              }}
+            </Form.Item>
+
+            <Form.Item name="price" label={<span className="font-semibold text-gray-700">Price ($)</span>} rules={[{ required: true }]} className="mb-0">
+              <InputNumber className="w-full py-0.5" min={0} placeholder="8.50" />
+            </Form.Item>
+
+            <Form.Item name="quantity" label={<span className="font-semibold text-gray-700">Initial Quantity</span>} rules={[{ required: true }]} className="mb-0">
+              <InputNumber min={1} max={100} className="w-full py-0.5" placeholder="50" />
+            </Form.Item>
+
+            <Form.Item name="expiredAt" label={<span className="font-semibold text-gray-700">Expiration Date</span>} rules={[{ required: true }]} className="mb-0">
+              <DatePicker format="YYYY-MM-DD" className="w-full py-2" disabledDate={(curr) => curr && curr.valueOf() < Date.now()} />
+            </Form.Item>
+
+            <Form.Item name="status" label={<span className="font-semibold text-gray-700">Initial Status</span>} className="mb-0">
+              <Select className="h-9" options={[{ value: 'IN STOCK', label: 'IN STOCK' }, { value: 'LOW STOCK', label: 'LOW STOCK' }]} />
+            </Form.Item>
+          </Form>
+        </Modal>
+
+        <Modal
+          title={<span className="text-base font-bold font-heading text-gray-800">Edit Product Info</span>}
+          open={isEditModalOpen}
+          onCancel={() => { setIsEditModalOpen(false); editForm.resetFields(); setEditingProduct(null); }}
+          onOk={handleUpdateSubmit}
+          confirmLoading={loading}
+          okText="Save Changes"
+          cancelText="Cancel"
+          width={460}
+          className="rounded-2xl"
+          okButtonProps={{ className: "bg-primary-500 hover:bg-primary-600! font-semibold px-4 rounded-xl shadow-sm cursor-pointer" }}
+          cancelButtonProps={{ className: "rounded-xl font-medium" }}
+          centered
+        >
+          <Form
+            form={editForm}
+            layout="vertical"
+            className="mt-4 text-sm flex flex-col gap-3.5 [&_.ant-input]:rounded-xl [&_.ant-input-number]:rounded-xl [&_.ant-select-selector]:rounded-xl! [&_.ant-picker]:rounded-xl"
+          >
+            <Form.Item name="name" label={<span className="font-semibold text-gray-700">Product Name</span>} rules={[{ required: true }]} className="mb-0">
+              <Input className="py-2" />
+            </Form.Item>
+
+            <Form.Item name="category" label={<span className="font-semibold text-gray-700">Category</span>} rules={[{ required: true }]} className="mb-0">
+              <Select className="h-9" options={[{ value: 'CAKE', label: 'CAKE' }, { value: 'DRINK', label: 'DRINK' }]} />
+            </Form.Item>
+
+            <Form.Item noStyle shouldUpdate={(prev, curr) => prev.category !== curr.category || prev.image !== curr.image}>
+              {({ getFieldsValue }) => {
+                const values = getFieldsValue();
+                const category = (values?.category || 'DRINK').toLowerCase();
+                const image = values?.image || '';
+
+                return (
+                  <div className="flex flex-col gap-2.5 bg-gray-50 p-3.5 rounded-xl border border-gray-100">
+                    <Form.Item
+                      name="image"
+                      label={<span className="font-semibold text-gray-700 text-xs">Image Filename</span>}
+                      rules={[{ required: true, message: 'Please enter filename!' }]}
+                      className="mb-0"
+                    >
+                      <Input className="py-2" />
+                    </Form.Item>
+
+                    <div className="flex items-center gap-3 bg-white p-2 rounded-lg border border-gray-200/60">
+                      <Avatar
+                        size={44}
+                        shape="square"
+                        src={`/product/${category}/${image}`}
+                        icon={<PictureOutlined />}
+                        className="rounded-lg! border border-gray-100 bg-gray-50 shadow-3xs object-cover"
+                      />
+                      <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Image Preview</span>
+                    </div>
+                  </div>
+                );
+              }}
+            </Form.Item>
+
+            <Form.Item name="price" label={<span className="font-semibold text-gray-700">Price ($)</span>} rules={[{ required: true }]} className="mb-0">
+              <InputNumber className="w-full py-0.5" min={0} />
+            </Form.Item>
+
+            <Form.Item name="status" label={<span className="font-semibold text-gray-700">Status</span>} className="mb-0">
+              <Select className="h-9" options={[{ value: 'IN STOCK', label: 'IN STOCK' }, { value: 'LOW STOCK', label: 'LOW STOCK' }, { value: 'OUT OF STOCK', label: 'OUT OF STOCK' }]} />
+            </Form.Item>
+          </Form>
+        </Modal>
       </div>
 
-    </div>
+    </div >
   );
 };
 

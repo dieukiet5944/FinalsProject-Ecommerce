@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth.js';
 import { useCart } from '../../context/CartContext';
 import { useEffect } from 'react';
-import { EditOutlined } from '@ant-design/icons'
+import { EditOutlined, FacebookOutlined, InstagramOutlined, YoutubeOutlined } from '@ant-design/icons'
 import { Button, message, Modal } from 'antd'
 import { Outlet, Link } from 'react-router-dom';
-import { putUsersApi} from '../../services/userService.js';
+import { putUsersApi } from '../../services/userService.js';
 
 
 function CustomerLayout() {
@@ -18,7 +18,7 @@ function CustomerLayout() {
     const [pickPicture, setPickPicture] = useState('')
 
 
-    const sampleAvatars = ['none-avt.png', 'carrick.jpg', 'davidbeckham.png', 'edwin.jpg', 'evra.jpg'];
+    const sampleAvatars = ['none-avt.png', 'carrick.jpg', 'davidbeckham.png', 'edwin.jpg', 'evra.jpg', 'ronaldo.jpg', 'tevez.jpg', 'vidic.jpg', 'hargo.jpg', 'rio.jpg'];
 
     const handleUpdateProfile = async () => {
         if (!user?.id) return;
@@ -28,7 +28,7 @@ function CustomerLayout() {
             };
 
             const response = await putUsersApi(user.id, payload);
-            
+
             if (response?.success || response?.data?.success) {
                 updateUserLocal({ avatar: pickPicture });
 
@@ -70,32 +70,41 @@ function CustomerLayout() {
 
                         <div className="flex items-center gap-3 shrink-0">
                             {user ? (
-                                <div className="flex items-center gap-4">
-                                    <span className="hidden text-sm text-white/80 md:block">
+                                <div className="flex items-center gap-3">
+                                    <span className="hidden text-sm font-medium text-white/90 md:block">
                                         Hi, {user.name}
                                     </span>
-                                    <button onClick={() => setOpenLogo(true)} className='cursor-pointer' >
-                                        <img className='w-10 h-10 rounded-xl border-2 border-solid' src={`/product/avtusers/${user.avatar}`} alt="img_logo" />
+
+                                    <button
+                                        onClick={() => setOpenLogo(true)}
+                                        className="cursor-pointer rounded-full transition-transform hover:scale-105 focus:outline-none"
+                                    >
+                                        <img
+                                            className="w-9 h-9 rounded-full object-cover border border-white/40 shadow-sm"
+                                            src={`/product/avtusers/${user.avatar}`}
+                                            alt="user_avatar"
+                                        />
                                     </button>
 
                                     <button
                                         onClick={logoutUser}
-                                        className="px-5 py-2 text-sm text-amber-50 border border-white/30 hover:border-white/60 rounded-full transition-colors"
+                                        className="px-4 py-1.5 text-xs font-medium text-white/90 border border-white/20 hover:border-white/50 rounded-full transition-all focus:outline-none"
                                     >
                                         Logout
                                     </button>
                                 </div>
                             ) : (
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-2.5">
                                     <Link
                                         to="/login"
-                                        className="px-6 py-2.5 text-sm border border-white/30 hover:border-white/60 rounded-full transition-colors text-light-bg"
+                                        className="px-4 py-1.5 text-xs font-semibold text-white border border-white/20 hover:border-white/50 rounded-full transition-all focus:outline-none"
                                     >
                                         Sign In
                                     </Link>
+
                                     <Link
                                         to="/register"
-                                        className="px-6 py-2.5 text-sm bg-white text-[#2a0614] font-semibold rounded-full hover:bg-white/90 transition-colors"
+                                        className="px-4 py-1.5 text-xs font-semibold bg-white text-gray-900 hover:bg-white/90 rounded-full transition-all shadow-sm focus:outline-none"
                                     >
                                         Join Now
                                     </Link>
@@ -104,59 +113,89 @@ function CustomerLayout() {
                         </div>
 
                         <Modal
-                            title="Profile"
+                            title={<span className="text-lg font-bold font-heading">User Profile</span>}
                             open={openLogo}
                             onCancel={() => setOpenLogo(false)}
                             onOk={handleUpdateProfile}
                             centered
-                            width={400}
+                            width={380}
+                            okText="Save Changes"
+                            cancelText="Cancel"
                         >
-                            <div className='p-8'>
-                                <div className="relative pr-5 pl-5 mb-8 flex justify-center">
-                                    <img
-                                        src={`/product/avtusers/${pickPicture.length === 0 ? 'none-avt.png' : pickPicture}`}
-                                        alt="admin-avatar"
-                                        className="w-12 h-12 sm:w-28 sm:h-28 rounded-xl object-cover bg-slate-800 border border-gray-150"
-                                    />
-                                    <button
-                                        onClick={() => setIsAvatarModalOpen(true)}
-                                        className="absolute -bottom-1 right-20 bg-[#EF3D78] text-white p-2 rounded-lg hover:bg-[#5e151a] transition-colors shadow-md flex items-center justify-center cursor-pointer border-2 border-white"
-                                    >
-                                        <EditOutlined className="text-xs" />
-                                    </button>
+                            <div className="py-4 px-2">
+                                <div className="relative flex justify-center mb-6">
+                                    <div className="relative group">
+                                        <img
+                                            src={`/product/avtusers/${pickPicture || 'none-avt.png'}`}
+                                            alt="user-avatar"
+                                            className="w-24 h-24 rounded-full object-cover shadow-md bg-light-surface border-2 border-gray-100 transition-transform duration-300 group-hover:scale-[1.02]"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsAvatarModalOpen(true)}
+                                            className="absolute bottom-0 right-0 bg-primary-500 text-white w-8 h-8 rounded-full hover:bg-primary-600 transition-colors shadow-md flex items-center justify-center cursor-pointer border-2 border-white"
+                                        >
+                                            <EditOutlined className="text-xs" />
+                                        </button>
+                                    </div>
                                 </div>
 
-                                <div className='flex flex-col gap-1'>
-                                    <h2><strong>ID: </strong>{user?.id}</h2>
-                                    <h2><strong>Role: </strong>{user?.role}</h2>
-                                    <h2><strong>Name: </strong>{user?.name}</h2>
-                                    <h2><strong>Mail: </strong>{user?.email}</h2>
+                                <div className="space-y-3 bg-light-surface p-4 rounded-xl border border-gray-100 text-sm">
+                                    <div className="flex justify-between items-center pb-2 border-b border-gray-200/60">
+                                        <span className="text-light-text-secondary font-medium">ID</span>
+                                        <span className="font-mono text-gray-500 text-xs">{user?.id || user?._id}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center pb-2 border-b border-gray-200/60">
+                                        <span className="text-light-text-secondary font-medium">Role</span>
+                                        <span className="px-2 py-0.5 text-xs font-semibold bg-primary-500/10 text-primary-500 rounded-md">
+                                            {user?.role}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between items-center pb-2 border-b border-gray-200/60">
+                                        <span className="text-light-text-secondary font-medium">Name</span>
+                                        <span className="font-semibold text-light-text">{user?.name}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-light-text-secondary font-medium">Email</span>
+                                        <span className="text-light-text font-medium">{user?.email}</span>
+                                    </div>
                                 </div>
                             </div>
                         </Modal>
 
                         <Modal
-                            title="Select Admin Avatar"
+                            title={<span className="text-base font-bold font-heading">Select Profile Avatar</span>}
                             open={isAvatarModalOpen}
                             onCancel={() => setIsAvatarModalOpen(false)}
                             footer={null}
                             centered
-                            width={400}
+                            width={420}
                         >
-                            <div className="grid grid-cols-2 gap-4 pt-4">
-                                {sampleAvatars.map((avtName) => (
-                                    <div
-                                        key={avtName}
-                                        onClick={() => {
-                                            setPickPicture(avtName)
-                                            setIsAvatarModalOpen(false);
-                                            message.success(`Đã chọn tạm hình ảnh ${avtName}, nhấn Save để lưu lưu!`);
-                                        }}
-                                        className={`cursor-pointer border-2 p-1 rounded-xl transition-all overflow-hidden bg-slate-800 hover:border-[#EF3D78] border-[#EF3D78] scale-95 shadow-md }`}
-                                    >
-                                        <img src={`/product/avtusers/${avtName}`} alt={avtName} className="w-full h-28 object-cover rounded-lg" />
-                                    </div>
-                                ))}
+                            <div className="grid grid-cols-3 gap-3 pt-3 max-h-87.5 overflow-y-auto pr-1">
+                                {sampleAvatars.map((avtName) => {
+                                    const isSelected = pickPicture === avtName;
+
+                                    return (
+                                        <div
+                                            key={avtName}
+                                            onClick={() => {
+                                                setPickPicture(avtName);
+                                                setIsAvatarModalOpen(false);
+                                                message.success(`Selected temporary avatar: ${avtName}. Click Save to commit.`);
+                                            }}
+                                            className={`cursor-pointer border-2 p-1 rounded-xl transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-sm overflow-hidden bg-white ${isSelected
+                                                ? 'border-primary-500 ring-2 ring-primary-500/20'
+                                                : 'border-gray-200 hover:border-primary-400'
+                                                }`}
+                                        >
+                                            <img
+                                                src={`/product/avtusers/${avtName}`}
+                                                alt={avtName}
+                                                className="w-full aspect-square object-cover rounded-lg"
+                                            />
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </Modal>
 
@@ -181,11 +220,44 @@ function CustomerLayout() {
                             </p>
                         </div>
 
-                        <div className="flex gap-8 text-sm text-white/70">
-                            <a href="#" className="transition-colors hover:text-white">Shop</a>
-                            <a href="#" className="transition-colors hover:text-white">Membership</a>
-                            <a href="#" className="transition-colors hover:text-white">About Us</a>
-                            <a href="#" className="transition-colors hover:text-white">Contact</a>
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-6 border-t border-white/10 pt-6">
+
+                            {/* Cụm 1: Các đường dẫn Text (Code cũ của bạn, tối ưu lại gap và căn giữa) */}
+                            <div className="flex flex-wrap justify-center gap-6 text-sm text-white/70">
+                                <a href="#" className="transition-colors hover:text-white">Shop</a>
+                                <a href="#" className="transition-colors hover:text-white">Membership</a>
+                                <a href="#" className="transition-colors hover:text-white">About Us</a>
+                                <a href="#" className="transition-colors hover:text-white">Contact</a>
+                            </div>
+
+                            {/* Cụm 2: Nơi tỏa sáng của các Icon Antd (Social Media) */}
+                            <div className="flex items-center gap-4 text-lg text-white/60">
+                                <a
+                                    href="https://facebook.com"
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center transition-all hover:bg-white/20 hover:text-white hover:-translate-y-0.5"
+                                >
+                                    <FacebookOutlined />
+                                </a>
+                                <a
+                                    href="https://instagram.com"
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center transition-all hover:bg-white/20 hover:text-white hover:-translate-y-0.5"
+                                >
+                                    <InstagramOutlined />
+                                </a>
+                                <a
+                                    href="https://youtube.com"
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center transition-all hover:bg-white/20 hover:text-white hover:-translate-y-0.5"
+                                >
+                                    <YoutubeOutlined />
+                                </a>
+                            </div>
+
                         </div>
 
                         <div className="text-xs text-center text-white/50 md:text-right">

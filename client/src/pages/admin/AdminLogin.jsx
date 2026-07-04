@@ -62,6 +62,7 @@ const AdminLogin = () => {
                             >
                                 <Input
                                     prefix={<MailOutlined className="text-gray-400" />}
+                                    autoComplete="off"
                                     placeholder="Enter administrator email"
                                     className="h-11 rounded-lg"
                                 />
@@ -75,7 +76,7 @@ const AdminLogin = () => {
                             >
                                 <Input.Password
                                     prefix={<LockOutlined className="text-gray-400" />}
-                                    autoComplete="current-password"
+                                    autoComplete="new-password"
                                     placeholder="••••••"
                                     className="h-11 rounded-lg"
                                 />
