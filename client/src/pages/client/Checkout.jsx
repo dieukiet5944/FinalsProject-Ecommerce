@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth.js';
 import { useCart } from '../../context/CartContext';
@@ -61,7 +61,7 @@ const Checkout = () => {
       });
 
       alert(`🎉 Order placed successfully!\n\nOrder ID: ${result.orderId || 'ORD-' + Date.now()}`);
-      navigate('/profile');
+      navigate('/order');
     } catch (err) {
       console.error(err);
       setError(err.message || "Failed to place order. Please try again.");

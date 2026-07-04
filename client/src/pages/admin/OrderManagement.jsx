@@ -73,33 +73,25 @@ const Orders = () => {
 
   const handleUpdateStatus = async (orderId, newStatus) => {
     try {
+      
       const targetOrder = dataSource.find(order => order._id === orderId);
 
       if (!targetOrder) {
-        message.error("Không tìm thấy thông tin đơn hàng này trên giao diện!");
+        message.error("Can not find this info in UI!");
         return;
       }
 
-      const userOwner = dataUsers.find(item => item.id === targetOrder.customerId);
-
-      const response = await putOrderApi(orderId, newStatus);
+      const response = await putOrderApi(orderId, { status: newStatus });
 
       if (response && response?.success) {
 
         setDataSource(prevSource =>
           prevSource.map(order =>
-            order.id === orderId ? { ...order, status: newStatus } : order
+            order._id === orderId ? { ...order, status: newStatus } : order
           )
         );
 
-        if (userOwner) {
-          const updatedUser = { ...userOwner, status: newStatus };
-          setDataUsers(prevUsers =>
-            prevUsers.map(u => u.id === userOwner.id ? updatedUser : u)
-          );
-        }
-
-        if (selectedOrder && selectedOrder.id === orderId) {
+        if (selectedOrder && selectedOrder._id === orderId) {
           setSelectedOrder(prev => ({ ...prev, status: newStatus }));
         }
 

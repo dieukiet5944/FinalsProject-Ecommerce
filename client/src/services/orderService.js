@@ -12,9 +12,9 @@ export const createOrderApi = (payload) => {
   return Axios.post('/orders', payload)
 }
 
-export const putOrderApi = (orderId, status) => {
-    return Axios.put(`/orders/${orderId}`, status);
-}
+export const putOrderApi = (orderId, body) => {
+  return Axios.put(`/orders/${orderId}`, body); 
+};
 
 export const putStatusOrderApi = (orderId) => {
     return Axios.put(`/orders/changestate/${orderId}`)

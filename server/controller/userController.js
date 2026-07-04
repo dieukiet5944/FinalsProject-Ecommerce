@@ -79,7 +79,8 @@ const userControllers = {
                         email: user.email,
                         name: user.username,
                         status: user.status,
-                        avatar: user.avatar
+                        avatar: user.avatar,
+                        role: user.role
                     }
                 }
             });

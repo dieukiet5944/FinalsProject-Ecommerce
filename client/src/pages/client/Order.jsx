@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Flex, Steps, message, Modal } from 'antd';
-import { LoadingOutlined, CheckCircleOutlined } from '@ant-design/icons'
+import { LoadingOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons'
 import dayjs from "dayjs";
 import { getOrderBreakPageApi } from "../../services/orderService.js";
 
@@ -17,7 +17,7 @@ const itemsCompleted = [
     {
         title: 'Completed',
         content: "Confirmed",
-        subTitle: <CheckCircleOutlined className="text-green-400"/>,
+        subTitle: <CheckCircleOutlined className="text-green-400" />,
     },
 ];
 
@@ -30,11 +30,28 @@ const itemsPending = [
     {
         title: 'In Progress',
         content: 'Waiting for order confirmation',
-        subTitle: <LoadingOutlined className="text-sky-500"/>,
+        subTitle: <LoadingOutlined className="text-sky-500" />,
     },
     {
         title: 'Waiting...',
         content: "Still waiting...",
+    },
+];
+
+const itemsCanceled = [
+    {
+        title: 'Order',
+        content: 'Packaging orders',
+        status: 'finish'
+    },
+    {
+        title: 'Canceled',
+        content: 'Order has been rejected',
+        subTitle: <CloseCircleOutlined className="text-red-500" />,
+    },
+    {
+        title: 'Failed',
+        content: "Transaction terminated",
     },
 ];
 
@@ -116,7 +133,21 @@ const Order = () => {
                                     <button onClick={() => { setSelectedOrder(item); setOpenView(true) }} className="bg-pink-500 pl-2 pr-2 rounded-xl active:bg-pink-800 text-amber-50 ">View order</button>
                                 </div>
                                 <Flex vertical gap="large">
-                                    { item.status === "Completed" ? <Steps current={2} status="finish" items={itemsCompleted} variant="outlined" /> : <Steps current={1} status="process" items={itemsPending} variant="outlined" />}
+                                    {(() => {
+                                        if (item.status === "Completed") {
+                                            return (
+                                                <Steps current={2} status="finish" items={itemsCompleted} variant="outlined"/>
+                                            );
+                                        }
+
+                                        if (item.status === "Canceled") {
+                                            return (<Steps current={1} status="error" items={itemsCanceled} variant="outlined" />
+                                            );
+                                        }
+
+                                        return (<Steps current={1} status="process"  items={itemsPending} variant="outlined"/>
+                                        );
+                                    })()}
                                 </Flex>
                             </div>
                         )
