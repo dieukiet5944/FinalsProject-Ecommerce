@@ -105,15 +105,15 @@ const Setting = () => {
             }
             const response = await putAdminApi(dataAdmin.id, updatePayload);
             if (response?.success || response?.status === 200) {
-                
+
                 const updatedAdminInfo = {
                     ...dataAdmin,
-                    ...updatePayload 
+                    ...updatePayload
                 };
 
                 localStorage.setItem("admin", JSON.stringify(updatedAdminInfo));
                 setdataAdmin(updatedAdminInfo);
-                                                                                    
+
                 setEditProfile(prev => ({
                     ...prev,
                     currentPassword: '',
@@ -247,27 +247,43 @@ const Setting = () => {
             </div>
 
             <Modal
-                title="Select Admin Avatar"
+                title={
+                    <div className="flex flex-col gap-0.5">
+                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Account Settings</span>
+                        <span className="text-base font-bold text-gray-800">Select Admin Avatar</span>
+                    </div>
+                }
                 open={isAvatarModalOpen}
                 onCancel={() => setIsAvatarModalOpen(false)}
                 footer={null}
                 centered
                 width={400}
             >
-                <div className="grid grid-cols-2 gap-4 pt-4">
-                    {sampleAvatars.map((avtName) => (
-                        <div
-                            key={avtName}
-                            onClick={() => {
-                                setEditProfile(prev => ({ ...prev, avatar: avtName }));
-                                setIsAvatarModalOpen(false);
-                                message.success(`The image ${avtName} has been temporarily selected; press Save to save it!`);
-                            }}
-                            className={`cursor-pointer border-2 p-1 rounded-xl transition-all overflow-hidden bg-slate-800 hover:border-[#EF3D78] ${editProfile.avatar === avtName ? 'border-[#EF3D78] scale-95 shadow-md' : 'border-transparent'}`}
-                        >
-                            <img src={`/product/adminavt/${avtName}`} alt={avtName} className="w-full h-28 object-cover rounded-lg" />
-                        </div>
-                    ))}
+                <div className="grid grid-cols-3 gap-3 pt-4 max-h-85 overflow-y-auto pr-1 text-sm scrollbar-none">
+                    {sampleAvatars.map((avtName) => {
+                        const isSelected = editProfile.avatar === avtName;
+
+                        return (
+                            <div
+                                key={avtName}
+                                onClick={() => {
+                                    setEditProfile(prev => ({ ...prev, avatar: avtName }));
+                                    setIsAvatarModalOpen(false); 
+                                    message.success(`Selected temporary avatar: ${avtName}. Click Save to apply changes.`);
+                                }}
+                                className={`cursor-pointer border-2 p-1 rounded-2xl transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-2xs overflow-hidden bg-gray-50 ${isSelected
+                                        ? 'border-primary-500 ring-4 ring-primary-500/10 bg-white'
+                                        : 'border-gray-100 hover:border-primary-400 hover:bg-white'
+                                    }`}
+                            >
+                                <img
+                                    src={`/product/adminavt/${avtName}`}
+                                    alt={avtName}
+                                    className="w-full aspect-square object-cover rounded-xl"
+                                />
+                            </div>
+                        );
+                    })}
                 </div>
             </Modal>
 

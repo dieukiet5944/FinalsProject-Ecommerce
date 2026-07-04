@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { Table, Tag, Avatar, Space, Button, Spin, Modal, Dropdown, message } from 'antd';
 import { MoreOutlined, EyeOutlined, CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, AuditOutlined, EditOutlined } from '@ant-design/icons'
-import { deleteOrdersApi, putOrderApi, putStatusOrderApi, getOrdersApi} from '../../services/orderService.js';
+import { deleteOrdersApi, putOrderApi, putStatusOrderApi, getOrdersApi } from '../../services/orderService.js';
 import { getUsersApi } from '../../services/userService.js';
 import { getProductsApi } from '../../services/productService.js';
 import dayjs from 'dayjs';
@@ -73,7 +73,7 @@ const Orders = () => {
 
   const handleUpdateStatus = async (orderId, newStatus) => {
     try {
-      
+
       const targetOrder = dataSource.find(order => order._id === orderId);
 
       if (!targetOrder) {
@@ -223,10 +223,10 @@ const Orders = () => {
       title: 'ORDER ID',
       dataIndex: '_id',
       key: '_id',
-      width: 120,
+      width: 130,
       render: (_, record) => (
-        <span className="text-[#ff4d4f] font-bold text-sm sm:text-base">
-          {`ORD-${record._id.toString().slice(2,5)}`}
+        <span className="text-gray-800 font-mono font-bold text-sm tracking-wide">
+          {`ORD-${String(record._id).slice(-5).toUpperCase()}`}
         </span>
       ),
     },
@@ -234,20 +234,20 @@ const Orders = () => {
       title: 'CUSTOMER',
       dataIndex: 'customer',
       key: 'customer',
-      width: 250,
+      width: 260,
       render: (customer) => (
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 py-0.5">
           <Avatar
-            src={`/product/avtusers/${customer.avatar}`}
-            size={44}
-            className="border border-gray-100 shrink-0 object-cover"
+            src={`/product/avtusers/${customer?.avatar || 'none-avt.png'}`}
+            size={40}
+            className="border border-gray-100 shadow-3xs shrink-0 object-cover"
           />
           <div className="flex flex-col min-w-0">
-            <span className="font-bold text-gray-800 text-sm sm:text-base truncate leading-snug">
-              {customer.name}
+            <span className="font-bold text-gray-800 text-sm truncate leading-tight">
+              {customer?.name}
             </span>
             <span className="text-xs text-gray-400 font-medium truncate mt-0.5">
-              {customer.email}
+              {customer?.email}
             </span>
           </div>
         </div>
@@ -259,7 +259,7 @@ const Orders = () => {
       key: 'date',
       width: 140,
       render: (date) => (
-        <span className="text-gray-500 font-medium text-sm">
+        <span className="text-gray-500 font-medium text-xs md:text-sm">
           {date}
         </span>
       ),
@@ -270,8 +270,8 @@ const Orders = () => {
       key: 'sumOrders',
       width: 130,
       render: (sumOrders) => (
-        <span className="font-bold text-gray-800 text-sm sm:text-base">
-          ${sumOrders.toFixed(2)}
+        <span className="font-bold text-gray-900 text-sm md:text-base">
+          ${Number(sumOrders).toFixed(2)}
         </span>
       ),
     },
@@ -279,57 +279,46 @@ const Orders = () => {
       title: 'STATUS',
       key: 'status',
       dataIndex: 'status',
-      width: 140,
+      width: 130,
       render: (status) => {
-        let color = 'default';
-        if (status === 'Pending') color = 'blue';
-        if (status === 'Completed') color = 'success';
-        if (status === 'Canceled') color = 'error';
+        let badgeStyle = 'bg-gray-50 text-gray-600 border-gray-200';
+        if (status === 'Pending') badgeStyle = 'bg-blue-50 text-blue-600 border-blue-100';
+        if (status === 'Completed') badgeStyle = 'bg-green-50 text-green-600 border-green-100';
+        if (status === 'Canceled') badgeStyle = 'bg-red-50 text-red-600 border-red-100';
 
         return (
-          <Tag
-            color={color}
-            className="rounded-full font-bold px-3 py-0.5 text-[11px] tracking-wider uppercase"
-          >
+          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase border ${badgeStyle}`}>
             {status}
-          </Tag>
+          </span>
         );
       },
     },
     {
-      title: 'ACTIONS',
+      title: '',
       key: 'action',
-      width: 80,
+      width: 60,
       align: 'center',
       render: (_, record) => {
-
         const viewDetailsItem = {
           key: 'vieworder',
-          label: <span className="font-medium text-gray-700">View Details</span>,
-          icon: <EyeOutlined className="text-gray-400" />,
+          label: <span className="text-sm text-gray-700 font-medium">View Details</span>,
+          icon: <EyeOutlined className="text-gray-400 text-sm" />,
           onClick: () => handleViewOrder(record)
         };
 
         const acceptItem = {
           key: 'accept',
-          label: <span className="font-medium text-gray-700">Accept</span>,
-          icon: <CheckCircleOutlined className="text-green-500" />,
+          label: <span className="text-sm text-gray-700 font-medium">Accept Order</span>,
+          icon: <CheckCircleOutlined className="text-green-500 text-sm" />,
           onClick: () => handleAcceptOrder(record._id)
         };
+
         const rejectItem = {
           key: 'cancel',
-          label: <span className="font-medium">Reject</span>,
-          icon: <CloseCircleOutlined />,
+          label: <span className="text-sm text-red-600 font-medium">Reject</span>,
+          icon: <CloseCircleOutlined className="text-red-400 text-sm" />,
           danger: true,
           onClick: () => handleUpdateStatus(record._id, 'Canceled')
-        };
-
-        const deleteItem = {
-          key: 'delete',
-          label: <span className="font-medium">Delete</span>,
-          icon: <DeleteOutlined />,
-          danger: true,
-          onClick: () => handleDelete(record)
         };
 
         let menuItems = [viewDetailsItem];
@@ -339,12 +328,10 @@ const Orders = () => {
             menuItems.push(acceptItem, rejectItem);
             break;
           case 'Completed':
-            menuItems
-            break;
           case 'Canceled':
             break;
           default:
-            return null;
+            break;
         }
 
         return (
@@ -352,21 +339,18 @@ const Orders = () => {
             menu={{ items: menuItems }}
             trigger={['click']}
             placement="bottomRight"
-            className="shadow-md rounded-lg"
           >
             <Button
               type="text"
               shape="circle"
-              className="hover:bg-gray-100 flex items-center justify-center m-auto"
-              icon={<MoreOutlined className="text-gray-500 text-xl" />}
+              className="flex items-center justify-center hover:bg-gray-100! text-gray-400 hover:text-gray-600 transition-colors"
+              icon={<MoreOutlined className="text-lg" />}
             />
           </Dropdown>
         );
-
       },
     }
   ];
-
 
   return (
     <div className="p-4 sm:p-6 md:p-9 flex flex-col gap-6 min-h-screen bg-gray-50/50">
@@ -427,68 +411,97 @@ const Orders = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl p-4 sm:p-6 shadow-[0_4px_12px_rgba(0,0,0,0.02)] border border-gray-100 relative flex flex-col gap-5">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
         <Spin spinning={loading}>
           <Table
             columns={columns}
             dataSource={filteredData}
-            pagination={{ pageSize: 5, placement: 'bottomRight' }}
+            size="middle"
             scroll={{ x: 800 }}
-            className="w-full"
+            pagination={{
+              pageSize: 5,
+              placement: ['bottomRight'],
+              showSizeChanger: false,
+              className: "px-6 py-4 border-t border-gray-50 !m-0"
+            }}
+            className="w-full [&_.ant-table-thead_th]:bg-transparent [&_.ant-table-thead_th]:text-gray-400 [&_.ant-table-thead_th]:text-[11px] [&_.ant-table-thead_th]:font-bold [&_.ant-table-thead_th]:tracking-wider [&_.ant-table-thead_th]:uppercase"
           />
         </Spin>
 
-        <div className="sm:absolute bottom-7 left-6 text-xs sm:text-sm text-gray-400 font-medium mt-2 sm:mt-0 text-center sm:text-left">
-          Showing 1 to 5 of {filteredData.length} records
+        <div className="px-6 py-4 border-t border-gray-50 bg-gray-50/40 flex items-center justify-between">
+          <div className="text-xs text-gray-400 font-medium">
+            Showing <span className="font-semibold text-gray-600">1</span> to{' '}
+            <span className="font-semibold text-gray-600">{Math.min(5, filteredData.length)}</span> of{' '}
+            <span className="font-semibold text-gray-600">{filteredData.length}</span> records
+          </div>
         </div>
       </div>
 
       <Modal
-        title={<span className="text-base sm:text-lg font-bold text-gray-800">Receipt: {selectedOrder?.orderId}</span>}
+        title={
+          <div className="flex flex-col gap-0.5">
+            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Receipt Details</span>
+            <span className="text-base sm:text-lg font-mono font-bold text-gray-800 tracking-wide">
+              {selectedOrder ? `ORD-${String(selectedOrder._id || selectedOrder.orderId).slice(-5).toUpperCase()}` : ''}
+            </span>
+          </div>
+        }
         open={isModalOpen}
         onCancel={handleCancel}
         footer={null}
-        width={500}
-        className="max-w-[calc(100vw-32px)] sm:max-w-125"
+        centered
+        width={440} 
       >
         {selectedOrder && (
-          <div className="text-gray-700 text-sm mt-4 space-y-5">
+          <div className="text-gray-700 text-sm pt-4 flex flex-col gap-5">
 
-            <div className="flex justify-between items-center pb-3 border-b border-gray-100 text-xs sm:text-sm">
-              <span className="text-gray-500 font-medium">
-                Date: <span className="text-gray-800 font-semibold">{selectedOrder.date}</span>
-              </span>
+            <div className="flex justify-between items-center bg-gray-50/50 p-3.5 rounded-xl border border-gray-100 text-xs sm:text-sm">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-gray-400 font-medium text-[11px] uppercase tracking-wider">Date Created</span>
+                <span className="text-gray-700 font-semibold">{selectedOrder.date}</span>
+              </div>
+
               <span
-                className="font-bold px-2.5 py-0.5 rounded-md text-xs uppercase tracking-wide"
+                className="font-bold px-3 py-0.5 rounded-full text-[10px] tracking-wider uppercase border"
                 style={{
                   color: getStatusColor(selectedOrder.status),
-                  backgroundColor: `${getStatusColor(selectedOrder.status)}12`
+                  backgroundColor: `${getStatusColor(selectedOrder.status)}10`,
+                  borderColor: `${getStatusColor(selectedOrder.status)}25`
                 }}
               >
-                Status: {selectedOrder.status}
+                {selectedOrder.status}
               </span>
             </div>
 
-            <div className="max-h-65 overflow-y-auto pr-1 space-y-3 scrollbar-thin">
-              {selectedOrder.items?.map((item, index) => (
-                <div key={index} className="flex justify-between items-center pb-2 border-b border-dashed border-gray-100 last:border-0 last:pb-0 gap-4">
-                  <div className="flex flex-col min-w-0">
-                    <span className="font-semibold text-gray-800 text-sm sm:text-base truncate">{item.name}</span>
-                    <span className="text-xs text-gray-400 mt-0.5 font-medium">
-                      {item.qty} x ${Number(item.price).toFixed(2)}
-                    </span>
+            <div>
+              <h3 className="text-xs font-bold text-gray-400 tracking-wider uppercase mb-3">Items Ordered</h3>
+              <div className="max-h-60 overflow-y-auto pr-1 space-y-3 scrollbar-none">
+                {selectedOrder.items?.map((item, index) => (
+                  <div
+                    key={index}
+                    className="flex justify-between items-center pb-3 border-b border-dashed border-gray-100 last:border-0 last:pb-0 gap-4"
+                  >
+                    <div className="flex flex-col min-w-0">
+                      <span className="font-bold text-gray-800 text-sm sm:text-base truncate">
+                        {item.name}
+                      </span>
+                      <span className="text-xs text-gray-400 mt-0.5 font-mono font-medium">
+                        {item.qty} × ${Number(item.price).toFixed(2)}
+                      </span>
+                    </div>
+
+                    <b className="text-gray-800 font-mono text-sm sm:text-base shrink-0 pl-2">
+                      ${(item.qty * item.price).toFixed(2)}
+                    </b>
                   </div>
-                  <b className="text-gray-800 text-sm sm:text-base shrink-0 pl-2">
-                    ${(item.qty * item.price).toFixed(2)}
-                  </b>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
-            <div className="flex justify-between items-center bg-gray-50 p-4 rounded-xl border border-gray-100">
-              <span className="text-sm sm:text-base text-gray-500 font-semibold">Total Amount:</span>
-              <b className="text-lg sm:text-xl text-red-500 font-extrabold">
-                ${Number(selectedOrder.sumOrders).toFixed(2)}
+            <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-gray-100 shadow-3xs mt-2">
+              <span className="text-sm text-gray-800 font-bold">Total Amount</span>
+              <b className="text-xl sm:text-2xl text-primary-500 font-extrabold tracking-tight">
+                ${Number(selectedOrder.sumOrders || selectedOrder.totalPrice).toFixed(2)}
               </b>
             </div>
 

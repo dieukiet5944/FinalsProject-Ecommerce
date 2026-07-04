@@ -76,6 +76,7 @@ const Login = () => {
               <input
                 type="email"
                 value={email}
+                autoComplete="off"
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-5 py-4 text-gray-900 bg-gray-100 border border-gray-200 rounded-2xl focus:outline-none focus:border-primary-500"
                 placeholder="hello@thecrumbandbean.com"
@@ -96,6 +97,7 @@ const Login = () => {
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
+                  autoComplete="new-password"
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full px-5 py-4 text-gray-900 bg-gray-100 border border-gray-200 rounded-2xl focus:outline-none focus:border-primary-500"
                   placeholder="••••••••"

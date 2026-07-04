@@ -6,6 +6,10 @@ export const getProductsIdApi = (productId) => {
     return Axios.get(`/products/${productId}`)
 }
 
+export const getProductsSlugApi = (slug) => {
+    return Axios.get(`/products/${slug}`)
+}
+
 export const putProductsApi =  (payload, productId) => { 
    return Axios.put(`/products/${productId}`, payload); 
 }

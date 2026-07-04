@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { DownloadOutlined, UserAddOutlined, TeamOutlined, TagOutlined, TrophyOutlined, DollarOutlined, FireOutlined, FunnelPlotOutlined, MoreOutlined, ProfileOutlined, DeleteOutlined, AuditOutlined } from '@ant-design/icons'
+import { CrownFilled ,StarFilled, DownloadOutlined, UserAddOutlined, TeamOutlined, TagOutlined, TrophyOutlined, DollarOutlined, FireOutlined, FunnelPlotOutlined, MoreOutlined, ProfileOutlined, DeleteOutlined, AuditOutlined } from '@ant-design/icons'
 import { Modal, Table, Tag, Avatar, Space, Button, Dropdown, Spin, message } from 'antd'
 import { getOrdersApi } from '../../services/orderService.js'
 import { getUsersApi, deleteUserApi } from '../../services/userService.js'
@@ -100,61 +100,78 @@ const Customers = () => {
 
 
     const handleViewProfile = (user) => {
-        const bgStatus = user.status === "online" ? "rgb(237, 255, 241)" : "rgb(255, 237, 237)"
         Modal.info({
-            title: <span className="text-base sm:text-lg font-bold text-gray-800">Detailed information: {user.username}</span>,
-            width: 500,
-            content: (
-                <div className="mt-5 text-gray-700 text-sm sm:text-base space-y-3">
-                    <div className="text-center mb-5 flex flex-col items-center">
-                        <Avatar
-                            src={`/product/avtusers/${user.avatar}`}
-                            size={100}
-                            className="border-2 border-gray-100 shadow-sm"
-                        />
-                        <h3 className="text-lg sm:text-xl font-bold text-gray-800 my-2">{user.username}</h3>
-                        <Tag color={user.role === 'admin' ? 'gold' : 'blue'} className="px-3 py-0.5 font-medium rounded">
-                            {user.role.toUpperCase()}
-                        </Tag>
-                    </div>
-
-                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 space-y-3">
-                        <p className="flex items-center gap-2 m-0">
-                            <span className="font-semibold text-gray-500 w-36 sm:w-40 shrink-0">📧 Email:</span>
-                            <span className="text-gray-800 break-all">{user.email}</span>
-                        </p>
-                        <p className="flex items-center gap-2 m-0">
-                            <span className="font-semibold text-gray-500 w-36 sm:w-40 shrink-0">⚽ Total orders:</span>
-                            <span className="text-gray-800 font-medium flex items-center gap-1.5">
-                                {user.history_orders.length} <AuditOutlined className="text-gray-400" />
-                            </span>
-                        </p>
-                        <p className="flex items-center gap-2 m-0">
-                            <span className="font-semibold text-gray-500 w-36 sm:w-40 shrink-0">🕒 Last activity:</span>
-                            <span className="text-gray-800">{user.createdAt}</span>
-                        </p>
-                        <p className="flex items-center gap-2 m-0">
-                            <span className="font-semibold text-gray-500 w-36 sm:w-40 shrink-0">📅 Date of participation:</span>
-                            <span className="text-gray-800">
-                                {user.createdAt ? new Date(user.createdAt).toLocaleDateString('vi-VN') : "Chưa cập nhật"}
-                            </span>
-                        </p>
-
-                        <p className="flex items-center gap-2 m-0 pt-1">
-                            <span className="font-semibold text-gray-500 w-36 sm:w-40 shrink-0">Status:</span>
-                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider ${user.status === "online"
-                                ? "bg-green-50 text-green-700 border border-green-200"
-                                : "bg-red-50 text-red-600 border border-red-200"
-                                }`}>
-                                <span className={`w-2 h-2 rounded-full ${user.status === "online" ? "bg-green-500" : "bg-red-500"}`}></span>
-                                {user.status}
-                            </span>
-                        </p>
-                    </div>
+            title: (
+                <div className="flex flex-col gap-0.5">
+                    <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">User Management</span>
+                    <span className="text-base font-bold text-gray-800">Customer Profile</span>
                 </div>
             ),
+            width: 380,
+            centered: true,
             okText: 'Close',
-            className: "max-w-[calc(100vw-32px)] sm:max-w-[500px]",
+            okButtonProps: {
+                className: "rounded-xl font-semibold border-gray-200 hover:bg-gray-50 transition-colors"
+            },
+            className: "max-w-[calc(100vw-32px)]",
+            content: (
+                <div className="pt-4 flex flex-col gap-5 text-sm">
+
+                    <div className="flex flex-col items-center text-center bg-gray-50/50 p-4 rounded-xl border border-gray-100/70">
+                        <Avatar
+                            src={`/product/avtusers/${user?.avatar || 'none-avt.png'}`}
+                            size={84}
+                            className="border-2 border-white shadow-md object-cover rounded-full"
+                        />
+                        <h3 className="text-base font-bold text-gray-800 mt-2.5 mb-1.5 tracking-wide">
+                            {user?.username}
+                        </h3>
+
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-[10px] font-bold tracking-wider uppercase border ${user?.role === 'admin'
+                            ? 'bg-amber-50 text-amber-600 border-amber-100'
+                            : 'bg-blue-50 text-blue-600 border-blue-100'
+                            }`}>
+                            {user?.role}
+                        </span>
+                    </div>
+
+                    <div className="bg-white p-1 rounded-xl space-y-3 text-xs sm:text-sm">
+                        <div className="flex justify-between items-center pb-2.5 border-b border-gray-100">
+                            <span className="text-gray-400 font-medium">Email Address</span>
+                            <span className="text-gray-800 font-semibold max-w-45 truncate text-right">
+                                {user?.email}
+                            </span>
+                        </div>
+
+                        <div className="flex justify-between items-center pb-2.5 border-b border-gray-100">
+                            <span className="text-gray-400 font-medium">Total Orders</span>
+                            <span className="text-gray-800 font-bold font-mono flex items-center gap-1">
+                                {user?.history_orders?.length || 0}
+                                <AuditOutlined className="text-gray-300 text-xs" />
+                            </span>
+                        </div>
+
+                        <div className="flex justify-between items-center pb-2.5 border-b border-gray-100">
+                            <span className="text-gray-400 font-medium">Joined Date</span>
+                            <span className="text-gray-700 font-medium font-mono">
+                                {user?.createdAt ? new Date(user.createdAt).toLocaleDateString('vi-VN') : "N/A"}
+                            </span>
+                        </div>
+
+                        <div className="flex justify-between items-center pt-0.5">
+                            <span className="text-gray-400 font-medium">Account Status</span>
+                            <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${user?.status === "online"
+                                ? "bg-green-50 text-green-600 border-green-100"
+                                : "bg-red-50 text-red-600 border-red-100"
+                                }`}>
+                                <span className={`w-1.5 h-1.5 rounded-full ${user?.status === "online" ? "bg-green-500" : "bg-red-500"}`}></span>
+                                {user?.status || 'offline'}
+                            </span>
+                        </div>
+                    </div>
+
+                </div>
+            ),
         });
     };
 
@@ -309,22 +326,21 @@ const Customers = () => {
     const columns = [
         {
             title: 'CUSTOMER',
-            width: 200,
+            width: 220,
             key: 'users',
             render: (_, record) => (
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 py-0.5">
                     <Avatar
-                        src={`/product/avtusers/${record.avatar}`}
-                        size={44}
-                        shape="square"
-                        className="rounded-md border border-gray-100 object-cover shrink-0"
+                        src={`/product/avtusers/${record?.avatar || 'none-avt.png'}`}
+                        size={40}
+                        className="border border-gray-100 shadow-3xs shrink-0 object-cover rounded-full"
                     />
                     <div className="min-w-0">
-                        <p className="font-bold text-gray-800 m-0 truncate text-sm sm:text-base">
+                        <p className="font-bold text-gray-800 m-0 truncate text-sm leading-tight">
                             {record.username}
                         </p>
-                        <p className="text-xs text-gray-400 m-0 mt-0.5 font-medium">
-                            ID: {record._id.toString().slice(0, 8)}
+                        <p className="text-[10px] font-mono text-gray-400 m-0 mt-1 uppercase tracking-wider">
+                            ID: {String(record._id).slice(-6).toUpperCase()}
                         </p>
                     </div>
                 </div>
@@ -336,38 +352,38 @@ const Customers = () => {
             dataIndex: 'email',
             key: 'email',
             render: (email) => (
-                <span className="text-gray-600 text-sm break-all font-medium">
+                <span className="text-gray-600 text-xs md:text-sm font-medium block truncate max-w-50">
                     {email}
                 </span>
             )
         },
         {
-            title: 'TOTAL ORDERS',
+            title: 'TIER RANK',
             width: 160,
             dataIndex: 'totalPrice',
             key: 'history_orders',
             render: (_, record) => {
-                const totalProductsCount = record.totalPrice * 2
+                const totalProductsCount = (record.totalPrice || 0) * 2;
 
                 let toptier = "New Member";
-                let badgeClass = "text-gray-500 bg-gray-50 border-gray-200";
+                let badgeStyle = "bg-gray-50 text-gray-500 border-gray-200";
 
                 if (totalProductsCount > 40 && totalProductsCount <= 100) {
                     toptier = "Cool";
-                    badgeClass = "text-blue-600 bg-blue-50 border-blue-200";
+                    badgeStyle = "bg-blue-50 text-blue-600 border-blue-100";
                 } else if (totalProductsCount > 100 && totalProductsCount <= 500) {
-                    toptier = "Occasional ";
-                    badgeClass = "text-orange-600 bg-orange-50 border-orange-200";
+                    toptier = "Occasional";
+                    badgeStyle = "bg-orange-50 text-orange-600 border-orange-100";
                 } else if (totalProductsCount > 500 && totalProductsCount <= 1500) {
                     toptier = "High Frequency";
-                    badgeClass = "text-green-600 bg-green-50 border-green-200";
+                    badgeStyle = "bg-green-50 text-green-600 border-green-100";
                 } else if (totalProductsCount > 1500) {
                     toptier = "Top Tier";
-                    badgeClass = "text-red-600 bg-red-50 border-red-200 font-bold";
+                    badgeStyle = "bg-red-50 text-red-600 border-red-100 font-bold";
                 }
 
                 return (
-                    <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold border uppercase tracking-wider ${badgeClass}`}>
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-[10px] font-bold border uppercase tracking-wider ${badgeStyle}`}>
                         {toptier}
                     </span>
                 );
@@ -379,86 +395,70 @@ const Customers = () => {
             dataIndex: 'totalPrice',
             key: 'points',
             render: (_, record) => {
-                if (!record.totalPrice || record.totalPrice === 0) {
-                    return (
-                        <div className="flex items-center gap-1.5 font-bold text-sm text-gray-800">
-                            <span className="text-base text-amber-500">⭐</span>
-                            <span>0</span>
-                        </div>
-                    )
-                }
-
-                const totalProductsCount = record.totalPrice * 2
-
+                const totalProductsCount = (record.totalPrice || 0) * 2;
                 return (
-                    <div className="flex items-center gap-1.5 font-bold text-sm text-gray-800">
-                        <span className="text-base text-amber-500">⭐</span>
-                        <span>{totalProductsCount.toFixed(0)}</span>
+                    <div className="flex items-center gap-1.5 font-bold text-xs text-amber-400 md:text-sm font-mono">
+                        <StarFilled className="text-amber-400 text-xs md:text-sm" />
+                        <span className="text-gray-600">{totalProductsCount.toFixed(0)}</span>
                     </div>
                 );
             }
         },
         {
             title: 'STATUS',
-            width: 140,
+            width: 130,
             key: 'status',
             dataIndex: 'status',
             render: (status) => {
-
                 const currentStatus = status || 'offline';
                 const isOnline = currentStatus === 'online';
 
                 return (
-                    <Tag
-                        color={isOnline ? 'success' : 'error'}
-                        className={`rounded-full px-3 py-0.5 font-bold uppercase text-[11px] tracking-wider border-none shadow-xs ${isOnline ? 'animate-pulse' : ''
-                            }`}
-                    >
-                        <span className="inline-block w-1.5 h-1.5 rounded-full mr-1.5 bg-current" />
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase border ${isOnline
+                        ? 'bg-green-50 text-green-600 border-green-100'
+                        : 'bg-red-50 text-red-400 border-red-200'
+                        } ${isOnline ? 'animate-pulse' : ''}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${isOnline ? 'bg-green-500' : 'bg-red-400'}`} />
                         {currentStatus}
-                    </Tag>
+                    </span>
                 );
             }
         },
         {
-            title: 'ACTIONS',
-            width: 80,
+            title: '',
+            width: 60,
             align: 'center',
             key: 'action',
             render: (_, record) => {
                 const actionItems = [
                     {
                         key: 'viewprofile',
-                        label: <span className="font-medium text-gray-700">View Info</span>,
-                        icon: <ProfileOutlined className="text-gray-400" />,
+                        label: <span className="text-sm text-gray-700 font-medium">View Info</span>,
+                        icon: <ProfileOutlined className="text-gray-400 text-sm" />,
                         onClick: () => handleViewProfile(record)
                     },
+                    { type: 'divider' },
                     {
                         key: 'delete',
-                        label: <span className="font-medium">Disable</span>,
-                        icon: <DeleteOutlined />,
+                        label: <span className="text-sm text-red-600 font-medium">Disable Account</span>,
+                        icon: <DeleteOutlined className="text-red-400 text-sm" />,
                         danger: true,
                         onClick: () => handleDeleteUser(record)
                     },
                 ];
 
                 return (
-                    <Dropdown
-                        menu={{ items: actionItems }}
-                        trigger={['click']}
-                        placement="bottomRight"
-                        classNames={{ root: "shadow-lg" }}
-                    >
+                    <Dropdown menu={{ items: actionItems }} trigger={['click']} placement="bottomRight">
                         <Button
                             type="text"
                             shape="circle"
-                            className="hover:bg-gray-100! flex items-center justify-center m-auto"
-                            icon={<MoreOutlined className="text-gray-500 text-xl!" />}
+                            className="flex items-center justify-center hover:bg-gray-100! text-gray-400 hover:text-gray-600 transition-colors"
+                            icon={<MoreOutlined className="text-lg" />}
                         />
                     </Dropdown>
                 );
-            },
-        },
+            }
+        }
     ];
 
 
@@ -514,8 +514,8 @@ const Customers = () => {
                             {topSpender?.totalSpent ? formatShortUSD(topSpender.totalSpent) : "$0.00"}
                         </h2>
 
-                        <p className="text-[11px] font-bold tracking-wider text-gray-500 m-0 mt-0.5 uppercase truncate">
-                            👑 {topSpender?.username}
+                        <p className="text-[11px] font-bold tracking-wider text-amber-500 m-0 mt-0.5 uppercase truncate">
+                            <CrownFilled className="text-amber-500 mr-1" /> {topSpender?.username}
                         </p>
                     </div>
 
@@ -558,26 +558,32 @@ const Customers = () => {
                 </div>
             </div>
 
-            <div className="flex flex-col gap-5 bg-white rounded-xl p-4 sm:p-6 shadow-[0_4px_12px_rgba(0,0,0,0.02)] border border-gray-100 relative">
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
                 <Spin spinning={loading}>
                     <Table
-                        rowClassName={(record) => record.disabled ? 'row-disabled' : ''}
+                        rowClassName={(record) => record.disabled ? 'opacity-40 bg-gray-50/50 pointer-events-none' : ''}
                         columns={columns}
                         rowKey="_id"
                         dataSource={filteredData}
+                        size="middle"
                         scroll={{ x: 800 }}
                         pagination={{
                             total: filteredData.length,
                             pageSize: 5,
                             showSizeChanger: false,
-                            placement: 'bottomRight',
+                            placement: ['bottomRight'],
+                            className: "px-6 py-4 border-t border-gray-50 !m-0"
                         }}
-                        className="w-full"
+                        className="w-full [&_.ant-table-thead_th]:bg-transparent [&_.ant-table-thead_th]:text-gray-400 [&_.ant-table-thead_th]:text-[11px] [&_.ant-table-thead_th]:font-bold [&_.ant-table-thead_th]:tracking-wider [&_.ant-table-thead_th]:uppercase"
                     />
                 </Spin>
 
-                <div className="sm:absolute bottom-7 left-6 text-xs sm:text-sm text-gray-400 font-medium mt-2 sm:mt-0 text-center sm:text-left">
-                    Showing 1 to 5 of {filteredData.length} records
+                <div className="px-6 py-4 border-t border-gray-50 bg-gray-50/40 flex items-center">
+                    <div className="text-xs text-gray-400 font-medium">
+                        Showing <span className="font-semibold text-gray-600">1</span> to{' '}
+                        <span className="font-semibold text-gray-600">{Math.min(5, filteredData.length)}</span> of{' '}
+                        <span className="font-semibold text-gray-600">{filteredData.length}</span> records
+                    </div>
                 </div>
             </div>
 

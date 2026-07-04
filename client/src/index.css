@@ -1,83 +1,85 @@
 /* src/index.css */
 
+/* 1. Nhập font chữ từ Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@400;500;600&display=swap');
 
+/* 2. Nhập thư viện Tailwind v4 */
 @import "tailwindcss";
 
+/* 3. Cấu hình Theme chuẩn Tailwind v4 */
 @theme {
-    --color-primary-500: #FF2D95;
-    /* Hồng đậm - giữ nguyên cho button & accent */
-    --color-primary-600: #E0207E;
+  /* Colors */
+  --color-primary-500: #FF2D95; /* Hồng đậm - giữ nguyên cho button & accent */
+  --color-primary-600: #E0207E;
+  
+  --color-warm-400: #D97757;    /* Cam nâu ấm */
+  --color-warm-600: #8B5A2B;
 
-    --color-warm-400: #D97757;
-    /* Cam nâu ấm */
-    --color-warm-600: #8B5A2B;
+  --color-light-bg: #FFFFFF;
+  --color-light-surface: #F8F6F3; /* Kem nhạt ấm áp */
+  --color-light-card: #FFFFFF;
+  --color-light-text: #1F1F1F;
+  --color-light-text-secondary: #555555;
 
-    /* Light mode colors - Phần chính chuyển sang sáng */
-    --color-light-bg: #FFFFFF;
-    --color-light-surface: #F8F6F3;
-    /* Kem nhạt ấm áp */
-    --color-light-card: #FFFFFF;
-    --color-light-text: #1F1F1F;
-    --color-light-text-secondary: #555555;
-
-    --font-family-heading: "Playfair Display", serif;
-    --font-family-body: "Inter", system-ui, sans-serif;
+  /* Fonts (Đã sửa lại đúng chuẩn hệ thống Tailwind v4) */
+  --font-serif: "Playfair Display", Georgia, serif;
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
 }
 
-body {
-    font-family: var(--font-family-body);
+/* 4. Ép font hệ thống và cấu hình mặc định (Base styles) */
+@layer base {
+  /* Ép toàn bộ dự án dùng font Inter (sans) làm chủ đạo và dùng !important để dọn sạch inline-style lỗi */
+  *, ::before, ::after {
+    font-family: var(--font-sans) !important;
+  }
+
+  /* Định hình body */
+  body {
     background-color: var(--color-light-bg);
     color: var(--color-light-text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Ép riêng các thẻ tiêu đề bắt buộc dùng font Playfair Display (serif) */
+  h1, h2, h3, h4, h5, h6, 
+  .font-title {
+    font-family: var(--font-serif) !important;
+  }
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-    font-family: var(--font-family-heading);
-}
+/* 5. Custom Utilities & Animations */
 
 /* Hero Background (giữ overlay tối để text dễ đọc) */
 .hero-bg-white {
-    background-image:
-        linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)),
-        url('https://picsum.photos/id/870/2000/1200');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+  background-image: 
+    linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)), 
+    url('https://picsum.photos/id/870/2000/1200');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
-/* Product Card */
+/* Product Card Effect */
 .product-card {
-    transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .product-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  transform: translateY(-8px);
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
 }
 
 /* Animation */
 .scroll-indicator {
-    animation: bounce 2s infinite;
+  animation: bounce v4-bounce 2s infinite;
 }
 
-@keyframes bounce {
-
-    0%,
-    20% {
-        transform: translateY(0);
-    }
-
-    50% {
-        transform: translateY(10px);
-    }
-
-    80%,
-    100% {
-        transform: translateY(0);
-    }
+@keyframes v4-bounce {
+  0%, 20%, 80%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(10px);
+  }
 }

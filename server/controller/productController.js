@@ -43,6 +43,29 @@ const productController = {
         }
     },
 
+    getProductBySlug: async (req, res) => {
+        try {
+            const { slug } = req.params;
+
+            if (!slug || slug === 'undefined') {
+            return res.status(400).json({ success: false, message: "Slug không hợp lệ" });
+        }
+            const product = await ProductModel.findOne({ slug: slug });
+
+            if (!product) {
+                return res.status(404).json({ message: "Product not found" });
+            }
+
+            res.status(200).json({
+                success: true,
+                message: "Successful get data Pro'slug",
+                data: product
+            })
+        } catch (error) {
+            res.status(500).json({ message: "Server error", error });
+        }
+    },
+
     getProductId: async (req, res) => {
         try {
             const { id } = req.params
@@ -77,7 +100,7 @@ const productController = {
                 message: "Internal Server Error",
                 error: error.message
             })
-        }                                                                                                                                   
+        }
     },
 
     postCreateProduct: async (req, res) => {
@@ -207,7 +230,7 @@ const productController = {
                 message: `Product "${product.name}" has been successfully received into inventory!`,
                 data: {
                     ...product.toObject(),
-                    quantity: totalQuantity 
+                    quantity: totalQuantity
                 }
             });
 

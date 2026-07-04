@@ -35,6 +35,11 @@ const productSchema = new mongoose.Schema({
         enum: ["IN STOCK", "LOW STOCK", "OUT OF STOCK"], 
         default: "OUT OF STOCK" 
     },
+    slug: { 
+        type: String, 
+        required: true,
+        unique: true
+    },
     stockBatches: [StockBatchSchema]
 }, {
     timestamps: true

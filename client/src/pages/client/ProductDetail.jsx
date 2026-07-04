@@ -1,14 +1,13 @@
-// src/pages/client/ProductDetail.jsx
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
+import { getProductsSlugApi, getProductsApi } from '../../services/productService.js';
 import LoadingSpinner from '../../components/client/LoadingSpinner.jsx';
 import ProductCard from '../../components/client/ProductCard';
 import SuccessToast from '../../components/client/SuccessToast';
-import { getProductsIdApi } from '../../services/productService.js';
 
 const ProductDetail = () => {
-  const { id } = useParams();
+  const { slug } = useParams();
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -22,17 +21,21 @@ const ProductDetail = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await getProductsIdApi(id);
+        const response = await getProductsSlugApi(slug);
+        const currentProduct = response?.data;
 
-        const result = response?.data
+        setProduct(currentProduct);
 
-        setProduct(result);
+        if (currentProduct) {
+          const allRes = await getProductsApi();
+          const dataAll = allRes?.data || [];
+          
+          const related = dataAll.filter(
+            (item) => item.category === currentProduct.category && item.slug !== currentProduct.slug
+          ).slice(0, 3); 
 
-        const mockRelated = [
-          { id: "BC-001", name: "Caramel Macchiato", price: 8.5, image: "caramel-macchiato.jpg", category: "DRINK" },
-          { id: "BC-002", name: "Cheesecake", price: 12, image: "cheesecake.jpg", category: "CAKE" },
-        ];
-        setRelatedProducts(mockRelated);
+          setRelatedProducts(related);
+        }
       } catch (error) {
         console.error(error);
       } finally {
@@ -40,7 +43,7 @@ const ProductDetail = () => {
       }
     };
     fetchProduct();
-  }, [id]);
+  }, [slug]);
 
   const getImagePath = (prod) => {
     if (!prod || !prod.image) return 'https://picsum.photos/id/1015/600/600';
@@ -71,22 +74,23 @@ const ProductDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-light-bg text-light-text pt-10 pb-20">
+   <div className="min-h-screen bg-light-bg text-light-text pt-6 pb-16">
       <SuccessToast isVisible={showToast} message={`Added ${quantity}x ${product?.name} to cart!`} />
-      <div className="max-w-6xl mx-auto px-6">
+      
+      <div className="max-w-5xl mx-auto px-4">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 mb-8 text-light-text-secondary hover:text-light-text transition-colors"
+          className="flex items-center gap-2 mb-6 text-sm text-light-text-secondary hover:text-light-text transition-colors"
         >
           ← Back to Shop
         </button>
 
-        <div className="grid md:grid-cols-2 gap-12 lg:gap-16">
-          <div className="rounded-3xl overflow-hidden shadow-xl bg-light-card">
+        <div className="grid md:grid-cols-2 gap-8 items-start">
+          <div className="rounded-2xl overflow-hidden shadow-md bg-light-card max-h-112.5 flex items-center">
             <img
               src={getImagePath(product)}
               alt={product.name}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover aspect-square"
               onError={(e) => {
                 e.target.src = 'https://picsum.photos/id/1015/600/600';
               }}
@@ -94,21 +98,21 @@ const ProductDetail = () => {
           </div>
 
           <div className="flex flex-col">
-            <h1 className="text-5xl font-heading font-bold leading-tight mb-4">
+            <h1 className="text-3xl font-heading font-bold leading-tight mb-2">
               {product.name}
             </h1>
 
-            <p className="text-4xl font-semibold text-warm-400 mb-6">
+            <p className="text-2xl font-bold text-warm-400 mb-4">
               ${product.price}
             </p>
 
-            <div className="mb-8">
-              <span className="inline-block px-4 py-1.5 bg-light-surface text-sm rounded-full border">
+            <div className="mb-5">
+              <span className="inline-block px-3 py-1 bg-light-surface text-xs rounded-full border">
                 {product.category}
               </span>
             </div>
 
-            <div className="prose prose-lg text-light-text-secondary mb-10 leading-relaxed">
+            <div className="text-light-text-secondary text-sm md:text-base mb-6 leading-relaxed">
               <p>
                 {product.description ||
                   "High-quality handmade product, freshly made every day at The Crumb & Bean."}
@@ -116,32 +120,32 @@ const ProductDetail = () => {
             </div>
 
             {product.stock && (
-              <div className="mb-8 text-sm">
+              <div className="mb-6 text-xs md:text-sm">
                 <span className="font-medium">Availability: </span>
                 <span className={`font-semibold ${product.status === 'IN STOCK' ? 'text-green-600' : 'text-red-500'}`}>
                   {product.status === 'IN STOCK' ? 'In Stock' : 'Out of Stock'}
                 </span>
                 {product.stock.currentstock && (
-                  <span className="ml-2 text-light-text-secondary">
+                  <span className="ml-2 text-light-text-secondary text-xs">
                     ({product.stock.currentstock} / {product.stock.capacity})
                   </span>
                 )}
               </div>
             )}
 
-            <div className="mb-8">
-              <p className="text-sm font-medium text-light-text-secondary mb-3">QUANTITY</p>
-              <div className="flex items-center gap-4">
+            <div className="mb-6">
+              <p className="text-xs font-semibold text-light-text-secondary mb-2 tracking-wider">QUANTITY</p>
+              <div className="flex items-center gap-3">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="w-12 h-12 flex items-center justify-center border border-gray-300 rounded-2xl hover:bg-gray-100 text-2xl font-light"
+                  className="w-9 h-9 flex items-center justify-center border border-gray-300 rounded-xl hover:bg-gray-100 text-lg font-light transition-colors"
                 >
                   −
                 </button>
-                <span className="w-12 text-center text-2xl font-medium">{quantity}</span>
+                <span className="w-8 text-center text-base font-semibold">{quantity}</span>
                 <button
                   onClick={() => setQuantity(quantity + 1)}
-                  className="w-12 h-12 flex items-center justify-center border border-gray-300 rounded-2xl hover:bg-gray-100 text-2xl font-light"
+                  className="w-9 h-9 flex items-center justify-center border border-gray-300 rounded-xl hover:bg-gray-100 text-lg font-light transition-colors"
                 >
                   +
                 </button>
@@ -150,16 +154,16 @@ const ProductDetail = () => {
 
             <button
               onClick={handleAddToCart}
-              className={`w-full py-5 text-lg font-semibold text-white rounded-3xl transition-all shadow-lg mb-10 ${
+              className={`w-full py-3 text-sm font-semibold text-white rounded-xl transition-all shadow-md mb-8 tracking-wider ${
                 addedToCart
                   ? 'bg-green-500 hover:bg-green-600'
                   : 'bg-primary-500 hover:bg-primary-600'
               }`}
             >
-              {addedToCart ? '✓ Added to Cart!' : 'ADD TO CART'}
+              {addedToCart ? '✓ ADDED TO CART!' : 'ADD TO CART'}
             </button>
 
-            <div className="border-t border-gray-200 pt-8 space-y-3 text-sm text-light-text-secondary">
+            <div className="border-t border-gray-100 pt-5 space-y-2 text-xs text-light-text-secondary">
               <p>✓ Freshly made daily</p>
               <p>✓ High-quality ingredients</p>
               <p>✓ Made with love in small batches</p>
@@ -167,12 +171,12 @@ const ProductDetail = () => {
           </div>
         </div>
 
-        <div className="mt-20">
-          <h2 className="text-3xl font-heading font-semibold mb-8">You May Also Like</h2>
+        <div className="mt-16">
+          <h2 className="text-2xl font-heading font-bold mb-6">You May Also Like</h2>
           {relatedProducts.length === 0 ? (
-            <p className="text-center text-light-text-secondary">No related products found</p>
+            <p className="text-center text-sm text-light-text-secondary">No related products found</p>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {relatedProducts.map((item) => (
                 <ProductCard
                   key={item.id || item.name}
