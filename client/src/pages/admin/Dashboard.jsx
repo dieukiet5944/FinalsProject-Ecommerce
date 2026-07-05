@@ -224,9 +224,7 @@ const Dashboard = ({ name }) => {
                 <div className="lg:col-span-2 flex flex-col bg-white p-5 sm:p-6 rounded-xl border border-gray-100 shadow-[0_4px_12px_rgba(0,0,0,0.02)] gap-6">
                     <Spin spinning={loading}>
                         <WeeklySalesChart
-                            orders={historyOrders} 
-                            onCurrentWeekRevenueChange={setCurrentWeekRevenue}
-                            onCurrentWeekOrdersChange={setCurrentWeekOrdersCount}
+                            orders={historyOrders}
                         />
                     </Spin>
 
