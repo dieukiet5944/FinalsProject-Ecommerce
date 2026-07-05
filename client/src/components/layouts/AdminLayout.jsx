@@ -4,7 +4,7 @@ import { ShopOutlined, MenuUnfoldOutlined, ShoppingOutlined, InboxOutlined, Team
 import { Input, Button, Modal, message, Drawer } from 'antd'
 import { Outlet, Link } from 'react-router-dom';
 
-import {logoutAdminApi} from '../../services/authService.js';
+import { logoutAdminApi } from '../../services/authService.js';
 
 import Dashboard from '../../pages/admin/Dashboard.jsx'
 import Orders from '../../pages/admin/OrderManagement.jsx'
@@ -42,8 +42,45 @@ function AdminLayout() {
     }
 
     const handleSelectPage = (pageKey) => {
-        setCurrentPage(pageKey);
+        const cleanKey = pageKey ? pageKey.toLowerCase().trim() : '';
+
         setSearchText('');
+
+        const routesMap = {
+            'dashboard': '/admin/dashboard',
+
+            'order': '/admin/order',
+            'orders': '/admin/order',
+
+            'storemanagement': '/admin/store',
+            'store': '/admin/store',
+
+            'inventory': '/admin/inventory',
+
+            'customer': '/admin/customer',
+            'customers': '/admin/customer',
+
+            'setting': '/admin/setting',
+            'settings': '/admin/setting'
+        };
+
+        const targetRoute = routesMap[cleanKey];
+
+        if (targetRoute) {
+            if (cleanKey === 'store') {
+                setCurrentPage('storemanagement');
+            } else if (cleanKey === 'orders') {
+                setCurrentPage('order');
+            } else if (cleanKey === 'customers') {
+                setCurrentPage('customer');
+            } else {
+                setCurrentPage(cleanKey);
+            }
+
+            navigate(targetRoute);
+        } else {
+            console.error(`Not found route key: "${pageKey}"`);
+        }
     };
 
     const showModal = () => {
@@ -102,7 +139,7 @@ function AdminLayout() {
                     localStorage.removeItem('token');
 
                     message.success("Logged out successfully! See you again. 👋");
-                    
+
 
                     navigate('/login');
 
@@ -117,8 +154,6 @@ function AdminLayout() {
     };
 
     const [currentPage, setCurrentPage] = useState('welcome');
-
-
 
     return (
         <div className="flex h-screen w-screen bg-gray-50 overflow-hidden">
@@ -222,7 +257,6 @@ function AdminLayout() {
                                 </div>
 
                                 {searchResults.length > 0 && (
-                                    console.log("=== 4. KẾT QUẢ TÌM KIẾM ===", searchResults),
                                     <div className="absolute top-full left-0 right-0 mt-1.5 bg-white rounded-xl shadow-xl border border-slate-100 z-50 max-h-60 overflow-y-auto p-1.5 flex flex-col gap-1">
                                         {searchResults.map((item) => (
                                             <button
@@ -284,7 +318,7 @@ function AdminLayout() {
                 className='md:hidden'
             >
                 <div className="flex flex-col gap-3">
-                    <Link to="/admin/dashboard" onClick={() => { setCurrentPage('dashboard'); setIsDrawerOpen(false)} }
+                    <Link to="/admin/dashboard" onClick={() => { setCurrentPage('dashboard'); setIsDrawerOpen(false) }}
                         className={`flex! items-center! gap-3! w-full! h-12! px-4! rounded-xl! text-sm! font-semibold! border-none! shadow-none! outline-none! transition-all! justify-start! ${currentPage === 'dashboard'
                             ? 'bg-[#EE2B6C]! text-white!'
                             : 'bg-transparent! text-gray-500! hover:text-[#EE2B6C]! hover:bg-pink-50/50!'
@@ -292,7 +326,7 @@ function AdminLayout() {
                     >
                         <MenuUnfoldOutlined className="text-lg" /> <span>Dashboard</span>
                     </Link>
-                    <Link to="/admin/order" onClick={() => { setCurrentPage('orders'); setIsDrawerOpen(false)} }
+                    <Link to="/admin/order" onClick={() => { setCurrentPage('order'); setIsDrawerOpen(false) }}
                         className={`flex! items-center! gap-3! w-full! h-12! px-4! rounded-xl! text-sm! font-semibold! border-none! shadow-none! outline-none! transition-all! justify-start! ${currentPage === 'order'
                             ? 'bg-[#EE2B6C]! text-white!'
                             : 'bg-transparent! text-gray-500! hover:text-[#EE2B6C]! hover:bg-pink-50/50!'
@@ -300,7 +334,7 @@ function AdminLayout() {
                     >
                         <ShoppingOutlined className="text-lg" /> <span>Orders</span>
                     </Link>
-                    <Link to="/admin/store" onClick={() => { setCurrentPage('storemanagement'); setIsDrawerOpen(false)} }
+                    <Link to="/admin/store" onClick={() => { setCurrentPage('storemanagement'); setIsDrawerOpen(false) }}
                         className={`flex! items-center! gap-3! w-full! h-12! px-4! rounded-xl! text-sm! font-semibold! border-none! shadow-none! outline-none! transition-all! justify-start! ${currentPage === 'store'
                             ? 'bg-[#EE2B6C]! text-white!'
                             : 'bg-transparent! text-gray-500! hover:text-[#EE2B6C]! hover:bg-pink-50/50!'
@@ -308,7 +342,7 @@ function AdminLayout() {
                     >
                         <ShopOutlined className="text-lg" /> <span>Store Management</span>
                     </Link>
-                    <Link to="/admin/inventory" onClick={() => { setCurrentPage('inventory'); setIsDrawerOpen(false)} }
+                    <Link to="/admin/inventory" onClick={() => { setCurrentPage('inventory'); setIsDrawerOpen(false) }}
                         className={`flex! items-center! gap-3! w-full! h-12! px-4! rounded-xl! text-sm! font-semibold! border-none! shadow-none! outline-none! transition-all! justify-start! ${currentPage === 'inventory'
                             ? 'bg-[#EE2B6C]! text-white!'
                             : 'bg-transparent! text-gray-500! hover:text-[#EE2B6C]! hover:bg-pink-50/50!'
@@ -316,7 +350,7 @@ function AdminLayout() {
                     >
                         <InboxOutlined className="text-lg" /> <span>Inventory</span>
                     </Link>
-                    <Link to="/admin/customer" onClick={() => { setCurrentPage('customer'); setIsDrawerOpen(false)} }
+                    <Link to="/admin/customer" onClick={() => { setCurrentPage('customer'); setIsDrawerOpen(false) }}
                         className={`flex! items-center! gap-3! w-full! h-12! px-4! rounded-xl! text-sm! font-semibold! border-none! shadow-none! outline-none! transition-all! justify-start! ${currentPage === 'customer'
                             ? 'bg-[#EE2B6C]! text-white!'
                             : 'bg-transparent! text-gray-500! hover:text-[#EE2B6C]! hover:bg-pink-50/50!'
@@ -324,7 +358,7 @@ function AdminLayout() {
                     >
                         <TeamOutlined className="text-lg" /> <span>Customers</span>
                     </Link>
-                    <Link to="/admin/setting" onClick={() => { setCurrentPage('setting'); setIsDrawerOpen(false)} }
+                    <Link to="/admin/setting" onClick={() => { setCurrentPage('setting'); setIsDrawerOpen(false) }}
                         className={`flex! items-center! gap-3! w-full! h-12! px-4! rounded-xl! text-sm! font-semibold! border-none! shadow-none! outline-none! transition-all! justify-start! ${currentPage === 'setting'
                             ? 'bg-[#EE2B6C]! text-white!'
                             : 'bg-transparent! text-gray-500! hover:text-[#EE2B6C]! hover:bg-pink-50/50!'

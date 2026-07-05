@@ -58,6 +58,8 @@ const WeeklySalesChart = ({ orders = [], onCurrentWeekRevenueChange, onCurrentWe
     };
   }, [orders, startOfWeek, endOfWeek]);
 
+  const { chartData, totalRevenue, ordersCount } = processedData;
+
   useEffect(() => {
     if (filterKey === 'this_week') {
       if (onCurrentWeekRevenueChange) onCurrentWeekRevenueChange(processedData.totalRevenue);

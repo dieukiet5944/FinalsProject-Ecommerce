@@ -168,7 +168,6 @@ const Dashboard = ({ name }) => {
                 <h1 className="text-xl sm:text-2xl font-bold text-[#EE2B6C] m-0">Dashboard Overview</h1>
                 <p className="text-xs sm:text-sm text-gray-400 m-0 mt-1 font-medium">
                     Welcome back, {name}! Here's the buzz from your store today
-                    {console.log("Dashboard Overview Rendered", historyOrders)}
                 </p>
             </div>
 
