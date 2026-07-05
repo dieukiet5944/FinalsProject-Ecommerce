@@ -4,9 +4,9 @@ import { Cascader, Row, Col, Progress, Space, DatePicker, Spin, message, Avatar,
 import dayjs from 'dayjs';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import isBetween from 'dayjs/plugin/isBetween';
-import {getOrdersApi} from '../../services/orderService.js'
-import {getUsersApi} from '../../services/userService.js'
-import {getProductsApi} from '../../services/productService.js'
+import { getOrdersApi } from '../../services/orderService.js'
+import { getUsersApi } from '../../services/userService.js'
+import { getProductsApi } from '../../services/productService.js'
 
 import WeeklySalesChart from './WeeklySalesChart';
 
@@ -19,8 +19,6 @@ const Dashboard = ({ name }) => {
     const [dataProduct, setDataProduct] = useState([]);
     const [historyOrders, setHistoryOrders] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [currentWeekRevenue, setCurrentWeekRevenue] = useState(0);
-    const [currentWeekOrdersCount, setCurrentWeekOrdersCount] = useState(0);
 
     const { Text: AntText } = Typography;
 
@@ -84,6 +82,21 @@ const Dashboard = ({ name }) => {
             .filter(order => order.status === 'Completed')
             .reduce((sum, order) => sum + (Number(order.totalPrice || order.sumOrders) || 0), 0);
     }, [historyOrders]);
+
+    const currentWeekOrders = useMemo(() => {
+        return historyOrders.filter(order => {
+            if (order.status !== 'Completed' || !order.createdAt) return false;
+            return dayjs(order.createdAt).isAfter(startOfCurrentWeek) || dayjs(order.createdAt).isSame(startOfCurrentWeek, 'day');
+        });
+    }, [historyOrders, startOfCurrentWeek]);
+
+    const currentWeekRevenue = useMemo(() => {
+        return currentWeekOrders.reduce((sum, order) => sum + (Number(order.totalPrice || order.sumOrders) || 0), 0);
+    }, [currentWeekOrders]);
+
+    const currentWeekOrdersCount = useMemo(() => {
+        return currentWeekOrders.length;
+    }, [currentWeekOrders]);
 
     const formattedHistoricalRevenue = useMemo(() => formatCurrency(historicalRevenueNumber), [historicalRevenueNumber]);
     const formattedCurrentWeekRevenue = useMemo(() => formatCurrency(currentWeekRevenue), [currentWeekRevenue]);
@@ -211,6 +224,7 @@ const Dashboard = ({ name }) => {
                 <div className="lg:col-span-2 flex flex-col bg-white p-5 sm:p-6 rounded-xl border border-gray-100 shadow-[0_4px_12px_rgba(0,0,0,0.02)] gap-6">
                     <Spin spinning={loading}>
                         <WeeklySalesChart
+                            orders={historyOrders} 
                             onCurrentWeekRevenueChange={setCurrentWeekRevenue}
                             onCurrentWeekOrdersChange={setCurrentWeekOrdersCount}
                         />

@@ -10,162 +10,60 @@ import isBetween from 'dayjs/plugin/isBetween';
 dayjs.extend(isoWeek);
 dayjs.extend(isBetween);
 
-const WeeklySalesChart = ({ onCurrentWeekRevenueChange, onCurrentWeekOrdersChange, }) => {
-
-  const [chartData, setChartData] = useState([]);
+const WeeklySalesChart = ({ orders = [], onCurrentWeekRevenueChange, onCurrentWeekOrdersChange }) => {
   const [filterKey, setFilterKey] = useState('this_week');
   const [timeLabel, setTimeLabel] = useState('');
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [currentWeekRevenue, setCurrentWeekRevenue] = useState(0);
-  const [currentWeekOrdersCount, setCurrentWeekOrdersCount] = useState(0);
 
-  const getDayName = (date) => {
-    const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-    return dayNames[date.getDay()];
-  };
-
-  const generateEmptyWeekData = () => {
-    return [
-      { day: 'MON', sales: 0 },
-      { day: 'TUE', sales: 0 },
-      { day: 'WED', sales: 0 },
-      { day: 'THU', sales: 0 },
-      { day: 'FRI', sales: 0 },
-      { day: 'SAT', sales: 0 },
-      { day: 'SUN', sales: 0 },
-    ];
-  };
-
-  const calculateDailySales = useCallback((ordersList, startOfWeek, endOfWeek) => {
-    const dailySalesMap = {};
-    let currentDay = startOfWeek.clone();
-    while (!currentDay.isAfter(endOfWeek, 'day')) {
-      const dayName = getDayName(currentDay.toDate());
-      dailySalesMap[dayName] = 0;
-      currentDay = currentDay.add(1, 'day');
+  const { startOfWeek, endOfWeek } = useMemo(() => {
+    const now = dayjs();
+    if (filterKey === 'this_week') {
+      return { startOfWeek: now.startOf('isoWeek'), endOfWeek: now.endOf('isoWeek') };
     }
+    return { startOfWeek: now.subtract(1, 'week').startOf('isoWeek'), endOfWeek: now.subtract(1, 'week').endOf('isoWeek') };
+  }, [filterKey]);
 
+  useEffect(() => {
+    setTimeLabel(`${startOfWeek.format('MMM DD')} - ${endOfWeek.format('MMM DD, YYYY')}`);
+  }, [startOfWeek, endOfWeek]);
+
+  const processedData = useMemo(() => {
+    const dayOrder = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+    const dailySalesMap = { MON: 0, TUE: 0, WED: 0, THU: 0, FRI: 0, SAT: 0, SUN: 0 };
+    
     let totalRevenue = 0;
-    let todayRevenue = 0;
-    let totalHistoricalRevenue = 0;
     let ordersCount = 0;
 
-    ordersList.forEach(order => {
-      if (!order.createdAt) return;
+    orders.forEach(order => {
+      if (!order.createdAt || order.status !== 'Completed') return;
 
-      if (order.status === 'Completed') {
-        const sales = order.totalPrice || 0;
-        const orderDate = dayjs(order.createdAt || order.updatedAt);
+      const orderDate = dayjs(order.createdAt);
+      const inWeek = orderDate.isBetween(startOfWeek, endOfWeek, 'day', '[]');
 
-        const inWeek = orderDate.isBetween(startOfWeek, endOfWeek, 'day', '[]');
-
-        if (inWeek) {
-          const dayName = orderDate.format('ddd').toUpperCase();
-          if (dailySalesMap[dayName] !== undefined) {
-            dailySalesMap[dayName] += sales;
-          }
-          totalRevenue += sales;
-          ordersCount += 1;
+      if (inWeek) {
+        const sales = Number(order.totalPrice || order.sumOrders) || 0;
+        const dayName = orderDate.format('ddd').toUpperCase(); 
+        
+        if (dailySalesMap[dayName] !== undefined) {
+          dailySalesMap[dayName] += sales;
         }
+        totalRevenue += sales;
+        ordersCount += 1;
       }
     });
 
-    const dayOrder = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
-
     return {
-      chartData: dayOrder.map(day => ({ day, sales: dailySalesMap[day] || 0 })),
+      chartData: dayOrder.map(day => ({ day, sales: dailySalesMap[day] })),
       totalRevenue,
-      todayRevenue,
-      totalHistoricalRevenue,
       ordersCount
     };
-  }, []);
+  }, [orders, startOfWeek, endOfWeek]);
 
-  const fetchOrders = async () => {
-    setLoading(true);
-    try {
-      const response = await getOrdersApi();
-      const result = response?.data?.data || response?.data || response;
-      const ordersData = Array.isArray(result) ? result : (result.orders || []);
-
-      setOrders(ordersData);
-    } catch (error) {
-      console.error('Error fetching orders:', error);
-      setOrders([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const processChartData = useCallback(() => {
-    if (!orders || orders.length === 0) return;
-
-    const now = dayjs();
-
-    let startOfWeek, endOfWeek;
-
+  useEffect(() => {
     if (filterKey === 'this_week') {
-      startOfWeek = now.startOf('isoWeek');
-      endOfWeek = now.endOf('isoWeek');
-    } else {
-      startOfWeek = now.subtract(1, 'week').startOf('isoWeek');
-      endOfWeek = now.subtract(1, 'week').endOf('isoWeek');
+      if (onCurrentWeekRevenueChange) onCurrentWeekRevenueChange(processedData.totalRevenue);
+      if (onCurrentWeekOrdersChange) onCurrentWeekOrdersChange(processedData.ordersCount);
     }
-
-    setTimeLabel(`${startOfWeek.format('MMM DD')} - ${endOfWeek.format('MMM DD, YYYY')}`);
-
-    const { chartData, totalRevenue, todayRevenue, totalHistoricalRevenue, ordersCount } = calculateDailySales(orders, startOfWeek, endOfWeek);
-
-    setChartData(chartData);
-
-    if (filterKey === 'this_week') {
-      setCurrentWeekRevenue(totalRevenue);
-      setCurrentWeekOrdersCount(ordersCount);
-      console.log('Processed Chart Data:', todayRevenue);
-    }
-
-  }, [filterKey, orders, calculateDailySales]);
-
-  useEffect(() => {
-    fetchOrders();
-  }, []);
-
-  useEffect(() => {
-    if (orders.length > 0 || filterKey) {
-      processChartData();
-    }
-  }, [filterKey, orders, processChartData]);
-
-  useEffect(() => {
-    if (filterKey === 'this_week' && onCurrentWeekRevenueChange) {
-      onCurrentWeekRevenueChange(currentWeekRevenue);
-    }
-  }, [currentWeekRevenue, filterKey, onCurrentWeekRevenueChange]);
-
-  useEffect(() => {
-    if (filterKey === 'this_week' && onCurrentWeekOrdersChange) {
-      onCurrentWeekOrdersChange(currentWeekOrdersCount);
-    }
-  }, [currentWeekOrdersCount, filterKey, onCurrentWeekOrdersChange]);
-
-  useEffect(() => {
-    const checkWeekChange = () => {
-      const now = dayjs();
-      const startOfCurrentWeek = now.startOf('isoWeek');
-      const isMondayMidnight = now.day() === 1 && now.hour() === 0 && now.minute() === 0;
-
-      if (isMondayMidnight && filterKey === 'this_week') {
-        setChartData(generateEmptyWeekData());
-        setCurrentWeekRevenue(0);
-        setCurrentWeekOrdersCount(0);
-        setTimeLabel(`${startOfCurrentWeek.format('MMM DD')} - ${now.endOf('isoWeek').format('MMM DD, YYYY')}`);
-      }
-    };
-
-    const interval = setInterval(checkWeekChange, 1000);
-    return () => clearInterval(interval);
-  }, [filterKey]);
+  }, [processedData.totalRevenue, processedData.ordersCount, filterKey, onCurrentWeekRevenueChange, onCurrentWeekOrdersChange]);
 
   const items = [
     { key: 'this_week', label: 'This Week' },
