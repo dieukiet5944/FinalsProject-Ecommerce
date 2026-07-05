@@ -222,7 +222,6 @@ function CustomerLayout() {
 
                         <div className="flex flex-col sm:flex-row items-center justify-between gap-6 border-t border-white/10 pt-6">
 
-                            {/* Cụm 1: Các đường dẫn Text (Code cũ của bạn, tối ưu lại gap và căn giữa) */}
                             <div className="flex flex-wrap justify-center gap-6 text-sm text-white/70">
                                 <a href="#" className="transition-colors hover:text-white">Shop</a>
                                 <a href="#" className="transition-colors hover:text-white">Membership</a>
@@ -230,7 +229,6 @@ function CustomerLayout() {
                                 <a href="#" className="transition-colors hover:text-white">Contact</a>
                             </div>
 
-                            {/* Cụm 2: Nơi tỏa sáng của các Icon Antd (Social Media) */}
                             <div className="flex items-center gap-4 text-lg text-white/60">
                                 <a
                                     href="https://facebook.com"
@@ -249,7 +247,7 @@ function CustomerLayout() {
                                     <InstagramOutlined />
                                 </a>
                                 <a
-                                    href="https://youtube.com"
+                                    href="https://www.youtube.com/watch?v=Q17C4TrJdW0"
                                     target="_blank"
                                     rel="noreferrer"
                                     className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center transition-all hover:bg-white/20 hover:text-white hover:-translate-y-0.5"
