@@ -673,6 +673,7 @@ const Inventory = () => {
         category: values.category,
         status: values.status || "IN STOCK",
         image: values.image || "default.jpg",
+        slug: values.slug || values.name.toLowerCase().replace(/ /g, '-'),
         quantity: Number(values.quantity),
         expiredAt: values.expiredAt ? values.expiredAt.format('YYYY-MM-DD') : null
       };
@@ -905,8 +906,9 @@ const Inventory = () => {
             <Form.Item noStyle shouldUpdate={(prev, curr) => prev.category !== curr.category || prev.image !== curr.image}>
               {({ getFieldsValue }) => {
                 const values = getFieldsValue();
-                const category = values?.category?.toLowerCase() || 'drink';
+                const category = values?.category?.toLowerCase() || 'drink' || 'cake';
                 const image = values?.image || '';
+                const slug = values?.slug || values?.name?.toLowerCase()?.replace(/ /g, '-');
 
                 return (
                   <div className="flex flex-col gap-2.5 bg-gray-50 p-3.5 rounded-xl border border-gray-100">
@@ -949,6 +951,10 @@ const Inventory = () => {
 
             <Form.Item name="status" label={<span className="font-semibold text-gray-700">Initial Status</span>} className="mb-0">
               <Select className="h-9" options={[{ value: 'IN STOCK', label: 'IN STOCK' }, { value: 'LOW STOCK', label: 'LOW STOCK' }]} />
+            </Form.Item>
+
+            <Form.Item name="slug" label={<span className="font-semibold text-gray-700">Slug</span>} rules={[{ required: true }]} className="mb-0">
+              <Input className="py-2" />
             </Form.Item>
           </Form>
         </Modal>

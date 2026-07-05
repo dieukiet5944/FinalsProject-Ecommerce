@@ -106,13 +106,13 @@ const productController = {
     postCreateProduct: async (req, res) => {
         try {
 
-            const { name, price, category, image, quantity, expiredAt, status } = req.body;
+            const { name, price, category, image, quantity, expiredAt, status, slug } = req.body;
 
 
-            if (!name || price === undefined || !category || !image || quantity === undefined || !expiredAt) {
+            if (!name || price === undefined || !category || !image || quantity === undefined || !expiredAt || !slug) {
                 return res.status(400).send({
                     success: false,
-                    message: "Please fill in all required information: Name, Price, Category, Image, and Stock Quantity."
+                    message: "Please fill in all required information: Name, Price, Category, Image, Stock Quantity, Expired At, Status, and Slug."
                 });
             }
 
@@ -153,7 +153,8 @@ const productController = {
                     quantity: productQuantity,
                     expiredAt: new Date(expiredAt)
                 }],
-                status: finalStatus
+                status: finalStatus,
+                slug
             });
 
             await newProduct.save();
@@ -177,7 +178,7 @@ const productController = {
     putProductDetails: async (req, res) => {
         try {
             const { id } = req.params;
-            const { name, price, category, image, status, quantity, expiredAt } = req.body;
+            const { name, price, category, image, status, quantity, expiredAt, slug } = req.body;
 
             const product = await ProductModel.findById(id);
             if (!product) {
@@ -192,7 +193,7 @@ const productController = {
             if (category) product.category = category;
             if (image) product.image = image;
             if (status) product.status = status;
-
+            if (slug) product.slug = slug;
             if (quantity && expiredAt) {
                 if (!product.stockBatches || !Array.isArray(product.stockBatches)) {
                     product.stockBatches = [];
