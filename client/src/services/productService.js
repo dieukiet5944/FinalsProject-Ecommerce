@@ -14,6 +14,14 @@ export const putProductsApi =  (payload, productId) => {
    return Axios.put(`/products/${productId}`, payload); 
 }
 
+export const uploadTocloud = (formData) => {
+    return Axios.post(`/products/upload`, formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data' 
+        }
+    }); 
+}
+
 export const createProductApi =  (productPayload) => {
   return Axios.post('/products', productPayload);
 }; 

@@ -21,12 +21,24 @@ function myLogger(req, res, next) {
   next(); 
 }
 
+const allowedOrigins = [
+  'http://localhost:5173', 
+  'https://finals-project-ecommerce.vercel.app'
+];
+
 app.use(myLogger);
 
 app.use(cors({
-  origin: "*",
-  credentials: true
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Deny by CORS: This access source is not permitted!'));
+    }
+  },
+  credentials: true 
 }));
+
 app.use(express.json());
 
 //USER

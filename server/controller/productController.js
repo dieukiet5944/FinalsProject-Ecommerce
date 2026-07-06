@@ -48,8 +48,8 @@ const productController = {
             const { slug } = req.params;
 
             if (!slug || slug === 'undefined') {
-            return res.status(400).json({ success: false, message: "Slug không hợp lệ" });
-        }
+                return res.status(400).json({ success: false, message: "Slug không hợp lệ" });
+            }
             const product = await ProductModel.findOne({ slug: slug });
 
             if (!product) {
@@ -101,6 +101,16 @@ const productController = {
                 error: error.message
             })
         }
+    },
+
+    postUploadCloud: async (req, res) => {
+        if (!req.file) {
+            return res.status(400).json({ message: 'No files were uploaded!' });
+        }
+        res.status(200).json({
+            message: 'Upload successful!',
+            fileUrl: req.file.path
+        });
     },
 
     postCreateProduct: async (req, res) => {

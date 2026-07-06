@@ -42,7 +42,7 @@ Axios.interceptors.response.use(
                     }
                 });
 
-                const newAccessToken = refreshResponse.data?.data?.accessToken;
+                const newAccessToken = refreshResponse.data?.accessToken;
 
                 if (newAccessToken) {
                     localStorage.setItem('token', newAccessToken);

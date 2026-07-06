@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { getProductsApi, putProductsApi, deleteProductsApi, createProductApi, deleteBatchsApi } from '../../services/productService.js';
+import { getProductsApi, putProductsApi, deleteProductsApi, createProductApi, deleteBatchsApi, uploadTocloud } from '../../services/productService.js';
 import {
-  WarningFilled, EyeOutlined, MoreOutlined, EditOutlined, DeleteOutlined, PlusCircleOutlined, AlertOutlined, PlusOutlined, PictureOutlined, ExceptionOutlined, UserOutlined
+  WarningFilled, EyeOutlined, MoreOutlined, EditOutlined, DeleteOutlined, PlusCircleOutlined, AlertOutlined, PlusOutlined, PictureOutlined, UploadOutlined, ExceptionOutlined, UserOutlined
 } from "@ant-design/icons";
-import { Table, Tag, Avatar, Button, Progress, Spin, Modal, Badge, message, InputNumber, Dropdown, Form, Input, Select, DatePicker } from 'antd';
+import { Table, Tag, Avatar, Button, Progress, Spin, Modal, Badge, message, InputNumber, Dropdown, Form, Input, Select, DatePicker, Upload } from 'antd';
 
 const Inventory = () => {
   const [data, setData] = useState([]);
@@ -43,29 +43,51 @@ const Inventory = () => {
     loadData();
   }, []);
 
+  const renderPreviewSrc = (imageFieldValue, categoryValue) => {
+    if (!imageFieldValue) return null;
+
+    if (Array.isArray(imageFieldValue) && imageFieldValue.length > 0) {
+      const file = imageFieldValue[0];
+      return file.url || (file.originFileObj ? URL.createObjectURL(file.originFileObj) : null);
+    }
+
+    if (typeof imageFieldValue === 'string' && imageFieldValue.startsWith('http')) {
+      return imageFieldValue;
+    }
+
+    const cleanCategory = (categoryValue || 'DRINK').toLowerCase();
+    return `/product/${cleanCategory}/${imageFieldValue}`;
+  };
+
   const columns = [
-    {
+   {
       title: 'PRODUCT NAME',
       key: 'product',
       width: 240,
-      render: (_, record) => (
-        <div className="flex items-center gap-3 py-0.5">
-          <Avatar
-            src={`/product/${record.category?.toLowerCase()}/${record.image}`}
-            size={42}
-            shape="square"
-            className="rounded-xl border border-gray-100 shadow-3xs shrink-0 object-cover bg-gray-50"
-          />
-          <div className="min-w-0">
-            <p className="font-bold text-gray-800 m-0 truncate text-sm leading-tight">
-              {record.name}
-            </p>
-            <p className="text-[11px] font-mono text-gray-400 m-0 mt-1 uppercase tracking-wider">
-              SKU: {String(record._id).slice(-6).toUpperCase()}
-            </p>
+      render: (_, record) => {
+        const finalImgSrc = record.image?.startsWith('http') 
+          ? record.image 
+          : `/product/${record.category?.toLowerCase()}/${record.image}`;
+
+        return (
+          <div className="flex items-center gap-3 py-0.5">
+            <Avatar
+              src={finalImgSrc || null}
+              size={42}
+              shape="square"
+              className="rounded-xl border border-gray-100 shadow-3xs shrink-0 object-cover bg-gray-50"
+            />
+            <div className="min-w-0">
+              <p className="font-bold text-gray-800 m-0 truncate text-sm leading-tight">
+                {record.name}
+              </p>
+              <p className="text-[11px] font-mono text-gray-400 m-0 mt-1 uppercase tracking-wider">
+                SKU: {String(record._id).slice(-6).toUpperCase()}
+              </p>
+            </div>
           </div>
-        </div>
-      ),
+        );
+      },
     },
     {
       title: 'CATEGORY',
@@ -250,7 +272,7 @@ const Inventory = () => {
           </span>
         </div>
       ),
-      width: 540, 
+      width: 540,
       okText: 'Complete Restock',
       cancelText: 'Close',
       centered: true,
@@ -662,24 +684,49 @@ const Inventory = () => {
     setIsEditModalOpen(true);
   };
 
+  const uploadImageToCloudinary = async (file) => {
+    console.log("File thực tế nhận được để upload:", file);
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      const response = await uploadTocloud(formData);
+
+      return response?.fileUrl;
+    } catch (error) {
+      console.error("Upload to Cloudinary failed:", error);
+      throw new Error(error.response?.message || "Can not upload Cloudinary!");
+    }
+  };
+
   const handleCreateSubmit = async () => {
     try {
       const values = await addForm.validateFields();
       setLoading(true);
+
+      let cloudinaryUrl = "default.jpg";
+
+      if (values.image && values.image.length > 0) {
+        const fileToUpload = values.image[0].originFileObj;
+        if (fileToUpload) {
+          message.loading({ content: "Uploading image...", key: "upload_msg" });
+          cloudinaryUrl = await uploadImageToCloudinary(fileToUpload);
+          message.success({ content: "Image uploaded! 🎉", key: "upload_msg" });
+        }
+      }
 
       const payload = {
         name: values.name,
         price: Number(values.price),
         category: values.category,
         status: values.status || "IN STOCK",
-        image: values.image || "default.jpg",
+        image: cloudinaryUrl,
         slug: values.slug || values.name.toLowerCase().replace(/ /g, '-'),
         quantity: Number(values.quantity),
         expiredAt: values.expiredAt ? values.expiredAt.format('YYYY-MM-DD') : null
       };
 
       const result = await createProductApi(payload);
-
       const newProd = result?.data;
 
       if (newProd) {
@@ -690,7 +737,7 @@ const Inventory = () => {
       }
     } catch (error) {
       console.error("Create Product Error:", error);
-      message.error(error.result?.message || "Please double-check the inputs!");
+      message.error(error.message || "Please double-check the inputs!");
     } finally {
       setLoading(false);
     }
@@ -699,15 +746,32 @@ const Inventory = () => {
   const handleUpdateSubmit = async () => {
     try {
       const values = await editForm.validateFields();
-
       setLoading(true);
+
+
+      let cloudinaryUrl = editingProduct.image || "default.jpg";
+
+      if (values.image && values.image.length > 0) {
+        const fileToUpload = values.image[0].originFileObj;
+
+        if (fileToUpload) {
+          message.loading({ content: "Updating image...", key: "upload_msg" });
+          cloudinaryUrl = await uploadImageToCloudinary(fileToUpload);
+          message.success({ content: "Image updated! 🎉", key: "upload_msg" });
+        }
+        else if (values.image[0].url) {
+          cloudinaryUrl = values.image[0].url;
+        }
+      } else {
+        cloudinaryUrl = "default.jpg";
+      }
 
       const payload = {
         name: values.name,
         price: Number(values.price),
         category: values.category,
         status: values.status,
-        image: values.image || editingProduct.image || "default.jpg"
+        image: cloudinaryUrl
       };
 
       const result = await putProductsApi(payload, editingProduct._id);
@@ -751,6 +815,11 @@ const Inventory = () => {
         }
       },
     });
+  };
+
+  const normFile = (e) => {
+    if (Array.isArray(e)) return e;
+    return e?.fileList;
   };
 
   return (
@@ -906,28 +975,35 @@ const Inventory = () => {
             <Form.Item noStyle shouldUpdate={(prev, curr) => prev.category !== curr.category || prev.image !== curr.image}>
               {({ getFieldsValue }) => {
                 const values = getFieldsValue();
-                const category = values?.category?.toLowerCase() || 'drink' || 'cake';
-                const image = values?.image || '';
-                const slug = values?.slug || values?.name?.toLowerCase()?.replace(/ /g, '-');
+                const previewUrl = renderPreviewSrc(values?.image, values?.category);
 
                 return (
                   <div className="flex flex-col gap-2.5 bg-gray-50 p-3.5 rounded-xl border border-gray-100">
                     <Form.Item
                       name="image"
-                      label={<span className="font-semibold text-gray-700 text-xs">Image Filename</span>}
-                      tooltip="File must exist in public/product/[category]/ folder"
-                      rules={[{ required: true, message: 'Please enter filename!' }]}
-                      className="mb-0"
+                      label={<span className="font-semibold text-gray-700 text-xs">Product Image</span>}
+                      valuePropName="fileList"
+                      getValueFromEvent={normFile}
+                      rules={[{ required: true, message: 'Please select an image!' }]}
+                      className="mb-0 [&_.ant-upload-list]:mt-1"
                     >
-                      <Input placeholder="e.g., cake_1.png" className="py-2" />
+                      <Upload
+                        beforeUpload={() => false}
+                        maxCount={1}
+                        listType="picture"
+                        accept="image/*"
+                      >
+                        <Button icon={<UploadOutlined />} className="w-full rounded-xl py-4 flex items-center justify-center font-medium border-dashed border-gray-300">
+                          Select Product File
+                        </Button>
+                      </Upload>
                     </Form.Item>
 
                     <div className="flex items-center gap-3 bg-white p-2 rounded-lg border border-gray-200/60">
                       <Avatar
                         size={44}
                         shape="square"
-                        src={`/product/${category}/${image}`}
-                        icon={<PictureOutlined />}
+                        src={record.image?.startsWith('http') ? record.image : `/product/${record.category?.toLowerCase()}/${record.image}`}                        icon={<PictureOutlined />}
                         className="rounded-lg! border border-gray-100 bg-gray-50 shadow-3xs object-cover"
                       />
                       <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Image Preview</span>
@@ -989,25 +1065,35 @@ const Inventory = () => {
             <Form.Item noStyle shouldUpdate={(prev, curr) => prev.category !== curr.category || prev.image !== curr.image}>
               {({ getFieldsValue }) => {
                 const values = getFieldsValue();
-                const category = (values?.category || 'DRINK').toLowerCase();
-                const image = values?.image || '';
+                const previewUrl = renderPreviewSrc(values?.image, values?.category);
 
                 return (
                   <div className="flex flex-col gap-2.5 bg-gray-50 p-3.5 rounded-xl border border-gray-100">
                     <Form.Item
                       name="image"
-                      label={<span className="font-semibold text-gray-700 text-xs">Image Filename</span>}
-                      rules={[{ required: true, message: 'Please enter filename!' }]}
-                      className="mb-0"
+                      label={<span className="font-semibold text-gray-700 text-xs">Product Image</span>}
+                      valuePropName="fileList"
+                      getValueFromEvent={normFile}
+                      rules={[{ required: true, message: 'Please select an image!' }]}
+                      className="mb-0 [&_.ant-upload-list]:mt-1"
                     >
-                      <Input className="py-2" />
+                      <Upload
+                        beforeUpload={() => false}
+                        maxCount={1}
+                        listType="picture"
+                        accept="image/*"
+                      >
+                        <Button icon={<UploadOutlined />} className="w-full rounded-xl py-4 flex items-center justify-center font-medium border-dashed border-gray-300">
+                          Change Product File
+                        </Button>
+                      </Upload>
                     </Form.Item>
 
                     <div className="flex items-center gap-3 bg-white p-2 rounded-lg border border-gray-200/60">
                       <Avatar
                         size={44}
                         shape="square"
-                        src={`/product/${category}/${image}`}
+                        src={previewUrl}
                         icon={<PictureOutlined />}
                         className="rounded-lg! border border-gray-100 bg-gray-50 shadow-3xs object-cover"
                       />
