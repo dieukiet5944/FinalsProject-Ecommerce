@@ -9,6 +9,7 @@ import productRouter from './routers/productsRouter.js';
 import adminRouter from './routers/adminRouter.js';
 import ordersRouter from './routers/ordersRouter.js';
 import storeRouter from './routers/storeRouter.js';
+import promoRouter from './routers/promotionRouter.js'
 
 const PORT = process.env.PORT || 8080;
 
@@ -56,6 +57,9 @@ app.use("/secret-key/admin", adminRouter);
 
 //ADMIN 
 app.use("/store", storeRouter);
+
+//PROMOTION
+app.use('/promotions', promoRouter);
 
 
 

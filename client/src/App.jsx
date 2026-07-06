@@ -17,6 +17,7 @@ import AdminLogin from './pages/admin/AdminLogin.jsx';
 import AdminLayout from './components/layouts/AdminLayout.jsx';
 import Dashboard from './pages/admin/Dashboard.jsx';
 import Orders from './pages/admin/OrderManagement.jsx';
+import Promotion from './pages/admin/Promotion.jsx';
 import Inventory from './pages/admin/Inventory.jsx';
 import Customers from './pages/admin/CustomerDirectory.jsx';
 import Setting from './pages/admin/Setting.jsx';
@@ -57,6 +58,7 @@ function App() {
           <Route index element={<Dashboard />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="order" element={<Orders />} />
+          <Route path="promo" element={<Promotion />} />
           <Route path="store" element={<StoreManagement />} />
           <Route path="inventory" element={<Inventory />} />
           <Route path="customer" element={<Customers />} />

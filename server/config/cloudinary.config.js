@@ -10,15 +10,25 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_SECRET
 });
 
-const storage = new CloudinaryStorage({
+const productStorage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: 'ecommerce_products',
-    allowed_formats: ['jpg', 'png', 'jpeg', 'mp4'],
+    allowed_formats: ['jpg', 'png', 'jpeg'],
     resource_type: 'auto',
   },
 });
+const uploadCloud = multer({ storage: productStorage });
 
-const uploadCloud = multer({ storage });
+const avatarStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'ecommerce_avatars', 
+    allowed_formats: ['jpg', 'png', 'jpeg'],
+    resource_type: 'auto',
+    transformation: [{ width: 400, height: 400, crop: 'limit' }] 
+  },
+});
+const uploadAvatarCloud = multer({ storage: avatarStorage });
 
-export default uploadCloud;
+export { uploadCloud, uploadAvatarCloud };

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ShopOutlined, MenuUnfoldOutlined, ShoppingOutlined, InboxOutlined, TeamOutlined, StockOutlined, SettingOutlined, SearchOutlined, BellOutlined, LogoutOutlined, MenuOutlined, ArrowRightOutlined } from '@ant-design/icons'
+import { ShareAltOutlined ,ShopOutlined, MenuUnfoldOutlined, ShoppingOutlined, InboxOutlined, TeamOutlined, StockOutlined, SettingOutlined, SearchOutlined, BellOutlined, LogoutOutlined, MenuOutlined, ArrowRightOutlined } from '@ant-design/icons'
 import { Input, Button, Modal, message, Drawer } from 'antd'
 import { Outlet, Link } from 'react-router-dom';
 
@@ -56,6 +56,8 @@ function AdminLayout() {
             'store': '/admin/store',
 
             'inventory': '/admin/inventory',
+
+            'promotion': '/admin/promo',
 
             'customer': '/admin/customer',
             'customers': '/admin/customer',
@@ -184,6 +186,14 @@ function AdminLayout() {
                                 }`}
                         >
                             <ShoppingOutlined className="text-lg" /> <span>Orders</span>
+                        </Link>
+                        <Link to="/admin/promo" onClick={() => setCurrentPage('promotion')}
+                            className={`flex! items-center! gap-3! w-full! h-12! px-4! rounded-xl! text-sm! font-semibold! border-none! shadow-none! outline-none! transition-all! justify-start! ${currentPage === 'order'
+                                ? 'bg-[#EE2B6C]! text-white!'
+                                : 'bg-transparent! text-gray-500! hover:text-[#EE2B6C]! hover:bg-pink-50/50!'
+                                }`}
+                        >
+                            <ShareAltOutlined className="text-lg" /> <span>Promotion</span>
                         </Link>
                         <Link to="/admin/store" onClick={() => setCurrentPage('storemanagement')}
                             className={`flex! items-center! gap-3! w-full! h-12! px-4! rounded-xl! text-sm! font-semibold! border-none! shadow-none! outline-none! transition-all! justify-start! ${currentPage === 'storemanagement'

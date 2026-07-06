@@ -1,6 +1,6 @@
 import express from 'express'
 import productController from '../controller/productController.js'
-import uploadCloud from '../config/cloudinary.config.js';
+import { uploadCloud } from '../config/cloudinary.config.js';
 
 const productRouter = express.Router();
 

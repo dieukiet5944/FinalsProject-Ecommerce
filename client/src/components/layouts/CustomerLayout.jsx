@@ -6,6 +6,7 @@ import { EditOutlined, FacebookOutlined, InstagramOutlined, YoutubeOutlined } fr
 import { Button, message, Modal } from 'antd'
 import { Outlet, Link } from 'react-router-dom';
 import { putUsersApi } from '../../services/userService.js';
+import { uploadAvatarToCloudApi } from '../../services/userService.js';
 
 
 function CustomerLayout() {
@@ -23,23 +24,34 @@ function CustomerLayout() {
     const handleUpdateProfile = async () => {
         if (!user?.id) return;
         try {
+            let avatarUrl = pickPicture || user.avatar;
+
+            if (pickPicture && typeof pickPicture !== 'string') {
+                message.loading({ content: "Uploading avatar...", key: "avatar_upload" });
+                
+                avatarUrl = await uploadAvatarToCloudApi(pickPicture); 
+                
+                message.success({ content: "Avatar uploaded! 🎉", key: "avatar_upload" });
+            }
+
             const payload = {
-                avatar: pickPicture,
+                avatar: avatarUrl, 
             };
 
             const response = await putUsersApi(user.id, payload);
 
             if (response?.success || response?.data?.success) {
-                updateUserLocal({ avatar: pickPicture });
+                updateUserLocal({ avatar: avatarUrl });
 
-                message.success("Product updated successfully! ❤️");
+                message.success("Profile updated successfully! ❤️");
                 setIsAvatarModalOpen(false);
-                setOpenLogo(false)
+                setOpenLogo(false);
             }
         } catch (error) {
             console.error("Update profile Error:", error);
+            message.error("Failed to update avatar. Please try again!");
         }
-    }
+    };
 
     return (
         <div className="flex flex-col min-h-screen bg-gray-50 text-gray-800">
@@ -81,7 +93,7 @@ function CustomerLayout() {
                                     >
                                         <img
                                             className="w-9 h-9 rounded-full object-cover border border-white/40 shadow-sm"
-                                            src={`/product/avtusers/${user.avatar}`}
+                                            src={user.avatar?.startsWith('http') ? user.avatar : `/product/avtusers/${user.avatar || 'default-avatar.png'}`}
                                             alt="user_avatar"
                                         />
                                     </button>
@@ -126,7 +138,7 @@ function CustomerLayout() {
                                 <div className="relative flex justify-center mb-6">
                                     <div className="relative group">
                                         <img
-                                            src={`/product/avtusers/${pickPicture || 'none-avt.png'}`}
+                                            src={pickPicture?.startsWith('http') ? pickPicture : `/product/avtusers/${pickPicture || 'none-avt.png'}`}
                                             alt="user-avatar"
                                             className="w-24 h-24 rounded-full object-cover shadow-md bg-light-surface border-2 border-gray-100 transition-transform duration-300 group-hover:scale-[1.02]"
                                         />
@@ -181,7 +193,7 @@ function CustomerLayout() {
                                             onClick={() => {
                                                 setPickPicture(avtName);
                                                 setIsAvatarModalOpen(false);
-                                                message.success(`Selected temporary avatar: ${avtName}. Click Save to commit.`);
+                                                message.success(`Selected temporary avatar. Click Save to commit.`);
                                             }}
                                             className={`cursor-pointer border-2 p-1 rounded-xl transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-sm overflow-hidden bg-white ${isSelected
                                                 ? 'border-primary-500 ring-2 ring-primary-500/20'

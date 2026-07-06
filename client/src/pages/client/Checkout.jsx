@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth.js';
 import { useCart } from '../../context/CartContext';
+import { validatePromoApi } from '../../services/promotionService.js';
+import { message } from 'antd';
 
 const Checkout = () => {
   const { cart, totalPrice, placeOrder, loading: cartLoading } = useCart();
@@ -19,6 +21,9 @@ const Checkout = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
 
+  const [promoInput, setPromoInput] = useState('');
+  const [appliedPromo, setAppliedPromo] = useState(null);
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     if (validationErrors[e.target.name]) {
@@ -28,22 +33,16 @@ const Checkout = () => {
 
   const handlePlaceOrder = async () => {
     const newErrors = {};
-    
+
     if (!user) {
       alert("Please log in to place an order");
       navigate('/login');
       return;
     }
 
-    if (!formData.fullName.trim()) {
-      newErrors.fullName = "Full name is required";
-    }
-    if (!formData.address.trim()) {
-      newErrors.address = "Address is required";
-    }
-    if (!formData.phone.trim()) {
-      newErrors.phone = "Phone number is required";
-    }
+    if (!formData.fullName.trim()) newErrors.fullName = "Full name is required";
+    if (!formData.address.trim()) newErrors.address = "Address is required";
+    if (!formData.phone.trim()) newErrors.phone = "Phone number is required";
 
     if (Object.keys(newErrors).length > 0) {
       setValidationErrors(newErrors);
@@ -55,12 +54,29 @@ const Checkout = () => {
     setError('');
 
     try {
-      const result = await placeOrder({
+      const orderPayload = {
         ...formData,
         userId: user.id || user._id,
-      });
+        items: cart.map(item => ({
+          productId: item.productId || item._id,
+          name: item.name,
+          qty: item.quantity || 1,
+          price: Number(item.price)
+        })),
+        subTotalPrice: totalPrice,
 
-      alert(`🎉 Order placed successfully!\n\nOrder ID: ${result.orderId || 'ORD-' + Date.now()}`);
+        promotion: {
+          code: appliedPromo ? appliedPromo.code : null,
+          discountAmount: appliedPromo ? appliedPromo.discountAmount : 0
+        },
+
+        totalPrice: totalPrice - (appliedPromo?.discountAmount || 0),
+      };
+
+      const result = await placeOrder(orderPayload);
+
+      alert(`Order placed successfully!\n\nOrder ID: ${result.orderId || 'ORD-' + Date.now()}`);
+
       navigate('/order');
     } catch (err) {
       console.error(err);
@@ -75,6 +91,36 @@ const Checkout = () => {
       navigate('/cart');
     }
   }, [user, navigate]);
+
+  const handleApplyPromo = async () => {
+    if (!promoInput.trim()) return message.warning("Please enter a promo code!");
+
+    try {
+
+      const response = await validatePromoApi({
+        code: promoInput.trim().toUpperCase(),
+        orderAmount: totalPrice,
+        userId: user.id || user._id
+      });
+
+      if (response && response.success) {
+        setAppliedPromo(response.data);
+        alert(`🎉 Applied successfully!`);
+      } else if (response?.data?.success) {
+        setAppliedPromo(response.data.data);
+      }
+
+    } catch (err) {
+      console.error("Promo error:", err);
+      alert(`${err.response?.data?.message || "Invalid code!"}`);
+    }
+  };
+
+  const handleCancelPromo = () => {
+    setAppliedPromo(null);
+    setPromoInput('');
+    message.info("Promo code removed. You can save it for your next order!");
+  };
 
   return (
     <div className="min-h-screen bg-light-bg py-12">
@@ -114,9 +160,8 @@ const Checkout = () => {
                     name="fullName"
                     value={formData.fullName}
                     onChange={handleChange}
-                    className={`w-full px-5 py-4 border rounded-2xl focus:outline-none focus:border-primary-500 ${
-                      validationErrors.fullName ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    className={`w-full px-5 py-4 border rounded-2xl focus:outline-none focus:border-primary-500 ${validationErrors.fullName ? 'border-red-500' : 'border-gray-300'
+                      }`}
                   />
                 </div>
 
@@ -129,9 +174,8 @@ const Checkout = () => {
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    className={`w-full px-5 py-4 border rounded-2xl focus:outline-none focus:border-primary-500 ${
-                      validationErrors.phone ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    className={`w-full px-5 py-4 border rounded-2xl focus:outline-none focus:border-primary-500 ${validationErrors.phone ? 'border-red-500' : 'border-gray-300'
+                      }`}
                     placeholder="Enter your phone number"
                   />
                   {validationErrors.phone && (
@@ -148,9 +192,8 @@ const Checkout = () => {
                     value={formData.address}
                     onChange={handleChange}
                     rows={3}
-                    className={`w-full px-5 py-4 border rounded-2xl focus:outline-none focus:border-primary-500 ${
-                      validationErrors.address ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    className={`w-full px-5 py-4 border rounded-2xl focus:outline-none focus:border-primary-500 ${validationErrors.address ? 'border-red-500' : 'border-gray-300'
+                      }`}
                     placeholder="Street, ward, district, city..."
                   />
                   {validationErrors.address && (
@@ -193,11 +236,58 @@ const Checkout = () => {
                 ))}
               </div>
 
+              <div className="bg-gray-50 border border-gray-100 p-4 rounded-2xl mb-6">
+                <p className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1.5">
+                  🏷️ Have a promo code?
+                </p>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="e.g., CRUMBBIGBEANS"
+                    value={promoInput}
+                    onChange={(e) => setPromoInput(e.target.value.toUpperCase())}
+                    disabled={!!appliedPromo}
+                    className="flex-1 px-4 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-primary-500 uppercase font-mono disabled:bg-gray-100"
+                  />
+                  {!appliedPromo ? (
+                    <button
+                      type="button"
+                      onClick={handleApplyPromo}
+                      className="px-4 py-2 text-sm font-medium bg-gray-900 hover:bg-gray-800 text-white rounded-xl transition-colors cursor-pointer"
+                    >
+                      Apply
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleCancelPromo}
+                      className="px-4 py-2 text-sm font-medium bg-red-500 hover:bg-red-600 text-white rounded-xl transition-colors cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </div>
+
+                {appliedPromo && (
+                  <p className="text-xs text-green-600 font-medium mt-2 flex items-center gap-1">
+                    ✓ Code applied successfully! Saving you ${(appliedPromo?.discountAmount || 0).toFixed(2)}
+                  </p>
+                )}
+              </div>
+
               <div className="border-t border-gray-200 pt-6 space-y-4">
                 <div className="flex justify-between text-lg">
                   <span className="text-gray-600">Subtotal</span>
                   <span>${totalPrice.toFixed(2)}</span>
                 </div>
+
+                {appliedPromo && (
+                  <div className="flex justify-between text-lg text-green-600 font-medium">
+                    <span>Discount ({appliedPromo?.code})</span>
+                    <span>-${(appliedPromo?.discountAmount || 0).toFixed(2)}</span>
+                  </div>
+                )}
+
                 <div className="flex justify-between text-lg">
                   <span className="text-gray-600">Shipping</span>
                   <span className="text-green-600">Free</span>
@@ -207,14 +297,16 @@ const Checkout = () => {
               <div className="border-t border-gray-200 pt-6 mt-6">
                 <div className="flex justify-between text-3xl font-bold">
                   <span>Total</span>
-                  <span className="text-warm-400">${totalPrice.toFixed(2)}</span>
+                  <span className="text-warm-400">
+                    ${(totalPrice - (appliedPromo?.discountAmount || 0)).toFixed(2)}
+                  </span>
                 </div>
               </div>
 
               <button
                 onClick={handlePlaceOrder}
                 disabled={isSubmitting || cartLoading}
-                className="w-full mt-10 py-5 text-lg font-semibold bg-primary-500 hover:bg-primary-600 disabled:bg-gray-400 text-white rounded-3xl transition-all"
+                className="w-full mt-10 py-5 text-lg font-semibold bg-primary-500 hover:bg-primary-600 disabled:bg-gray-400 text-white rounded-3xl transition-all cursor-pointer"
               >
                 {isSubmitting ? "Processing..." : "Place Order"}
               </button>

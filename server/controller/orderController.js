@@ -1,5 +1,6 @@
 import OrderModel from "../model/order.js";
 import ProductModel from "../model/products.js";
+import PromotionModel from "../model/promo.js";
 import crypto from 'crypto'
 
 const orderController = {
@@ -50,7 +51,7 @@ const orderController = {
 
     postOrder: async (req, res) => {
         try {
-            const { customerId, items } = req.body;
+            const { customerId, items, promotion } = req.body;
 
             if (!customerId || !items || items.length === 0) {
                 return res.status(400).json({
@@ -59,7 +60,7 @@ const orderController = {
                 });
             }
 
-            let totalPrice = 0;
+            let subTotalPrice = 0;
             const confirmedItems = [];
             const productsToSave = [];
 
@@ -83,7 +84,7 @@ const orderController = {
                 }
 
                 const currentPrice = Number(product.price) || 0;
-                totalPrice += currentPrice * item.qty;
+                subTotalPrice += currentPrice * item.qty;
 
                 confirmedItems.push({
                     productId: product._id,
@@ -126,12 +127,45 @@ const orderController = {
                 productsToSave.push(product);
             }
 
+            let discountAmount = 0;
+            let appliedCode = null;
+
+            if (promotion && promotion.code) {
+                const promoData = await PromotionModel.findOne({ code: promotion.code.toUpperCase(), isActive: true });
+
+                if (promoData && !promoData.usersUsed.includes(customerId) && subTotalPrice >= promoData.minOrderValue) {
+                    appliedCode = promoData.code;
+
+                    if (promoData.type === "percentage") {
+                        discountAmount = subTotalPrice * (promoData.value / 100);
+                        if (promoData.maxDiscount && discountAmount > promoData.maxDiscount) {
+                            discountAmount = promoData.maxDiscount;
+                        }
+                    } else if (promoData.type === "fixed") {
+                        discountAmount = promoData.value;
+                    }
+
+                    if (discountAmount > subTotalPrice) discountAmount = subTotalPrice;
+
+                    promoData.usedCount += 1;
+                    promoData.usersUsed.push(customerId);
+                    await promoData.save();
+                }
+            }
+
+            const finalTotalPrice = subTotalPrice - discountAmount;
+
             await Promise.all(productsToSave.map(p => p.save({ runValidators: false })));
 
             const newOrder = new OrderModel({
                 customerId,
                 items: confirmedItems,
-                totalPrice,
+                subTotalPrice: subTotalPrice,
+                totalPrice: finalTotalPrice, 
+                promotion: {
+                    code: appliedCode,
+                    discountAmount: discountAmount
+                }
             });
 
             await newOrder.save();

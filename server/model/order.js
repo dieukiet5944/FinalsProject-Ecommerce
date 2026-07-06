@@ -29,6 +29,20 @@ const orderSchema = new mongoose.Schema({
         required: true,
         default: []
     },
+    promotion: {
+        code: { 
+            type: String, 
+            default: null 
+        },     
+        discountAmount: { 
+            type: Number, 
+            default: 0 
+        } 
+    },
+    subTotalPrice: { 
+        type: Number, 
+        required: true 
+    },
     totalPrice: { 
         type: Number, 
         required: true 
