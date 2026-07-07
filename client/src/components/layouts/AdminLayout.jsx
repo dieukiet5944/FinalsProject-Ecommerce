@@ -188,7 +188,7 @@ function AdminLayout() {
                             <ShoppingOutlined className="text-lg" /> <span>Orders</span>
                         </Link>
                         <Link to="/admin/promo" onClick={() => setCurrentPage('promotion')}
-                            className={`flex! items-center! gap-3! w-full! h-12! px-4! rounded-xl! text-sm! font-semibold! border-none! shadow-none! outline-none! transition-all! justify-start! ${currentPage === 'order'
+                            className={`flex! items-center! gap-3! w-full! h-12! px-4! rounded-xl! text-sm! font-semibold! border-none! shadow-none! outline-none! transition-all! justify-start! ${currentPage === 'promotion'
                                 ? 'bg-[#EE2B6C]! text-white!'
                                 : 'bg-transparent! text-gray-500! hover:text-[#EE2B6C]! hover:bg-pink-50/50!'
                                 }`}

@@ -6,9 +6,9 @@ const CartItem = ({ item, onUpdateQuantity, onRemove }) => {
             <div className="w-28 h-28 shrink-0 overflow-hidden rounded-xl bg-gray-100">
                 <img
                     src={
-                        item.image
-                            ? `/product/${item.category?.toLowerCase() === 'cake' ? 'cake' : 'drink'}/${item.image}`
-                            : 'https://picsum.photos/id/1015/300/300'
+                        item.image?.startsWith('http') 
+                            ? item.image 
+                            : `/product/${item.category?.toLowerCase()}/${item.image}`
                     }
                     alt={item.name}
                     className="w-full h-full object-cover"

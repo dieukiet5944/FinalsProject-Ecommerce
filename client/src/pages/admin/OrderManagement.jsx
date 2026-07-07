@@ -266,8 +266,8 @@ const Orders = () => {
     },
     {
       title: 'TOTAL',
-      dataIndex: 'sumOrders',
-      key: 'sumOrders',
+      dataIndex: 'totalPrice',
+      key: 'totalPrice',
       width: 130,
       render: (sumOrders) => (
         <span className="font-bold text-gray-900 text-sm md:text-base">
@@ -450,7 +450,7 @@ const Orders = () => {
         onCancel={handleCancel}
         footer={null}
         centered
-        width={440} 
+        width={440}
       >
         {selectedOrder && (
           <div className="text-gray-700 text-sm pt-4 flex flex-col gap-5">
@@ -498,10 +498,33 @@ const Orders = () => {
               </div>
             </div>
 
+            <div className="border-t border-gray-100 pt-4 space-y-2 text-xs text-gray-600">
+              <div className="flex justify-between">
+                <span>Subtotal</span>
+                <span className="font-medium text-gray-800">
+                  ${Number(selectedOrder.subTotalPrice || selectedOrder.totalPrice).toFixed(2)}
+                </span>
+              </div>
+
+              {selectedOrder.promotion && selectedOrder.promotion.code && selectedOrder.promotion.discountAmount > 0 && (
+                <div className="flex justify-between items-center text-green-600 font-medium bg-green-50/60 px-3 py-2 rounded-xl border border-green-100/50">
+                  <span className="flex items-center gap-1">
+                    🏷️ Promo Code: <span className="font-mono font-bold uppercase text-xs bg-green-100 px-1.5 py-0.5 rounded text-green-700">{selectedOrder.promotion.code}</span>
+                  </span>
+                  <span>-${Number(selectedOrder.promotion.discountAmount).toFixed(2)}</span>
+                </div>
+              )}
+
+              <div className="flex justify-between">
+                <span>Shipping</span>
+                <span className="text-green-600 font-medium">Free</span>
+              </div>
+            </div>
+
             <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-gray-100 shadow-3xs mt-2">
               <span className="text-sm text-gray-800 font-bold">Total Amount</span>
               <b className="text-xl sm:text-2xl text-primary-500 font-extrabold tracking-tight">
-                ${Number(selectedOrder.sumOrders || selectedOrder.totalPrice).toFixed(2)}
+                ${Number(selectedOrder.totalPrice).toFixed(2)}
               </b>
             </div>
 

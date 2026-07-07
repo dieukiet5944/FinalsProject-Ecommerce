@@ -5,10 +5,9 @@ const ProductCard = ({ product, onAddToCart, showLink = true }) => {
   const [isAdded, setIsAdded] = useState(false);
   const timeoutRef = useRef(null);
 
-  const imageFolder = product.category?.toLowerCase() === 'cake' ? 'cake' : 'drink';
-  const imagePath = product.image
-    ? `/product/${imageFolder}/${product.image}`
-    : 'https://picsum.photos/id/1015/400/400';
+  const imagePath = product.image?.startsWith('http') 
+    ? product.image 
+    : `/product/${product.category?.toLowerCase()}/${product.image}`;
 
   const handleAddToCart = (e) => {
     e.preventDefault();

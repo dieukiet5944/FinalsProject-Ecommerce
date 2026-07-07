@@ -37,6 +37,7 @@ const Cart = () => {
             <div
               className="bg-light-card border border-gray-100 rounded-3xl p-6 max-h-144 overflow-y-auto custom-scroll"
             >
+              {console.log(cart)}
               <div className="space-y-6 pr-2">
                 {cart.map((item, index) => (
                   <CartItem

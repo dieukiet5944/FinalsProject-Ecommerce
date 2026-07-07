@@ -197,7 +197,7 @@ const Order = () => {
                                 <div className="flex justify-between items-center">
                                     <span className="text-light-text-secondary font-medium">Status</span>
                                     <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wide uppercase ${selectedOrder.status === 'Completed' ? 'bg-green-100 text-green-700' :
-                                            selectedOrder.status === 'Canceled' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-700'
+                                        selectedOrder.status === 'Canceled' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-700'
                                         }`}>
                                         {selectedOrder.status}
                                     </span>
@@ -235,6 +235,29 @@ const Order = () => {
                                             </span>
                                         </div>
                                     ))}
+                                </div>
+                            </div>
+
+                            <div className="border-t border-gray-100 pt-4 space-y-2 text-xs text-gray-600">
+                                <div className="flex justify-between">
+                                    <span>Subtotal</span>
+                                    <span className="font-medium text-gray-800">
+                                        ${Number(selectedOrder.subTotalPrice || selectedOrder.totalPrice).toFixed(2)}
+                                    </span>
+                                </div>
+
+                                {selectedOrder.promotion && selectedOrder.promotion.code && selectedOrder.promotion.discountAmount > 0 && (
+                                    <div className="flex justify-between items-center text-green-600 font-medium bg-green-50/60 px-3 py-2 rounded-xl border border-green-100/50">
+                                        <span className="flex items-center gap-1">
+                                            🏷️ Promo Code: <span className="font-mono font-bold uppercase text-xs bg-green-100 px-1.5 py-0.5 rounded text-green-700">{selectedOrder.promotion.code}</span>
+                                        </span>
+                                        <span>-${Number(selectedOrder.promotion.discountAmount).toFixed(2)}</span>
+                                    </div>
+                                )}
+
+                                <div className="flex justify-between">
+                                    <span>Shipping</span>
+                                    <span className="text-green-600 font-medium">Free</span>
                                 </div>
                             </div>
 
