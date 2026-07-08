@@ -4,6 +4,8 @@ import Inventory from '../pages/admin/Inventory.jsx';
 import Customers from '../pages/admin/CustomerDirectory.jsx';
 import Setting from '../pages/admin/Setting.jsx';
 import StoreManagement from '../pages/admin/StoreManagement.jsx';
+import Promotion from '../pages/admin/Promotion.jsx';
+import AdminReviews from '../pages/admin/AdminReviews.jsx';
 
 export const ADMIN_ROUTES = [
   {
@@ -33,6 +35,20 @@ export const ADMIN_ROUTES = [
     path: '/admin/customers',
     component: Customers,
     keywords: ['user', 'customers']
+  },
+  {
+    key: 'promotion',
+    title: 'Promotion',
+    path: '/admin/promo',
+    component: Promotion,
+    keywords: ['promo', 'Promotion']
+  },
+  {
+    key: 'review',
+    title: 'Feedback',
+    path: '/admin/review',
+    component: AdminReviews,
+    keywords: ['feedback', 'Adminreview', 'review']
   },
   {
     key: 'storemanagement',

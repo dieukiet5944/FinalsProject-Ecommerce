@@ -10,6 +10,7 @@ import adminRouter from './routers/adminRouter.js';
 import ordersRouter from './routers/ordersRouter.js';
 import storeRouter from './routers/storeRouter.js';
 import promoRouter from './routers/promotionRouter.js'
+import reviewRouter from './routers/reviewRouter.js';
 
 const PORT = process.env.PORT || 8080;
 
@@ -60,6 +61,9 @@ app.use("/store", storeRouter);
 
 //PROMOTION
 app.use('/promotions', promoRouter);
+
+//REVIEW
+app.use('/reviews', reviewRouter)
 
 
 
