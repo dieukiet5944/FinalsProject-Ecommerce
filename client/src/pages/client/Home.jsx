@@ -9,16 +9,15 @@ const Home = () => {
 
         <div className="relative z-10 max-w-5xl px-6 mx-auto text-center">
           <p className="text-warm-400 tracking-[6px] text-sm mb-4 font-medium">
-            EST. 2024
+            The Crumb & Bean — EST. 2024
           </p>
 
           <h1 className="text-7xl md:text-[92px] leading-none font-bold mb-6 tracking-tight text-white">
-            Artisanal<br />Perfection
+            Freshly Baked.<br />Perfectly Brewed.
           </h1>
 
           <p className="max-w-2xl mx-auto mb-12 text-xl text-white/90">
-            Experience the harmonious blend of specialty roasts and delicate
-            pâtisserie crafted with meticulous precision.
+            Discover a curated collection of artisanal beverages and delicate pâtisserie, crafted daily to elevate your every moment.
           </p>
 
           <div className="flex justify-center">
@@ -46,12 +45,13 @@ const Home = () => {
             <div className="h-1 w-16 bg-primary-500" />
 
             <h2 className="text-5xl md:text-6xl font-semibold leading-tight">
-              The Art of the Brew
+              The Craft Behind Every Sip & Bite
             </h2>
 
             <p className="text-lg text-light-text-secondary leading-relaxed">
-              Every cup at The Crumb & Bean begins with ethically sourced beans,
-              roasted in small batches to preserve their unique terroir and character.
+              Every item at The Crumb & Bean is a labor of love. 
+              From our carefully curated tea leaves and premium coffee blends to our daily handcrafted pastri3es, 
+              we select only the finest ingredients to spark joy in your day.
             </p>
 
             <Link
@@ -65,7 +65,7 @@ const Home = () => {
 
           <div className="overflow-hidden rounded-3xl shadow-xl">
             <img
-              src="https://picsum.photos/id/1016/800/600"
+              src="https://picsum.photos/id/312/800/600"
               alt="Barista brewing coffee"
               className="w-full h-full object-cover"
             />

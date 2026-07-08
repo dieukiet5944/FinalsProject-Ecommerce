@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ShareAltOutlined ,ShopOutlined, MenuUnfoldOutlined, ShoppingOutlined, InboxOutlined, TeamOutlined, StockOutlined, SettingOutlined, SearchOutlined, BellOutlined, LogoutOutlined, MenuOutlined, ArrowRightOutlined } from '@ant-design/icons'
+import { MessageOutlined, ShareAltOutlined ,ShopOutlined, MenuUnfoldOutlined, ShoppingOutlined, InboxOutlined, TeamOutlined, StockOutlined, SettingOutlined, SearchOutlined, BellOutlined, LogoutOutlined, MenuOutlined, ArrowRightOutlined } from '@ant-design/icons'
 import { Input, Button, Modal, message, Drawer } from 'antd'
 import { Outlet, Link } from 'react-router-dom';
 
@@ -58,6 +58,8 @@ function AdminLayout() {
             'inventory': '/admin/inventory',
 
             'promotion': '/admin/promo',
+
+            'review': '/admin/review',
 
             'customer': '/admin/customer',
             'customers': '/admin/customer',
@@ -194,6 +196,14 @@ function AdminLayout() {
                                 }`}
                         >
                             <ShareAltOutlined className="text-lg" /> <span>Promotion</span>
+                        </Link>
+                        <Link to="/admin/review" onClick={() => setCurrentPage('review')}
+                            className={`flex! items-center! gap-3! w-full! h-12! px-4! rounded-xl! text-sm! font-semibold! border-none! shadow-none! outline-none! transition-all! justify-start! ${currentPage === 'review'
+                                ? 'bg-[#EE2B6C]! text-white!'
+                                : 'bg-transparent! text-gray-500! hover:text-[#EE2B6C]! hover:bg-pink-50/50!'
+                                }`}
+                        >
+                            <MessageOutlined className="text-lg" /> <span>Feedback</span>
                         </Link>
                         <Link to="/admin/store" onClick={() => setCurrentPage('storemanagement')}
                             className={`flex! items-center! gap-3! w-full! h-12! px-4! rounded-xl! text-sm! font-semibold! border-none! shadow-none! outline-none! transition-all! justify-start! ${currentPage === 'storemanagement'

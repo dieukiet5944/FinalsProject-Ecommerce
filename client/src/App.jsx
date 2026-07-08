@@ -8,7 +8,8 @@ import Cart from './pages/client/Cart.jsx';
 import Checkout from './pages/client/Checkout';
 import Login from './components/auth/Login.jsx';
 import Register from './components/auth/Register';
-import Order from './pages/client/Order';
+import Order from './pages/client/Order.jsx';
+import ProcessPage from './pages/client/ProcessPage.jsx';
 
 import ProtectedRoute from './router/ProtectedRoute';
 
@@ -23,6 +24,7 @@ import Customers from './pages/admin/CustomerDirectory.jsx';
 import Setting from './pages/admin/Setting.jsx';
 import StoreManagement from './pages/admin/StoreManagement.jsx';
 import AdminProtectedRoute from './router/AdminProtectedRoute.jsx';
+import AdminReviews from './pages/admin/AdminReviews.jsx';
 import './App.css';
 
 function App() {
@@ -35,6 +37,7 @@ function App() {
         <Route path="/products/:slug" element={<ProductDetail />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/order" element={<Order />} />
+        <Route path="/process" element={<ProcessPage />} />
 
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -59,6 +62,7 @@ function App() {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="order" element={<Orders />} />
           <Route path="promo" element={<Promotion />} />
+          <Route path="review" element={<AdminReviews />} />
           <Route path="store" element={<StoreManagement />} />
           <Route path="inventory" element={<Inventory />} />
           <Route path="customer" element={<Customers />} />

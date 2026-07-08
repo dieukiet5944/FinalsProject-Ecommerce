@@ -5,6 +5,7 @@ import { getProductsSlugApi, getProductsApi } from '../../services/productServic
 import LoadingSpinner from '../../components/client/LoadingSpinner.jsx';
 import ProductCard from '../../components/client/ProductCard';
 import SuccessToast from '../../components/client/SuccessToast';
+import ProductReviews from '../../components/client/ProductReviews.jsx';
 
 const ProductDetail = () => {
   const { slug } = useParams();
@@ -187,6 +188,10 @@ const ProductDetail = () => {
               ))}
             </div>
           )}
+        </div>
+
+        <div className="mt-16 border-t border-gray-100 pt-12">
+          <ProductReviews productId={product?._id || product?.id} />
         </div>
       </div>
     </div>
