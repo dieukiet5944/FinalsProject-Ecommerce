@@ -33,16 +33,6 @@ const storeSchema = new mongoose.Schema(
             type: String,
             required: true
         },
-        // logo: {
-        //     type: String,
-        //     required: true,
-        //     default:"none.jpg"
-        // },  
-        // banner: {
-        //     type: String,
-        //     required: true
-        // },  
-
         description: {
             type: String,
             required: true
@@ -52,17 +42,12 @@ const storeSchema = new mongoose.Schema(
             required: true,
             enum: ["Open", "Close"],
             default: "Close"
-        },             
-
-        // isVerified: Boolean,      
-
-        // totalProducts: Number,
-
-        // totalOrders: Number,
-
-        // totalRevenue: Number,
-
-        // ratingAverage: Number,
+        },
+        staff: {
+            type: Number,
+            required: true,
+            default: 0
+        }
     },{
         timestamps: true
     }

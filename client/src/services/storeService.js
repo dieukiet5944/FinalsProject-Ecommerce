@@ -8,3 +8,11 @@ export const getStoreApi = () => {
 export const createStoreApi = (payload) => {
   return Axios.post('/store', payload);
 };
+
+export const updateStoreApi = (storeId, payload) => {
+  return Axios.put(`/store/${storeId}`, payload);
+};
+
+export const deleteStoreApi = (storeId) => {
+  return Axios.delete(`/store/${storeId}`);
+};

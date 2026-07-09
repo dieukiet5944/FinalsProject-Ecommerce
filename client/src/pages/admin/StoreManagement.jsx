@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { Table, Button, Input, Tag, Card, Modal, Form, Select, notification, message, Spin, Dropdown, Descriptions } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Table, Button, Input, InputNumber, Tag, Card, Modal, Form, Select, notification, message, Spin, Dropdown, Descriptions } from 'antd';
 import { UserAddOutlined, MoreOutlined, SearchOutlined, FilterOutlined, PlusOutlined, EditOutlined, DeleteOutlined, ShopOutlined } from '@ant-design/icons';
-import { createStoreApi, getStoreApi } from '../../services/storeService.js';
+import { createStoreApi, getStoreApi, updateStoreApi, deleteStoreApi } from '../../services/storeService.js';
 
 const StoreManagement = () => {
 
@@ -11,7 +11,8 @@ const StoreManagement = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingStore, setEditingStore] = useState(null);
 
-  const formValues = useRef({ storeName: '', email: '', phone: '', address: '', description: '' });
+  const [form] = Form.useForm();
+
 
   useState(() => {
     const getData = async (req, res) => {
@@ -41,51 +42,88 @@ const StoreManagement = () => {
   }, [])
 
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    formValues.current[name] = value;
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  const handleSubmit = async (values) => {
     setLoading(true);
 
+    const admin = localStorage.getItem('admin');
+    const result = JSON.parse(admin);
+
     const payload = {
-      storeName: formValues.current.storeName?.trim(),
-      email: formValues.current.email?.trim(),
-      address: formValues.current.address?.trim(),
-      phone: formValues.current.phone?.trim(),
-      description: formValues.current.description?.trim()
+      storeName: values.storeName?.trim(),
+      email: values.email?.trim(),
+      address: values.address?.trim(),
+      phone: values.phone?.trim(),
+      description: values.description?.trim(),
+      staff: Number(values.staff),
+      status: values.status,
+      ownerId: result?.id,
+      ownerName: result?.name
     };
 
     try {
-      const response = await createStoreApi(payload);
+      let response;
 
-      if (response?.status === 201) {
-        message.success('Successfull create new store ❤️');
+      if (editingStore) {
+        response = await updateStoreApi(editingStore, payload);
+      } else {
+        response = await createStoreApi(payload);
+      }
+
+      if (response?.success === true) {
+        message.success(
+          editingStore
+            ? 'Successfully updated store info ✨'
+            : 'Successfully created new store ❤️'
+        );
+
         setIsModalOpen(false);
-
-        formValues.current = { storeName: '', email: '', phone: '', address: '', description: '' };
+        form.resetFields();
       }
     } catch (error) {
       console.error("Error when calling API:", error);
-      message.error(error.response?.message);
+      message.error(error.response?.data?.message || 'Something went wrong!');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = (key) => {
+  const handleEditStore = (record) => {
+    setEditingStore(record._id);
+    setIsModalOpen(true);
+
+    form.setFieldsValue({
+      storeName: record.storeName,
+      email: record.email,
+      phone: record.phone,
+      address: record.address,
+      staff: record.staff,
+      description: record.description,
+      status: record.status
+    });
+  };
+
+  const handleDelete = (record) => {
+    const storeId = record._id;
+
     Modal.confirm({
       title: 'Are you sure you want to delete this store?',
       content: 'This action cannot be undone.',
       okText: 'Delete',
       okType: 'danger',
       cancelText: 'Cancel',
-      onOk() {
-        setStores(stores.filter(item => item.key !== key));
-        notification.success({ message: 'The store has been deleted.' });
+      async onOk() {
+        try {
+          await deleteStoreApi(storeId)
+          notification.success({ title: 'The store has been deleted successfully.' });
+          setStores(prevStores => prevStores.filter(item => item._id !== storeId));
+
+        } catch (error) {
+          console.error("Error when delete store:", error);
+          notification.error({
+            title: 'Failed to delete store',
+            description: error.response?.data?.message || 'Something went wrong.'
+          });
+        }
       }
     });
   };
@@ -128,11 +166,11 @@ const StoreManagement = () => {
           <div className="flex flex-col gap-1 max-w-40">
             {hasOwner ? (
               <>
-                <span className="text-sm font-semibold text-gray-800 truncate">
+                <span className="inline-block w-fit px-2.5 py-0.5 text-xs font-medium text-green-600 bg-green-50 rounded-md border border-green-100">
                   {record.ownerName}
                 </span>
-                <span className="text-xs font-mono text-gray-400 truncate">
-                  ID: {record.ownerId}
+                <span className="inline-block w-fit px-2.5 py-0.5 text-xs font-medium text-gray-600 bg-gray-50 rounded-md border border-gray-100">
+                  Staff: {record.staff}
                 </span>
               </>
             ) : (
@@ -161,18 +199,23 @@ const StoreManagement = () => {
     {
       title: 'STATUS',
       key: 'status',
-      width: 100,
+      width: 110,
+      align: 'center',
       render: (_, record) => {
-        const isClose = record.status === 'Close';
+        const isOpen = record.status === 'Open';
+
         return (
-          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wider uppercase border ${isClose
-            ? 'bg-red-50 text-red-600 border-red-100'
-            : 'bg-green-50 text-green-600 border-green-100'
-            }`}>
-            {record.status}
+          <span
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase border transition-all shadow-3xs ${isOpen
+                ? 'bg-emerald-50 text-emerald-600 border-emerald-200/60'
+                : 'bg-rose-50 text-rose-600 border-rose-200/60'
+              }`}
+          >
+            <span className={`w-1.5 h-1.5 rounded-full ${isOpen ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+            {isOpen ? 'Open' : 'Close'}
           </span>
         );
-      },
+      }
     },
     {
       title: '',
@@ -182,34 +225,48 @@ const StoreManagement = () => {
       render: (_, record) => {
         const actionItems = [
           {
-            key: 'Edit',
+            key: 'edit',
             label: <span className="text-sm text-gray-700 font-medium">Edit Store</span>,
             icon: <EditOutlined className="text-gray-400 text-sm" />,
           },
-          record.ownerId === 'None' && {
-            key: 'Owner',
+          ...(record.ownerId === 'None' ? [{
+            key: 'owner',
             label: <span className="text-sm text-gray-700 font-medium">Assign Owner</span>,
             icon: <UserAddOutlined className="text-primary-500 text-sm" />,
-          },
+          }] : []),
+
           { type: 'divider' },
           {
-            key: 'Delete',
+            key: 'delete',
             label: <span className="text-sm text-red-600 font-medium">Delete</span>,
             icon: <DeleteOutlined className="text-red-400 text-sm" />,
             danger: true,
           },
-        ].filter(Boolean);
+        ];
+
+        const handleMenuClick = ({ key }) => {
+          if (key === 'edit') {
+            handleEditStore(record);
+          } else if (key === 'delete') {
+            handleDelete(record);
+          } else if (key === 'owner') {
+            // handleAssignOwner(record); (Nếu bạn có làm tính năng này)
+          }
+        };
 
         return (
           <Dropdown
-            menu={{ items: actionItems }}
+            menu={{
+              items: actionItems,
+              onClick: handleMenuClick
+            }}
             trigger={['click']}
             placement="bottomRight"
           >
             <Button
               type="text"
               shape="circle"
-              className="flex items-center justify-center hover:bg-gray-100! text-gray-400 hover:text-gray-600 transition-colors"
+              className="flex items-center justify-center hover:bg-gray-100! text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
               icon={<MoreOutlined className="text-lg" />}
             />
           </Dropdown>
@@ -217,6 +274,25 @@ const StoreManagement = () => {
       }
     },
   ];
+  const handleOpenCreate = () => {
+    setEditingStore(null);
+    form.resetFields();
+    setIsModalOpen(true);
+  };
+
+  const totalBranches = stores.length;
+
+  const uniqueRegions = [...new Set(stores.map(store => {
+    const parts = store.address?.split(',') || [];
+    return parts[parts.length - 1]?.trim() || 'Unknown';
+  }))].filter(region => region !== 'Unknown');
+
+  const totalRegions = uniqueRegions.length;
+  const regionsDisplay = uniqueRegions.length > 0
+    ? uniqueRegions.slice(0, 3).join(', ')
+    : 'No regions active';
+
+  const totalStaff = stores.reduce((sum, store) => sum + (Number(store.staff) || 0), 0);
 
   return (
     <div className="p-4 sm:p-6 md:p-9 flex flex-col gap-6 min-h-screen bg-gray-50/50">
@@ -229,8 +305,8 @@ const StoreManagement = () => {
           color="pink"
           variant="solid"
           icon={<PlusOutlined />}
-          className="w-full sm:w-auto h-10 font-semibold shadow-sm flex items-center justify-center gap-1.5"
-          onClick={() => setIsModalOpen(true)}
+          className="w-full sm:w-auto h-10 font-semibold shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
+          onClick={handleOpenCreate}
         >
           Add New Store
         </Button>
@@ -239,18 +315,32 @@ const StoreManagement = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <Card className="p-5 flex flex-col gap-3 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.04)] border border-gray-100">
           <div className="text-xs font-bold text-gray-400 tracking-wider">TOTAL BRANCHES</div>
-          <div className="text-4xl font-black text-[#de1e60] my-1">08</div>
-          <div className="text-xs font-semibold text-emerald-500">↗ +2 this quarter</div>
+          <div className="text-4xl font-black text-[#de1e60] my-1">
+            {String(totalBranches).padStart(2, '0')}
+          </div>
+          <div className="text-xs font-semibold text-emerald-500">
+            ↗ Active branches in system
+          </div>
         </Card>
+
         <Card className="p-5 flex flex-col gap-3 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.04)] border border-gray-100">
           <div className="text-xs font-bold text-gray-400 tracking-wider">ACTIVE REGIONS</div>
-          <div className="text-4xl font-black text-slate-900 my-1">03</div>
-          <div className="text-xs text-gray-500 font-medium">Paris, Lyon, Bordeaux</div>
+          <div className="text-4xl font-black text-slate-900 my-1">
+            {String(totalRegions).padStart(2, '0')}
+          </div>
+          <div className="text-xs text-gray-500 font-medium truncate" title={regionsDisplay}>
+            {regionsDisplay}
+          </div>
         </Card>
+
         <Card className="p-5 flex flex-col gap-3 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.04)] border border-gray-100">
           <div className="text-xs font-bold text-gray-400 tracking-wider">TOTAL STAFF</div>
-          <div className="text-4xl font-black text-slate-900 my-1">42</div>
-          <div className="text-xs font-semibold text-emerald-500">✓ 95% full attendance</div>
+          <div className="text-4xl font-black text-slate-900 my-1">
+            {String(totalStaff).padStart(2, '0')}
+          </div>
+          <div className="text-xs font-semibold text-emerald-500">
+            ✓ Employed across all stores
+          </div>
         </Card>
       </div>
 
@@ -294,85 +384,139 @@ const StoreManagement = () => {
           className: "rounded-xl font-medium"
         }}
         centered
-        width={520} 
+        width={520}
       >
-        <form
+        <Form
+          form={form}
           id="modal-form"
-          onSubmit={handleSubmit}
+          onFinish={handleSubmit}
+          layout="vertical"
+          requiredMark={false}
           className="pt-4 flex flex-col gap-4 text-sm"
         >
-          <div className="flex flex-col gap-1.5">
-            <label className="font-semibold text-gray-700 flex items-center">
-              Store Name <span className="text-red-500 ml-1">*</span>
-            </label>
-            <input
-              name="storeName"
-              onChange={handleInputChange}
-              type="text"
+          <Form.Item
+            name="storeName"
+            label={
+              <span className="font-semibold text-gray-700 flex items-center">
+                Store Name <span className="text-red-500 ml-1">*</span>
+              </span>
+            }
+            rules={[{ required: true, message: 'Please enter store name' }]}
+            className="mb-0"
+          >
+            <Input
               placeholder="e.g. The Crumb & Bean District 1"
               className="w-full px-3.5 py-2 border border-gray-200 rounded-xl outline-none text-gray-800 placeholder-gray-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/10 transition-all"
-              required
             />
-          </div>
+          </Form.Item>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="flex flex-col gap-1.5">
-              <label className="font-semibold text-gray-700 flex items-center">
-                Email Address <span className="text-red-500 ml-1">*</span>
-              </label>
-              <input
-                name="email"
-                onChange={handleInputChange}
-                type="email"
+            <Form.Item
+              name="email"
+              label={
+                <span className="font-semibold text-gray-700 flex items-center">
+                  Email Address <span className="text-red-500 ml-1">*</span>
+                </span>
+              }
+              rules={[
+                { required: true, message: 'Please enter email address' },
+                { type: 'email', message: 'Please enter a valid email' }
+              ]}
+              className="mb-0"
+            >
+              <Input
                 placeholder="store@example.com"
                 className="w-full px-3.5 py-2 border border-gray-200 rounded-xl outline-none text-gray-800 placeholder-gray-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/10 transition-all"
-                required
               />
-            </div>
+            </Form.Item>
 
-            <div className="flex flex-col gap-1.5">
-              <label className="font-semibold text-gray-700 flex items-center">
-                Phone Number <span className="text-red-500 ml-1">*</span>
-              </label>
-              <input
-                name="phone"
-                onChange={handleInputChange}
-                type="text"
+            <Form.Item
+              name="phone"
+              label={
+                <span className="font-semibold text-gray-700 flex items-center">
+                  Phone Number <span className="text-red-500 ml-1">*</span>
+                </span>
+              }
+              rules={[{ required: true, message: 'Please enter phone number' }]}
+              className="mb-0"
+            >
+              <Input
                 placeholder="0901234567"
                 className="w-full px-3.5 py-2 border border-gray-200 rounded-xl outline-none text-gray-800 placeholder-gray-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/10 transition-all"
-                required
               />
-            </div>
+            </Form.Item>
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label className="font-semibold text-gray-700 flex items-center">
-              Address <span className="text-red-500 ml-1">*</span>
-            </label>
-            <input
-              name="address"
-              onChange={handleInputChange}
-              type="text"
+          <Form.Item
+            name="address"
+            label={
+              <span className="font-semibold text-gray-700 flex items-center">
+                Address <span className="text-red-500 ml-1">*</span>
+              </span>
+            }
+            rules={[{ required: true, message: 'Please enter store address' }]}
+            className="mb-0"
+          >
+            <Input
               placeholder="Enter store full address"
               className="w-full px-3.5 py-2 border border-gray-200 rounded-xl outline-none text-gray-800 placeholder-gray-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/10 transition-all"
-              required
             />
-          </div>
+          </Form.Item>
 
-          <div className="flex flex-col gap-1.5">
-            <label className="font-semibold text-gray-700 flex items-center">
-              Description <span className="text-red-500 ml-1">*</span>
-            </label>
-            <textarea
-              name="description"
-              onChange={handleInputChange}
+          <Form.Item
+            name="status"
+            label={
+              <span className="font-semibold text-gray-700 flex items-center">
+                Status <span className="text-red-500 ml-1">*</span>
+              </span>
+            }
+            initialValue="Open"
+            rules={[{ required: true, message: 'Please select store status' }]}
+            className="mb-0"
+          >
+            <Select
+              className="w-full h-10 border border-gray-200 rounded-xl outline-none text-gray-800 placeholder-gray-400 focus:border-primary-500 transition-all"
+              options={[
+                { value: 'Open', label: <span className="text-emerald-600 font-medium">● Open (Active)</span> },
+                { value: 'Close', label: <span className="text-rose-600 font-medium">● Close (Inactive)</span> },
+              ]}
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="staff"
+            label={
+              <span className="font-semibold text-gray-700 flex items-center">
+                Staff <span className="text-red-500 ml-1">*</span>
+              </span>
+            }
+            rules={[{ required: true, message: 'Please enter staff quantity' }]}
+            className="mb-0"
+          >
+            <InputNumber
+              placeholder="Enter staff quantity"
+              min={1}
+              className="w-full px-3.5 py-1 border border-gray-200 rounded-xl outline-none text-gray-800 placeholder-gray-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/10 transition-all flex items-center"
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="description"
+            label={
+              <span className="font-semibold text-gray-700 flex items-center">
+                Description <span className="text-red-500 ml-1">*</span>
+              </span>
+            }
+            rules={[{ required: true, message: 'Please enter brief description' }]}
+            className="mb-0"
+          >
+            <Input.TextArea
               placeholder="Write a brief description about this store branch..."
               rows={3}
               className="w-full px-3.5 py-2 border border-gray-200 rounded-xl outline-none text-gray-800 placeholder-gray-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/10 transition-all resize-none"
-              required
             />
-          </div>
-        </form>
+          </Form.Item>
+        </Form>
       </Modal>
     </div>
   );
