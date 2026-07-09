@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect } from "react";
 import { useAuth } from "../hooks/useAuth.js";
 import { getCartApi, postCartApi, deleteCartApi } from "../services/cartService.js";
 import { createOrderApi } from "../services/orderService.js";
+import { message } from "antd";
 
 const CartContext = createContext();
 
@@ -33,7 +34,10 @@ export const CartProvider = ({ children }) => {
   }, [user?.id]);
 
   const addToCart = async (productOrId, quantity = 1) => {
-    if (!user?.id) return alert("Please log in to add products to cart");
+    if (!user || (!user.id && !user._id)) {
+      message.warning("Vui lòng đăng nhập để thêm vào giỏ hàng!");
+      return;
+    }
 
     const productId = typeof productOrId === 'object' ? (productOrId._id || productOrId.id) : productOrId;
 
@@ -44,17 +48,18 @@ export const CartProvider = ({ children }) => {
 
     try {
       setLoading(true);
+      const currentUserId = user.id || user._id;
       const payload = {
+        customerId: currentUserId, 
         items: [{ productId, quantity }]
       };
-      
-      const response = await postCartApi(user.id, payload);
-
+      const response = await postCartApi(currentUserId, payload);
       const result = response?.data;
 
 
       if (result && result.items) {
-        setCart(result.items); 
+        setCart(result.items);
+        message.success("The product is already in carrt ");
       }
     } catch (error) {
       console.error("Error adding to cart:", error);
@@ -92,7 +97,7 @@ export const CartProvider = ({ children }) => {
 
       const result = response?.data;
       if (result && result.items) {
-        setCart(result.items); 
+        setCart(result.items);
       }
     } catch (error) {
       console.error("Error removing item:", error);
