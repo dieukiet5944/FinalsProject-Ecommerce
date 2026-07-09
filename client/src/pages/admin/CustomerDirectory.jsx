@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { CrownFilled ,StarFilled, DownloadOutlined, UserAddOutlined, TeamOutlined, TagOutlined, TrophyOutlined, DollarOutlined, FireOutlined, FunnelPlotOutlined, MoreOutlined, ProfileOutlined, DeleteOutlined, AuditOutlined } from '@ant-design/icons'
 import { Modal, Table, Tag, Avatar, Space, Button, Dropdown, Spin, message } from 'antd'
-import { getOrdersApi } from '../../services/orderService.js'
+import { getOrdersApiForAdmin } from '../../services/orderService.js'
 import { getUsersApi, deleteUserApi } from '../../services/userService.js'
 
 import { jsPDF } from "jspdf";
@@ -22,7 +22,7 @@ const Customers = () => {
             try {
                 const [resUsers, resOrders] = await Promise.all([
                     getUsersApi(),
-                    getOrdersApi()
+                    getOrdersApiForAdmin()
                 ]);
 
 

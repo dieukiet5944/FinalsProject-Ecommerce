@@ -3,10 +3,11 @@ import ProductModel from "../model/products.js";
 
 export const cartController = {
     postCart: async (req, res) => {
-         try {
-            const { userId, items } = req.body;
+        try {
+            const { customerId } = req.params;
+            const { items } = req.body;
 
-            if (!userId) {
+            if (!customerId) {
                 return res.status(400).json({
                     success: false,
                     message: "Please provide your user ID"
@@ -20,22 +21,25 @@ export const cartController = {
                 });
             }
 
-            for (const item of items) {
-                const product = await ProductModel.findById(item.productId);
-                if (!product) {
-                    return res.status(404).json({
-                        success: false,
-                        message: `The product with ID ${item.productId} does not exist.`
-                    });
-                }
+            const productIds = items.map(item => item.productId);
+            const existingProducts = await ProductModel.find({ _id: { $in: productIds } });
+
+            if (existingProducts.length !== productIds.length) {
+                return res.status(404).json({
+                    success: false,
+                    message: "One or more products in your list do not exist."
+                });
             }
 
-            let cart = await CartModel.findOne({ userId: userId });
+            let cart = await CartModel.findOne({ customerId });
 
             if (!cart) {
                 cart = new CartModel({
-                    userId: userId,
-                    items: items
+                    customerId,
+                    items: items.map(item => ({
+                        productId: item.productId,
+                        quantity: item.quantity
+                    }))
                 });
             } else {
                 items.forEach(newItem => {
@@ -56,6 +60,9 @@ export const cartController = {
 
             await cart.save();
 
+            await cart.populate('items.productId');
+            console.log("Dữ liệu giỏ hàng sau khi populate gửi về client:", JSON.stringify(cart.items, null, 2));
+
             return res.status(200).json({
                 success: true,
                 message: "Product added to cart successfully.",
@@ -73,22 +80,22 @@ export const cartController = {
 
     getCart: async (req, res) => {
         try {
-            const { userId } = req.params;
+            const { customerId } = req.params;
 
-            if (!userId) {
+            if (!customerId) {
                 return res.status(400).json({
                     success: false,
                     message: "Please provide your user ID"
                 });
             }
 
-            const cart = await CartModel.findOne({ customerId: userId });
+            const cart = await CartModel.findOne({ customerId }).populate('items.productId');
 
             if (!cart) {
                 return res.status(200).json({
                     success: true,
                     message: "Shopping cart is empty.",
-                    data: { customerId: userId, items: [] }
+                    data: { customerId, items: [] }
                 });
             }
 
@@ -106,4 +113,43 @@ export const cartController = {
             });
         }
     },
+
+    deleteCartItem: async (req, res) => {
+        try {
+            const { customerId, productId } = req.params;
+
+            if (!customerId || !productId) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Please provide both customerId and productId."
+                });
+            }
+
+            const updatedCart = await CartModel.findOneAndUpdate(
+                { customerId: customerId },
+                { $pull: { items: { productId: productId } } },
+                { new: true }
+            ).populate('items.productId');
+
+            if (!updatedCart) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Shopping cart not found for this user."
+                });
+            }
+
+            return res.status(200).json({
+                success: true,
+                message: "Item removed from cart successfully.",
+                data: updatedCart
+            });
+
+        } catch (error) {
+            console.error("Error at deleteCartItem Controller:", error);
+            return res.status(500).json({
+                success: false,
+                message: error.message
+            });
+        }
+    }
 }

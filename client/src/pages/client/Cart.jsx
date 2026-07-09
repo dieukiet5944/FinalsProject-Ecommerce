@@ -3,8 +3,7 @@ import { useCart } from '../../context/CartContext';
 import CartItem from '../../components/client/CartItem.jsx';
 
 const Cart = () => {
-  const { cart = [], removeFromCart, updateQuantity, totalPrice = 0 } = useCart();
-
+  const { cart = [], removeFromCart, updateQuantity, totalPrice = 0, cartCount = 0 } = useCart();
   if (cart.length === 0) {
     return (
       <div className="min-h-screen bg-light-bg flex items-center justify-center py-20">
@@ -29,7 +28,7 @@ const Cart = () => {
     <div className="min-h-screen bg-light-bg text-light-text py-12">
       <div className="max-w-6xl mx-auto px-6">
         <h1 className="text-4xl font-heading font-bold tracking-tight mb-10">
-          Your Cart ({cart.length})
+          Your Cart ({cartCount})
         </h1>
 
         <div className="grid lg:grid-cols-12 gap-10">
@@ -37,16 +36,19 @@ const Cart = () => {
             <div
               className="bg-light-card border border-gray-100 rounded-3xl p-6 max-h-144 overflow-y-auto custom-scroll"
             >
-              {console.log(cart)}
               <div className="space-y-6 pr-2">
-                {cart.map((item, index) => (
-                  <CartItem
-                    key={item.id || `${item.name}-${index}`}
-                    item={item}
-                    onUpdateQuantity={updateQuantity}
-                    onRemove={removeFromCart}
-                  />
-                ))}
+                {cart.map((item, index) => {
+                  const pId = item.productId?._id;
+
+                  return (
+                    <CartItem
+                      key={pId || index} 
+                      item={item}
+                      onUpdateQuantity={(quantity) => updateQuantity(pId, quantity)}
+                      onRemove={() => removeFromCart(pId)}
+                    />
+                  );
+                })}
               </div>
             </div>
           </div>

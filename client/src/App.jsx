@@ -10,6 +10,9 @@ import Login from './components/auth/Login.jsx';
 import Register from './components/auth/Register';
 import Order from './pages/client/Order.jsx';
 import ProcessPage from './pages/client/ProcessPage.jsx';
+import UserProfile from './pages/client/UserProfile.jsx';
+import TechnicalSupport from './pages/client/TechnicalSupport.jsx';
+import OfferPromotions from './pages/client/OfferPromotion.jsx';
 
 import ProtectedRoute from './router/ProtectedRoute';
 
@@ -37,6 +40,9 @@ function App() {
         <Route path="/products/:slug" element={<ProductDetail />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/order" element={<Order />} />
+        <Route path="/offerpromo" element={<OfferPromotions />} />
+        <Route path="/support" element={<TechnicalSupport />} />
+        <Route path="/profile" element={<UserProfile />} />
         <Route path="/process" element={<ProcessPage />} />
 
         <Route path="/login" element={<Login />} />

@@ -280,8 +280,7 @@ const StoreManagement = () => {
     setIsModalOpen(true);
   };
 
-  const totalBranches = stores.length;
-
+  const totalBranches = stores.filter(item => item.status === "Open")
   const uniqueRegions = [...new Set(stores.map(store => {
     const parts = store.address?.split(',') || [];
     return parts[parts.length - 1]?.trim() || 'Unknown';
@@ -316,7 +315,7 @@ const StoreManagement = () => {
         <Card className="p-5 flex flex-col gap-3 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.04)] border border-gray-100">
           <div className="text-xs font-bold text-gray-400 tracking-wider">TOTAL BRANCHES</div>
           <div className="text-4xl font-black text-[#de1e60] my-1">
-            {String(totalBranches).padStart(2, '0')}
+            {String(totalBranches.length)}
           </div>
           <div className="text-xs font-semibold text-emerald-500">
             ↗ Active branches in system
@@ -326,7 +325,7 @@ const StoreManagement = () => {
         <Card className="p-5 flex flex-col gap-3 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.04)] border border-gray-100">
           <div className="text-xs font-bold text-gray-400 tracking-wider">ACTIVE REGIONS</div>
           <div className="text-4xl font-black text-slate-900 my-1">
-            {String(totalRegions).padStart(2, '0')}
+            {String(totalRegions)}
           </div>
           <div className="text-xs text-gray-500 font-medium truncate" title={regionsDisplay}>
             {regionsDisplay}

@@ -298,7 +298,7 @@ const Inventory = () => {
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <Avatar
-                    src={`/product/${item.category.toLowerCase()}/${item.image}`}
+                    src={item?.image ? item.image : `/product/${item.category.toLowerCase()}/${item.image}`}
                     shape="square"
                     size={42}
                     className="rounded-xl border border-gray-100 shrink-0 object-cover bg-white shadow-3xs"
@@ -311,7 +311,7 @@ const Inventory = () => {
                       Available: <b className="text-red-500 font-semibold font-mono">{currentQty}</b> / 100 U
                     </span>
                     <span className="inline-flex items-center gap-1 text-[10px] font-bold text-red-500 bg-red-50 border border-red-100 px-1.5 py-0.2 mt-1 rounded uppercase tracking-wider animate-pulse">
-                      Critical
+                      Alert
                     </span>
                   </div>
                 </div>

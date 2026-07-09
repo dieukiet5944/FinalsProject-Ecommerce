@@ -1,87 +1,135 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { useAuth } from "../hooks/useAuth.js";
-import {createOrderApi} from '../services/orderService.js';
+import { getCartApi, postCartApi, deleteCartApi } from "../services/cartService.js";
+import { createOrderApi } from "../services/orderService.js";
 
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState([]);
   const [loading, setLoading] = useState(false);
-  const { user } = useAuth(); 
+  const { user } = useAuth();
 
-  const getCartItemId = (product) => {
-    return product.id || product._id || `${product.name}-${product.price}`;
-  };
-
-  const isSameCartItem = (item, id) => {
-    return item.id === id || item._id === id;
-  };
-
-  const addToCart = (product) => {
-    const cartId = getCartItemId(product);
-    const quantityToAdd = Number(product.quantity) > 0 ? Number(product.quantity) : 1;
-
-    setCart((prev) => {
-      const existingIndex = prev.findIndex((item) => isSameCartItem(item, cartId));
-
-      if (existingIndex !== -1) {
-        const updatedCart = [...prev];
-        const existingItem = updatedCart[existingIndex];
-        updatedCart[existingIndex] = {
-          ...existingItem,
-          id: cartId,
-          quantity: (existingItem.quantity || 1) + quantityToAdd,
-        };
-        return updatedCart;
+  useEffect(() => {
+    const fetchCart = async () => {
+      if (!user?.id) {
+        setCart([]);
+        return;
       }
+      try {
+        setLoading(true);
+        const response = await getCartApi(user.id);
+        if (response?.success) {
+          setCart(response?.data?.items || []);
+        }
+      } catch (error) {
+        console.error("Error fetching cart from server:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      return [...prev, { ...product, id: cartId, quantity: quantityToAdd }];
-    });
+    fetchCart();
+  }, [user?.id]);
+
+  const addToCart = async (productOrId, quantity = 1) => {
+    if (!user?.id) return alert("Please log in to add products to cart");
+
+    const productId = typeof productOrId === 'object' ? (productOrId._id || productOrId.id) : productOrId;
+
+    if (!productId) {
+      console.error("Invalid product ID passed to addToCart");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const payload = {
+        items: [{ productId, quantity }]
+      };
+      
+      const response = await postCartApi(user.id, payload);
+
+      const result = response?.data;
+
+
+      if (result && result.items) {
+        setCart(result.items); 
+      }
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const removeFromCart = (id) => {
-    setCart((prev) => prev.filter((item) => !isSameCartItem(item, id)));
-  };
-
-  const updateQuantity = (id, newQuantity) => {
+  const updateQuantity = async (productId, newQuantity) => {
     if (newQuantity < 1) return;
-    setCart((prev) =>
-      prev.map((item) =>
-        isSameCartItem(item, id) ? { ...item, id: getCartItemId(item), quantity: newQuantity } : item
-      )
-    );
+    try {
+      setLoading(true);
+      const payload = {
+        items: [{ productId, quantity: newQuantity }]
+      };
+
+      const response = await postCartApi(user.id, payload);
+      const result = response?.data;
+
+      if (result && result.items) {
+        setCart(result.items);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const removeFromCart = async (productId) => {
+    if (!user?.id) return;
+    try {
+      setLoading(true);
+      const response = await deleteCartApi(user.id, productId);
+
+      const result = response?.data;
+      if (result && result.items) {
+        setCart(result.items); 
+      }
+    } catch (error) {
+      console.error("Error removing item:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const clearCart = () => setCart([]);
 
   const placeOrder = async (orderData = {}) => {
-    if (!user || !user.id) throw new Error("You need to log in to place an order");
+    if (!user?.id) throw new Error("You need to log in to place an order");
     if (cart.length === 0) throw new Error("Your shopping cart is empty");
 
     setLoading(true);
-    try { 
+    try {
       const payload = {
         customerId: user.id,
         items: cart.map((item) => ({
-          productId: item._id,
-          qty: item.quantity ,
-          name: item.name,
-          price: item.price,
+          productId: item.productId?._id || item.productId,
+          quantity: item.quantity,
         })),
         ...orderData,
       };
 
       const response = await createOrderApi(payload);
-      const result = response?.data
-
-      clearCart();
-      return {
-        success: true,
-        orderId: result._id 
-      };
+      const result = response?.data;
+      if (result?.success) {
+        clearCart();
+        return {
+          success: true,
+          orderId: result?.data?._id || result?.data?.data?._id
+        };
+      }
     } catch (error) {
       console.error(error);
-      const errorMsg = error.response?.data?.message || "Order failed. Please try again.";
+      const errorMsg = error.response?.message || "Order failed. Please try again.";
       throw new Error(errorMsg);
     } finally {
       setLoading(false);
@@ -89,7 +137,8 @@ export const CartProvider = ({ children }) => {
   };
 
   const totalPrice = cart.reduce((sum, item) => {
-    return sum + (Number(item.price) || 0) * (item.quantity || 1);
+    const price = Number(item.productId?.price) || 0;
+    return sum + price * (item.quantity || 1);
   }, 0);
 
   return (
@@ -103,7 +152,6 @@ export const CartProvider = ({ children }) => {
         placeOrder,
         loading,
         totalPrice,
-        cartCount: cart.length,
       }}
     >
       {children}

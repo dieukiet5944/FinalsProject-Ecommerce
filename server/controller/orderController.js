@@ -1,37 +1,44 @@
 import OrderModel from "../model/order.js";
 import ProductModel from "../model/products.js";
 import PromotionModel from "../model/promo.js";
+import CartModel from "../model/cart.js";
 import crypto from 'crypto'
 
 const orderController = {
     getOrders: async (req, res) => {
         try {
-            const pageNumber = Number(req.query.pageNumber)
+            const { customerId } = req.params;
 
-            const pageSize = Number(req.query.pageSize)
-
+            const pageNumber = Number(req.query.pageNumber) || 1;
+            const pageSize = Number(req.query.pageSize) || 3;
             const skip = (pageNumber - 1) * pageSize;
 
+            const filter = { customerId };
+
             const [response, totalItems] = await Promise.all([
-                OrderModel.find()
+                OrderModel.find(filter)
                     .sort({ createdAt: -1 })
                     .skip(skip)
                     .limit(pageSize),
 
-                (await OrderModel.find()).length
+                OrderModel.countDocuments(filter)
             ]);
 
             if (!response || response.length === 0) {
                 return res.status(200).json({
                     success: true,
-                    message: "No orders found",
-                    data: []
+                    message: "No orders found for this user",
+                    data: [],
+                    totalItems: 0,
+                    totalPages: 0,
+                    pageNumber,
+                    pageSize
                 });
             }
 
             return res.status(200).json({
                 success: true,
-                message: "GET list of orders successful",
+                message: "User orders fetched successfully",
                 data: response,
                 totalItems,
                 totalPages: Math.ceil(totalItems / pageSize),
@@ -46,6 +53,34 @@ const orderController = {
                 message: error.message,
                 data: null
             });
+        }
+    },
+
+    getOrdersForAdmin: async (req, res) => {
+        try {
+            const pageNumber = Number(req.query.pageNumber) || 1;
+            const pageSize = Number(req.query.pageSize) || 10; 
+            const skip = (pageNumber - 1) * pageSize;
+
+            const [response, totalItems] = await Promise.all([
+                OrderModel.find()
+                    .sort({ createdAt: -1 })
+                    .skip(skip)
+                    .limit(pageSize),
+                OrderModel.countDocuments()
+            ]);
+
+            return res.status(200).json({
+                success: true,
+                message: "Admin: GET all orders successful",
+                data: response,
+                totalItems,
+                totalPages: Math.ceil(totalItems / pageSize),
+                pageNumber,
+                pageSize
+            });
+        } catch (error) {
+            return res.status(500).json({ success: false, message: error.message });
         }
     },
 
@@ -161,7 +196,7 @@ const orderController = {
                 customerId,
                 items: confirmedItems,
                 subTotalPrice: subTotalPrice,
-                totalPrice: finalTotalPrice, 
+                totalPrice: finalTotalPrice,
                 promotion: {
                     code: appliedCode,
                     discountAmount: discountAmount
@@ -169,6 +204,11 @@ const orderController = {
             });
 
             await newOrder.save();
+
+            await CartModel.findOneAndUpdate(
+                { customerId: customerId },
+                { $set: { items: [] } }
+            );
 
             res.status(201).json({
                 success: true,

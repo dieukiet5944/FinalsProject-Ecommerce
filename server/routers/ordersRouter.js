@@ -3,7 +3,9 @@ import orderController from '../controller/orderController.js'
 
 const ordersRouter = express.Router();
 
-ordersRouter.get("/", orderController.getOrders);
+ordersRouter.get("/", orderController.getOrdersForAdmin);
+
+ordersRouter.get("/user/:customerId", orderController.getOrders);
 
 ordersRouter.post("/", orderController.postOrder);
 

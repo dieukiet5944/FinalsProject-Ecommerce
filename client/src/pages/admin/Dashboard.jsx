@@ -4,7 +4,7 @@ import { Cascader, Row, Col, Progress, Space, DatePicker, Spin, message, Avatar,
 import dayjs from 'dayjs';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import isBetween from 'dayjs/plugin/isBetween';
-import { getOrdersApi } from '../../services/orderService.js'
+import { getOrdersApiForAdmin } from '../../services/orderService.js'
 import { getUsersApi } from '../../services/userService.js'
 import { getProductsApi } from '../../services/productService.js'
 
@@ -31,7 +31,7 @@ const Dashboard = ({ name }) => {
                 const [resUsers, resProducts, resOrders] = await Promise.all([
                     getUsersApi(),
                     getProductsApi(),
-                    getOrdersApi()
+                    getOrdersApiForAdmin()
                 ]);
 
                 const usersArray = resUsers?.data || [];

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth.js';
 import { useCart } from '../../context/CartContext';
 import { useEffect } from 'react';
-import { EditOutlined, FacebookOutlined, InstagramOutlined, YoutubeOutlined } from '@ant-design/icons'
+import { EditOutlined, FireFilled, FacebookOutlined, GithubFilled, YoutubeOutlined, ArrowRightOutlined } from '@ant-design/icons'
 import { Button, message, Modal } from 'antd'
 import { Outlet, Link } from 'react-router-dom';
 import { putUsersApi } from '../../services/userService.js';
@@ -28,14 +28,14 @@ function CustomerLayout() {
 
             if (pickPicture && typeof pickPicture !== 'string') {
                 message.loading({ content: "Uploading avatar...", key: "avatar_upload" });
-                
-                avatarUrl = await uploadAvatarToCloudApi(pickPicture); 
-                
+
+                avatarUrl = await uploadAvatarToCloudApi(pickPicture);
+
                 message.success({ content: "Avatar uploaded! 🎉", key: "avatar_upload" });
             }
 
             const payload = {
-                avatar: avatarUrl, 
+                avatar: avatarUrl,
             };
 
             const response = await putUsersApi(user.id, payload);
@@ -43,7 +43,7 @@ function CustomerLayout() {
             if (response?.success || response?.data?.success) {
                 updateUserLocal({ avatar: avatarUrl });
 
-                message.success("Profile updated successfully! ❤️");
+                message.success("Profile updated successfully!");
                 setIsAvatarModalOpen(false);
                 setOpenLogo(false);
             }
@@ -68,6 +68,10 @@ function CustomerLayout() {
                         <nav className="hidden md:flex items-center gap-10 text-sm font-medium text-white/90">
                             <Link to="/" className="hover:text-white transition-colors">HOME</Link>
                             <Link to="/products" className="hover:text-white transition-colors">SHOP</Link>
+                            <Link to="/offerpromo" className="hover:text-white transition-colors flex items-center gap-1">
+                                OFFERS
+                                <span className="text-xs animate-pulse"><FireFilled /></span>
+                            </Link>
                             <Link to="/cart" className="flex items-center gap-1.5 hover:text-white transition-colors">
                                 CART
                                 {cart.length > 0 && (
@@ -76,8 +80,6 @@ function CustomerLayout() {
                                     </span>
                                 )}
                             </Link>
-
-                            {user ? <Link to="/order" className="hover:text-white transition-colors">ORDER</Link> : <button onClick={() => { message.error("You need to login") }} className="hover:text-white transition-colors" >ORDER</button>}
                         </nav>
 
                         <div className="flex items-center gap-3 shrink-0">
@@ -172,6 +174,19 @@ function CustomerLayout() {
                                         <span className="text-light-text font-medium">{user?.email}</span>
                                     </div>
                                 </div>
+
+                                <div className="mt-4 flex justify-end">
+                                    <Link to="/profile" onClick={() => setOpenLogo(false)}>
+                                        <Button
+                                            type="link"
+                                            icon={<ArrowRightOutlined />}
+                                            iconPlacement="end"
+                                            className="text-xs font-semibold text-primary-500 p-0 hover:text-primary-600 flex items-center gap-1"
+                                        >
+                                            View Full Account Details
+                                        </Button>
+                                    </Link>
+                                </div>
                             </div>
                         </Modal>
 
@@ -235,10 +250,16 @@ function CustomerLayout() {
                         <div className="flex flex-col sm:flex-row items-center justify-between gap-6 border-t border-white/10 pt-6">
 
                             <div className="flex flex-wrap justify-center gap-6 text-sm text-white/70">
-                                <a href="#" className="transition-colors hover:text-white">Shop</a>
-                                <a href="#" className="transition-colors hover:text-white">Membership</a>
-                                <a href="#" className="transition-colors hover:text-white">About Us</a>
-                                <a href="#" className="transition-colors hover:text-white">Contact</a>
+                                <Link to="/products" className="transition-colors hover:text-white">Shop</Link>
+                                <Link to="/" className="transition-colors hover:text-white">Membership</Link>
+                                <Link to="/process" className="transition-colors hover:text-white">About Us</Link>
+                                <Link to="/contact" className="transition-colors hover:text-white">Contact</Link>
+                                <Link
+                                    to="/support"
+                                    className="transition-colors text-primary-400 hover:text-primary-300 font-medium"
+                                >
+                                    Tech Support
+                                </Link>
                             </div>
 
                             <div className="flex items-center gap-4 text-lg text-white/60">
@@ -251,12 +272,12 @@ function CustomerLayout() {
                                     <FacebookOutlined />
                                 </a>
                                 <a
-                                    href="https://instagram.com"
+                                    href="https://github.com/lethanhhoacnttanm-ops"
                                     target="_blank"
                                     rel="noreferrer"
                                     className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center transition-all hover:bg-white/20 hover:text-white hover:-translate-y-0.5"
                                 >
-                                    <InstagramOutlined />
+                                    <GithubFilled />
                                 </a>
                                 <a
                                     href="https://www.youtube.com/watch?v=Q17C4TrJdW0"

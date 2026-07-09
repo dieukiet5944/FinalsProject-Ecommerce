@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { Table, Tag, Avatar, Space, Button, Spin, Modal, Dropdown, message } from 'antd';
 import { MoreOutlined, EyeOutlined, CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, AuditOutlined, EditOutlined } from '@ant-design/icons'
-import { deleteOrdersApi, putOrderApi, putStatusOrderApi, getOrdersApi } from '../../services/orderService.js';
+import { deleteOrdersApi, putOrderApi, putStatusOrderApi, getOrdersApiForAdmin } from '../../services/orderService.js';
 import { getUsersApi } from '../../services/userService.js';
 import { getProductsApi } from '../../services/productService.js';
 import dayjs from 'dayjs';
@@ -161,7 +161,7 @@ const Orders = () => {
       const [usersRes, productsRes, ordersRes] = await Promise.all([
         getUsersApi(),
         getProductsApi(),
-        getOrdersApi()
+        getOrdersApiForAdmin()
       ]);
 
       const listUsers = usersRes?.data;

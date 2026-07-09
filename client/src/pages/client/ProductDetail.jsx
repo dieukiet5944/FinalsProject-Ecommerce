@@ -30,10 +30,10 @@ const ProductDetail = () => {
         if (currentProduct) {
           const allRes = await getProductsApi();
           const dataAll = allRes?.data || [];
-          
+
           const related = dataAll.filter(
             (item) => item.category === currentProduct.category && item.slug !== currentProduct.slug
-          ).slice(0, 3); 
+          ).slice(0, 3);
 
           setRelatedProducts(related);
         }
@@ -54,7 +54,7 @@ const ProductDetail = () => {
 
   const handleAddToCart = () => {
     if (product) {
-      addToCart({ ...product, quantity });
+      addToCart(product._id || product.id, quantity);
       setAddedToCart(true);
       setShowToast(true);
       setTimeout(() => setAddedToCart(false), 2000);
@@ -75,9 +75,9 @@ const ProductDetail = () => {
   }
 
   return (
-   <div className="min-h-screen bg-light-bg text-light-text pt-6 pb-16">
+    <div className="min-h-screen bg-light-bg text-light-text pt-6 pb-16">
       <SuccessToast isVisible={showToast} message={`Added ${quantity}x ${product?.name} to cart!`} />
-      
+
       <div className="max-w-5xl mx-auto px-4">
         <button
           onClick={() => navigate(-1)}
@@ -155,11 +155,10 @@ const ProductDetail = () => {
 
             <button
               onClick={handleAddToCart}
-              className={`w-full py-3 text-sm font-semibold text-white rounded-xl transition-all shadow-md mb-8 tracking-wider ${
-                addedToCart
-                  ? 'bg-green-500 hover:bg-green-600'
-                  : 'bg-primary-500 hover:bg-primary-600'
-              }`}
+              className={`w-full py-3 text-sm font-semibold text-white rounded-xl transition-all shadow-md mb-8 tracking-wider ${addedToCart
+                ? 'bg-green-500 hover:bg-green-600'
+                : 'bg-primary-500 hover:bg-primary-600'
+                }`}
             >
               {addedToCart ? '✓ ADDED TO CART!' : 'ADD TO CART'}
             </button>
@@ -180,9 +179,9 @@ const ProductDetail = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {relatedProducts.map((item) => (
                 <ProductCard
-                  key={item.id || item.name}
+                  key={item._id || item.id || item.name}
                   product={item}
-                  onAddToCart={addToCart}
+                  onAddToCart={() => addToCart(item._id || item.id, 1)}
                   showLink={true}
                 />
               ))}

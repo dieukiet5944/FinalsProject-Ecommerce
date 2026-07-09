@@ -3,6 +3,8 @@ import { Flex, Steps, message, Modal } from 'antd';
 import { LoadingOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons'
 import dayjs from "dayjs";
 import { getOrderBreakPageApi } from "../../services/orderService.js";
+import { useAuth } from "../../hooks/useAuth.js";
+
 
 const itemsCompleted = [
     {
@@ -66,20 +68,29 @@ const Order = () => {
 
     const [openView, setOpenView] = useState(false)
 
+    const { user } = useAuth();
+
     useEffect(() => {
         const loadDataOrder = async () => {
+            if (!user?.id) return;
             setLoading(true)
             try {
-                const response = await getOrderBreakPageApi(pageNumber, 3);
+                const response = await getOrderBreakPageApi(user.id, pageNumber, 3);
 
                 const result = response?.data;
 
-                if (response?.success) {
-                    setListOrder(result)
-                    setTotalPages(response?.totalPages);
-                    setTotalItems(response?.totalItems);
+                if (Array.isArray(result)) {
+                    setListOrder(result);
+
+                    if (result.length === 3) {
+                        setTotalPages(pageNumber + 1); 
+                    } else {
+                        setTotalPages(pageNumber);
+                    }
+
+                    console.log("The raw array has been processed smoothly, with no more errors!");
                 } else {
-                    message.error("Error to get Data ")
+                    message.error("Data format is incorrect");
                 }
 
             } catch (error) {
@@ -91,7 +102,7 @@ const Order = () => {
         }
         loadDataOrder()
 
-    }, [pageNumber])
+    }, [pageNumber, user?.id])
 
     return (
         <div className="min-h-screen bg-light-bg py-10 text-light-text">

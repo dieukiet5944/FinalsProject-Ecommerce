@@ -11,6 +11,7 @@ import ordersRouter from './routers/ordersRouter.js';
 import storeRouter from './routers/storeRouter.js';
 import promoRouter from './routers/promotionRouter.js'
 import reviewRouter from './routers/reviewRouter.js';
+import cartRouter from './routers/cartRouter.js';
 
 const PORT = process.env.PORT || 8080;
 
@@ -64,6 +65,9 @@ app.use('/promotions', promoRouter);
 
 //REVIEW
 app.use('/reviews', reviewRouter)
+
+//CART
+app.use('/cart', cartRouter)
 
 
 
