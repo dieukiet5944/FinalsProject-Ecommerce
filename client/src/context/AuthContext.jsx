@@ -21,15 +21,15 @@ export const AuthProvider = ({ children }) => {
     setAuthLoading(false);
   }, []);
 
-  
+
   const loginUser = async (email, password) => {
     setLoading(true);
     try {
       const response = await loginUserApi(email, password);
       const result = response?.data?.data || response?.data || response;
-      
+
       const userData = result.user || result;
-      
+
       setUser(userData);
       localStorage.setItem("user", JSON.stringify(userData));
       if (result.accessToken) localStorage.setItem("token", result.accessToken);
@@ -43,13 +43,31 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  
+  const loginWithGoogleContext = (result) => {
+    setLoading(true);
+    try {
+      const userData = result.user || result;
+      setUser(userData);
+
+      localStorage.setItem("user", JSON.stringify(userData));
+      if (result.accessToken) localStorage.setItem("token", result.accessToken);
+      if (result.refreshToken) localStorage.setItem("refreshToken", result.refreshToken);
+
+      return { success: true, user: userData };
+    } catch (error) {
+      console.error("Context Google Login Error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
   const loginAdmin = async (email, password) => {
     setLoading(true);
     try {
       const response = await loginAdminApi(email, password);
       const result = response?.data?.data || response?.data || response;
-      
+
       const adminData = result.admin || result;
 
       setAdmin(adminData);
@@ -65,7 +83,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  
+
   const logoutUser = async () => {
     const targetId = user?._id || user?.id;
     setUser(null);
@@ -82,11 +100,11 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  
+
   const logoutAdmin = async () => {
     const targetId = admin?._id || admin?.id;
     setAdmin(null);
-    localStorage.removeItem("admin"); 
+    localStorage.removeItem("admin");
     localStorage.removeItem("token");
     localStorage.removeItem("refreshToken");
 
@@ -101,18 +119,18 @@ export const AuthProvider = ({ children }) => {
 
   const updateUserLocal = (newUserData) => {
     try {
-     
+
       const currentLocalUser = localStorage.getItem("user");
-      
+
       if (currentLocalUser) {
         const parsedUser = JSON.parse(currentLocalUser);
-        
+
         const updatedUser = { ...parsedUser, ...newUserData };
-        
+
         setUser(updatedUser);
-        
+
         localStorage.setItem("user", JSON.stringify(updatedUser));
-        
+
       } else {
         setUser(prev => ({ ...prev, ...newUserData }));
       }
@@ -123,11 +141,11 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ 
-        user, admin, 
-        loginUser, loginAdmin, 
-        logoutUser, logoutAdmin, 
-        loading, authLoading, updateUserLocal
+      value={{
+        user, admin,
+        loginUser, loginAdmin,
+        logoutUser, logoutAdmin,
+        loading, authLoading, updateUserLocal, loginWithGoogleContext
       }}
     >
       {children}

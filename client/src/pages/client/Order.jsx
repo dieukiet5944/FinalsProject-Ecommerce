@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Flex, Steps, message, Modal } from 'antd';
-import { LoadingOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons'
+import { LoadingOutlined, CheckCircleOutlined, CloseCircleOutlined, TagFilled } from '@ant-design/icons'
 import dayjs from "dayjs";
 import { getOrderBreakPageApi } from "../../services/orderService.js";
 import { useAuth } from "../../hooks/useAuth.js";
@@ -146,6 +146,7 @@ const Order = () => {
                             key={item._id}
                             className="bg-white border border-gray-100 p-5 rounded-2xl flex flex-col gap-6 shadow-sm hover:shadow-md transition-shadow"
                         >
+                            {console.log(listOrders)}
                             <div className="flex items-center justify-between pb-3 border-b border-gray-100">
                                 <div className="flex items-center gap-2 min-w-0">
                                     <span className="text-xs font-bold text-primary-500 bg-primary-500/10 px-2 py-0.5 rounded-md shrink-0">
@@ -260,7 +261,7 @@ const Order = () => {
                                 {selectedOrder.promotion && selectedOrder.promotion.code && selectedOrder.promotion.discountAmount > 0 && (
                                     <div className="flex justify-between items-center text-green-600 font-medium bg-green-50/60 px-3 py-2 rounded-xl border border-green-100/50">
                                         <span className="flex items-center gap-1">
-                                            🏷️ Promo Code: <span className="font-mono font-bold uppercase text-xs bg-green-100 px-1.5 py-0.5 rounded text-green-700">{selectedOrder.promotion.code}</span>
+                                            <TagFilled /> Promo Code: <span className="font-mono font-bold uppercase text-xs bg-green-100 px-1.5 py-0.5 rounded text-green-700">{selectedOrder.promotion.code}</span>
                                         </span>
                                         <span>-${Number(selectedOrder.promotion.discountAmount).toFixed(2)}</span>
                                     </div>

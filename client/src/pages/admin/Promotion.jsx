@@ -35,7 +35,7 @@ function Promotion() {
             }
         } catch (error) {
             console.error(error);
-            message.error(error.response?.data?.message || 'Không thể tải danh sách khuyến mãi!');
+            message.error(error.response?.data?.message || 'Unable to load the promotion list!');
         } finally {
             setLoading(false);
         }
@@ -75,19 +75,19 @@ function Promotion() {
             if (editingId) {
                 const response = await updatePromoApi(editingId, promotionData);
                 if (response.success) {
-                    message.success('Cập nhật chương trình khuyến mãi thành công!');
+                    message.success('Promotion updated successfully!');
                 }
             } else {
                 const response = await createPromoApi(promotionData);
                 if (response.success) {
-                    message.success('Tạo mới chương trình khuyến mãi thành công! (Giới hạn 10 phiếu) 🎉');
+                    message.success('New promotion created successfully! (Limited to 10 vouchers)');
                 }
             }
             setIsModalOpen(false);
             fetchPromotions();
         } catch (error) {
             console.error(error);
-            message.error(error.response?.message || 'Thao tác thất bại!');
+            message.error(error.response?.message || 'Operation failed!');
         }
     };
 
@@ -95,11 +95,11 @@ function Promotion() {
         try {
             const response = await deletePromoApi(id);
             if (response.success) {
-                message.success('Đã xóa chương trình khuyến mãi thành công.');
+                message.success('The promotion has been successfully removed.');
                 fetchPromotions();
             }
         } catch (error) {
-            message.error(error.response?.data?.message || 'Xóa thất bại!');
+            message.error(error.response?.data?.message || 'Deletion failed.');
         }
     };
 
@@ -107,11 +107,11 @@ function Promotion() {
         try {
             const response = await updatePromoApi(record._id, { isActive: checked });
             if (response.success) {
-                message.success(`Đã ${checked ? 'bật' : 'tắt'} hoạt động của mã ${record.code}`);
+                message.success(`Has ${checked ? 'on' : 'off'} worked for the ${record.code} code?`);
                 setPromotions(prev => prev.map(p => p._id === record._id ? { ...p, isActive: checked } : p));
             }
         } catch (error) {
-            message.error('Không thể cập nhật trạng thái!');
+            message.error('Unable to update the status!');
         }
     };
 
@@ -238,12 +238,12 @@ function Promotion() {
             >
                 <Form form={form} layout="vertical" onFinish={handleFormSubmit} initialValues={{ type: 'percentage', isActive: true, minOrderValue: 0, usageLimit: 10 }} className="pt-3">
                     <Form.Item name="name" label="Program name" rules={[{ required: true, message: 'Please fill in the program name!' }]}>
-                        <Input placeholder="Ví dụ: Showing appreciation to our loyal customers..." className="h-10" />
+                        <Input placeholder="Ex: Showing appreciation to our loyal customers..." className="h-10" />
                     </Form.Item>
 
                     <div className="grid grid-cols-2 gap-4">
                         <Form.Item name="code" label="Code" rules={[{ required: true, message: 'Enter the code!' }, { pattern: /^[A-Za-z0-9]+$/, message: 'No special characters allowed!' }]}>
-                            <Input placeholder="Ví dụ: LUCKY10" className="h-10 uppercase font-mono" disabled={!!editingId} />
+                            <Input placeholder="Ex: LUCKY10" className="h-10 uppercase font-mono" disabled={!!editingId} />
                         </Form.Item>
                         <Form.Item name="type" label="Type of discount">
                             <Select className="h-10">
@@ -278,7 +278,7 @@ function Promotion() {
                         </Form.Item>
                     </div>
 
-                    <Form.Item name="dateRange" label="Thời gian hiệu lực" rules={[{ required: true, message: 'Choose your validity period!' }]}>
+                    <Form.Item name="dateRange" label="Validity period" rules={[{ required: true, message: 'Choose your validity period!' }]}>
                         <RangePicker className="w-full h-10" format="YYYY-MM-DD" />
                     </Form.Item>
 

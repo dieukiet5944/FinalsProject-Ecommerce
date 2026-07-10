@@ -10,7 +10,7 @@ export const storeController = {
 
             res.status(200).send({
                 success: true,
-                message: `Success to log data 🎉`,
+                message: `Success to log data`,
                 data: getAlldata
             });
         } catch (error) {
@@ -52,7 +52,7 @@ export const storeController = {
 
             res.status(201).send({
                 success: true,
-                message: `Create a new store "${storeName}" successful! 🎉`,
+                message: `Create a new store "${storeName}" successful!`,
                 data: newStore
             });
 
@@ -94,7 +94,7 @@ export const storeController = {
 
             res.status(200).json({
                 success: true,
-                message: "Successfully updated store info ✨",
+                message: "Successfully updated store info",
                 data: updatedStore
             });
 
@@ -118,7 +118,7 @@ export const storeController = {
                 return res.status(404).json({ success: false, message: "Store not found!" });
             }
 
-            res.status(200).json({ success: true, message: "Successfully deleted store from DB 🗑️" });
+            res.status(200).json({ success: true, message: "Successfully deleted store from DB" });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
         }

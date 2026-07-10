@@ -4,26 +4,26 @@ const promotionController = {
     validatePromo: async (req, res) => {
         try {
             const { code, orderAmount, userId } = req.body;
-            if (!code) return res.status(400).json({ success: false, message: "Vui lòng nhập mã giảm giá!" });
+            if (!code) return res.status(400).json({ success: false, message: "Please enter the discount code!" });
 
             const promo = await PromotionModel.findOne({ code: code.toUpperCase() });
-            if (!promo) return res.status(404).json({ success: false, message: "Mã giảm giá không tồn tại!" });
+            if (!promo) return res.status(404).json({ success: false, message: "The discount code doesn't exist!" });
 
-            if (!promo.isActive) return res.status(400).json({ success: false, message: "Mã này đang bị khóa!" });
+            if (!promo.isActive) return res.status(400).json({ success: false, message: "This code is locked!" });
 
             const now = new Date();
-            if (now < promo.startDate) return res.status(400).json({ success: false, message: "Chương trình chưa bắt đầu!" });
-            if (now > promo.endDate) return res.status(400).json({ success: false, message: "Mã giảm giá đã hết hạn!" });
-            if (promo.usedCount >= promo.usageLimit) return res.status(400).json({ success: false, message: "Mã giảm giá đã hết lượt sử dụng!" });
+            if (now < promo.startDate) return res.status(400).json({ success: false, message: "The program hasn't started yet!" });
+            if (now > promo.endDate) return res.status(400).json({ success: false, message: "The discount code has expired!" });
+            if (promo.usedCount >= promo.usageLimit) return res.status(400).json({ success: false, message: "The discount code has expired!" });
 
             if (promo.usersUsed.includes(userId)) {
-                return res.status(400).json({ success: false, message: "Bạn đã sử dụng mã này cho đơn hàng trước rồi!" });
+                return res.status(400).json({ success: false, message: "You've already used this code for a previous order!" });
             }
 
             if (orderAmount < promo.minOrderValue) {
                 return res.status(400).json({
                     success: false,
-                    message: `Đơn hàng chưa đủ điều kiện. Cần tối thiểu $${promo.minOrderValue.toFixed(2)}`
+                    message: `The order is not eligible. A minimum of $${promo.minOrderValue.toFixed(2)} is required.`
                 });
             }
 
@@ -41,7 +41,7 @@ const promotionController = {
 
             return res.status(200).json({
                 success: true,
-                message: "Áp dụng mã thành công!",
+                message: "Code applied successfully!",
                 data: { code: promo.code, type: promo.type, discountAmount }
             });
         } catch (error) {
@@ -54,7 +54,7 @@ const promotionController = {
             const promos = await PromotionModel.find().sort({ createdAt: -1 });
             return res.status(200).json({ success: true, data: promos });
         } catch (error) {
-            console.error("🔥 Lỗi tại getAllPromos Backend:", error);
+            console.error("Error at getAllPromos Backend:", error);
             return res.status(500).json({ success: false, message: error.message });
         }
     },
@@ -62,7 +62,7 @@ const promotionController = {
     createPromo: async (req, res) => {
         try {
             const exist = await PromotionModel.findOne({ code: req.body.code.toUpperCase() });
-            if (exist) return res.status(400).json({ success: false, message: "Mã Code này đã tồn tại!" });
+            if (exist) return res.status(400).json({ success: false, message: "This code already exists!" });
 
             const newPromo = new PromotionModel({
                 ...req.body,
@@ -70,7 +70,7 @@ const promotionController = {
                 usageLimit: 10
             });
             await newPromo.save();
-            return res.status(201).json({ success: true, message: "Tạo mã thành công!", data: newPromo });
+            return res.status(201).json({ success: true, message: "Code generated successfully!", data: newPromo });
         } catch (error) {
             return res.status(400).json({ success: false, message: error.message });
         }
@@ -80,7 +80,7 @@ const promotionController = {
         try {
             if (req.body.code) req.body.code = req.body.code.toUpperCase();
             const updated = await PromotionModel.findByIdAndUpdate(req.params.id, req.body, { new: true });
-            return res.status(200).json({ success: true, message: "Cập nhật thành công!", data: updated });
+            return res.status(200).json({ success: true, message: "Update successful!", data: updated });
         } catch (error) {
             return res.status(400).json({ success: false, message: error.message });
         }
@@ -89,7 +89,7 @@ const promotionController = {
     deletePromo: async (req, res) => {
         try {
             await PromotionModel.findByIdAndDelete(req.params.id);
-            return res.status(200).json({ success: true, message: "Xóa mã thành công!" });
+            return res.status(200).json({ success: true, message: "Code removed successfully!" });
         } catch (error) {
             return res.status(400).json({ success: false, message: error.message });
         }

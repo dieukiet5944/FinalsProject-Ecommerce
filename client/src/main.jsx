@@ -1,8 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';  
-
 import App from './App.jsx';
+import { BrowserRouter } from 'react-router-dom';
 import './index.css';
 import ScrollToTop from './components/client/ScrollToTop.jsx';
 
@@ -11,10 +10,10 @@ import { CartProvider } from './context/CartContext';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <BrowserRouter future={{ 
-        v7_startTransition: true, 
-        v7_relativeSplatPath: true 
-      }}>
+    <BrowserRouter future={{
+      v7_startTransition: true,
+      v7_relativeSplatPath: true
+    }}>
       <ScrollToTop />
       <AuthProvider>
         <CartProvider>

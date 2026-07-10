@@ -14,7 +14,7 @@ export const checkloginUser = async (req,res,next) => {
 
     if(!user) {
         return res.status(404).json({
-            message: "wrong email !!!"
+            message: "Email or password are note correct !!!"
         })
     }
 
@@ -24,7 +24,7 @@ export const checkloginUser = async (req,res,next) => {
 
     if(!checkpass) {
         return res.status(404).json({
-            message: "wrong password !!!"
+            message: "Email or password are note correct !!!"
         })
     }
 

@@ -1,4 +1,5 @@
 import reviewModel from "../model/review.js";
+import DOMPurify from 'isomorphic-dompurify';
 
 export const reviewController = {
     createReview: async (req, res) => {
@@ -12,13 +13,15 @@ export const reviewController = {
                 });
             }
 
+            const cleanComment = DOMPurify.sanitize(comment);
+
             const newReview = new reviewModel({
                 productId,
                 userId,
                 userName,
                 userEmail,
                 rating,
-                comment,
+                comment: cleanComment,
                 reviewImg: reviewImg || null
             });
 

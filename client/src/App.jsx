@@ -16,7 +16,6 @@ import OfferPromotions from './pages/client/OfferPromotion.jsx';
 
 import ProtectedRoute from './router/ProtectedRoute';
 
-// --- PHẦN ADMIN ---
 import AdminLogin from './pages/admin/AdminLogin.jsx';
 import AdminLayout from './components/layouts/AdminLayout.jsx';
 import Dashboard from './pages/admin/Dashboard.jsx';
@@ -33,7 +32,6 @@ import './App.css';
 function App() {
   return (
     <Routes>
-      {/* Nhóm các trang có Header + Footer */}
       <Route element={<CustomerLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/products" element={<ProductList />} />
@@ -49,7 +47,6 @@ function App() {
         <Route path="/register" element={<Register />} />
       </Route>
 
-      {/* Checkout cần đăng nhập */}
       <Route
         path="/checkout"
         element={
@@ -58,7 +55,6 @@ function App() {
           </ProtectedRoute>
         }
       />
-      {/* {route admin } */}
 
       <Route path="/admin-login" element={<AdminLogin />} />
 

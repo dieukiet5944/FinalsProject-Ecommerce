@@ -14,7 +14,7 @@ export const checkloginAD = async (req,res,next) => {
 
     if(!admin) {
         return res.status(404).json({
-            message: "wrong email !!!"
+            message: "These email and password are required !!! "
         })
     }
 
@@ -24,7 +24,7 @@ export const checkloginAD = async (req,res,next) => {
 
     if(!checkpass) {
         return res.status(404).json({
-            message: "wrong password !!!"
+            message: "These email and password are required !!! "
         })
     }
 
