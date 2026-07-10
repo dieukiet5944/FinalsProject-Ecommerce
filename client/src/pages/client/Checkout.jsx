@@ -5,9 +5,10 @@ import { useCart } from '../../context/CartContext';
 import { message, Modal, Radio, Space } from 'antd';
 import { validatePromoApi } from '../../services/promotionService.js';
 import { CreditCardOutlined, WalletOutlined, SyncOutlined } from '@ant-design/icons';
+import { getOrdersApi } from '../../services/orderService.js';
 
 const Checkout = () => {
-  const { cart, totalPrice, placeOrder, loading: cartLoading } = useCart();
+  const { cart, totalPrice, placeOrder, loading: cartLoading, clearCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -43,15 +44,15 @@ const Checkout = () => {
     setIsCheckingPayment(true);
     const interval = setInterval(async () => {
       try {
-        // Thay bằng API check đơn hàng thực tế của bạn: const res = await getOrderDetailsApi(orderId);
-        // if (res.data.paymentStatus === 'paid') {
-        //   clearInterval(interval);
-        //   message.success("🎉 Cổng Sepay xác nhận: Thanh toán thành công!");
-        //   setQrModalOpen(false);
-        //   navigate('/profile'); // Chuyển sang lịch sử đơn hàng
-        // }
+        const res = await getOrdersApi(orderId);
+        if (res.data.paymentStatus === 'paid') {
+          clearInterval(interval);
+          message.success("Sepay payment gateway confirms: Payment successful!");
+          setQrModalOpen(false);
+          navigate('/profile');
+        }
       } catch (err) {
-        console.error("Lỗi check trạng thái dòng tiền:", err);
+        console.error("Error checking the state:", err);
       }
     }, 3000);
 
@@ -105,6 +106,10 @@ const Checkout = () => {
 
       const result = await placeOrder(orderPayload);
 
+      if (typeof clearCart === 'function') {
+        clearCart();
+      }
+
       const generatedOrderId = result?.orderId || result?.data?._id || 'ORD' + Math.floor(1000 + Math.random() * 9000);
       const newOrder = { id: generatedOrderId, totalPrice: finalPrice };
 
@@ -117,7 +122,6 @@ const Checkout = () => {
         navigate('/profile');
       }
 
-      navigate('/order');
     } catch (err) {
       console.error(err);
       setError(err.message || "Failed to place order. Please try again.");
@@ -145,7 +149,7 @@ const Checkout = () => {
 
       if (response && response.success) {
         setAppliedPromo(response.data);
-        message.success(`🎉 Applied successfully!`);
+        message.success(`Applied successfully!`);
       } else if (response?.data?.success) {
         setAppliedPromo(response.data.data);
       }
@@ -161,6 +165,10 @@ const Checkout = () => {
     setPromoInput('');
     message.info("Promo code removed.");
   };
+
+
+  const TỶ_GIÁ_USD_VND = 25400;
+  const finalPriceVND = Math.round(finalPrice * TỶ_GIÁ_USD_VND);
 
   return (
     <div className="min-h-screen bg-light-bg py-12">
@@ -246,20 +254,28 @@ const Checkout = () => {
 
             <div className="bg-white border border-gray-200 rounded-3xl p-8">
               <h2 className="text-2xl font-semibold mb-6">Payment Method</h2>
-              <Radio.Group 
-                onChange={(e) => setPaymentMethod(e.target.value)} 
+              <Radio.Group
+                onChange={(e) => setPaymentMethod(e.target.value)}
                 value={paymentMethod}
                 className="w-full"
               >
                 <Space orientation="vertical" className="w-full gap-4">
-                  <div className={`flex items-center justify-between p-4 border rounded-2xl cursor-pointer transition-all ${paymentMethod === 'cod' ? 'border-primary-500 bg-primary-500/5' : 'border-gray-200'}`}>
-                    <Radio value="cod" className="font-semibold text-gray-700">
+                  <div
+                    onClick={() => setPaymentMethod('cod')}
+                    className={`flex items-center justify-between p-4 border rounded-2xl cursor-pointer transition-all ${paymentMethod === 'cod' ? 'border-primary-500 bg-primary-500/5' : 'border-gray-200'
+                      }`}
+                  >
+                    <Radio value="cod" className="font-semibold text-gray-700 select-none">
                       <span className="flex items-center gap-2"><WalletOutlined /> Cash on Delivery (COD)</span>
                     </Radio>
                   </div>
-                  <div className={`flex items-center justify-between p-4 border rounded-2xl cursor-pointer transition-all ${paymentMethod === 'bank' ? 'border-primary-500 bg-primary-500/5' : 'border-gray-200'}`}>
-                    <Radio value="bank" className="font-semibold text-gray-700">
-                      <span className="flex items-center gap-2"><CreditCardOutlined /> Chuyển khoản ngân hàng (Auto QR bằng Sepay)</span>
+                  <div
+                    onClick={() => setPaymentMethod('bank')}
+                    className={`flex items-center justify-between p-4 border rounded-2xl cursor-pointer transition-all ${paymentMethod === 'bank' ? 'border-primary-500 bg-primary-500/5' : 'border-gray-200'
+                      }`}
+                  >
+                    <Radio value="bank" className="font-semibold text-gray-700 select-none">
+                      <span className="flex items-center gap-2"><CreditCardOutlined /> Bank transfer (Auto QR code via Sepay)</span>
                     </Radio>
                   </div>
                 </Space>
@@ -270,19 +286,22 @@ const Checkout = () => {
           <div className="lg:col-span-5">
             <div className="bg-white border border-gray-200 rounded-3xl p-8 sticky top-28">
               <h2 className="text-2xl font-semibold mb-6">Order Summary</h2>
-
+              {console.log(cart)}
               <div className="max-h-60 overflow-y-auto pr-2 space-y-5 mb-8">
-                {cart.map((item, index) => (
-                  <div key={index} className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <p className="font-medium">{item.name}</p>
-                      <p className="text-sm text-gray-600">{item.category} × {item.quantity || 1}</p>
+                {cart.map((item, index) => {
+                  const product = item.productId
+                  return (
+                    <div key={index} className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <p className="font-medium">{product.name}</p>
+                        <p className="text-sm text-gray-600">{product.category} × {item.quantity || 1}</p>
+                      </div>
+                      <p className="font-semibold text-warm-400 whitespace-nowrap ml-4">
+                        ${((Number(product.price) || 0) * (Number(item.quantity) || 1)).toFixed(2)}
+                      </p>
                     </div>
-                    <p className="font-semibold text-warm-400 whitespace-nowrap ml-4">
-                      ${(Number(item.price) * (item.quantity || 1)).toFixed(2)}
-                    </p>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
 
               <div className="bg-gray-50 border border-gray-100 p-4 rounded-2xl mb-6">
@@ -344,12 +363,14 @@ const Checkout = () => {
       <Modal
         title={<span className="font-bold text-lg font-heading">Quét Mã QR Thanh Toán (Sepay)</span>}
         open={qrModalOpen}
-        closable={false} 
+        closable={false}
         footer={[
-          <button 
-            key="cancel" 
-            onClick={() => { setQrModalOpen(false); navigate('/profile'); }}
-            className="px-4 py-2 border rounded-xl text-xs font-semibold mr-2 hover:bg-gray-50"
+          <button
+            key="cancel"
+            onClick={() => {
+              setQrModalOpen(false);
+            }}
+            className="px-4 py-2 border border-gray-200 rounded-xl text-xs font-semibold mr-2 hover:bg-gray-50 cursor-pointer"
           >
             Thanh toán sau / Đóng
           </button>
@@ -359,23 +380,38 @@ const Checkout = () => {
       >
         <div className="py-4 flex flex-col items-center text-center">
           <p className="text-xs text-gray-400 mb-4">
-            Vui lòng quét mã QR dưới đây. Hệ thống sẽ tự động duyệt đơn khi nhận được dòng tiền khớp từ hệ thống ngân hàng.
+            Please scan the QR code below. The system will automatically process your order once it receives matching funds from the bank.
           </p>
 
-          <img 
-            src={`https://img.vietqr.io/image/MBBank-0987654321-qr_only.png?amount=${currentOrder?.totalPrice}&addInfo=CRUMB_${currentOrder?.id}`} 
-            alt="Sepay Auto Payment QR" 
-            className="w-52 h-52 object-contain border border-gray-100 rounded-2xl p-2 shadow-2xs bg-white"
-          />
+          <div className="py-4 flex flex-col items-center text-center">
+            <img
+              src={`https://img.vietqr.io/image/ACB-5417941-qr_only.png?amount=${finalPrice}&addInfo=CRUMB_${currentOrder?.id}`}
+              alt="Sepay Auto Payment QR"
+              className="w-52 h-52 object-contain border border-gray-100 rounded-2xl p-2 bg-white"
+            />
+            <div className="mt-4 bg-gray-50 border border-gray-100 p-3 rounded-xl w-full text-left text-xs space-y-2 font-medium text-gray-600">
+              <div className="flex justify-between items-center">
+                <span>Total amount (USD):</span>
+                <span className="font-bold text-gray-900">${finalPrice.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between items-center border-t border-gray-200/60 pt-1.5">
+                <span>Amount converted (VND):</span>
+                <span className="font-black text-primary-600 text-sm">
+                  {finalPriceVND.toLocaleString('vi-VN')} đ
+                </span>
+              </div>
+              <div className="flex justify-between items-center border-t border-gray-200/60 pt-1.5">
+                <span>Transfer details:</span>
+                <span className="font-mono font-black text-red-600 bg-red-50 px-1.5 py-0.5 rounded border border-red-100">
+                  CRUMB_{currentOrder?.id}
+                </span>
+              </div>
+            </div>
 
-          <div className="mt-4 bg-gray-50 border border-gray-100 p-3 rounded-xl w-full text-left text-xs space-y-1 font-medium text-gray-600">
-            <div className="flex justify-between"><span>Số tiền chuyển:</span> <span className="font-bold text-gray-900">${currentOrder?.totalPrice.toFixed(2)}</span></div>
-            <div className="flex justify-between"><span>Nội dung bắt buộc:</span> <span className="font-mono font-black text-red-600">CRUMB_{currentOrder?.id}</span></div>
-          </div>
-
-          <div className="flex items-center gap-2 text-2xs text-amber-600 mt-5 font-semibold animate-pulse">
-            <SyncOutlined spin />
-            <span>Đang đợi cổng giao dịch ngân hàng phản hồi...</span>
+            <div className="flex items-center gap-2 text-2xs text-amber-600 mt-5 font-semibold animate-pulse">
+              <SyncOutlined spin />
+              <span>Waiting for a response from the bank's transaction gateway...</span>
+            </div>
           </div>
         </div>
       </Modal>

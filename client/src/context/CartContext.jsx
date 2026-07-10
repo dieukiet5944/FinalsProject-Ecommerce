@@ -50,7 +50,7 @@ export const CartProvider = ({ children }) => {
       setLoading(true);
       const currentUserId = user.id || user._id;
       const payload = {
-        customerId: currentUserId, 
+        customerId: currentUserId,
         items: [{ productId, quantity }]
       };
       const response = await postCartApi(currentUserId, payload);
@@ -106,7 +106,14 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const clearCart = () => setCart([]);
+  const clearCart = async () => {
+    try {
+      setCart([]);
+      setTotalPrice(0);
+    } catch (error) {
+      console.error("Error clearing cart:", error);
+    }
+  };
 
   const placeOrder = async (orderData = {}) => {
     if (!user?.id) throw new Error("You need to log in to place an order");

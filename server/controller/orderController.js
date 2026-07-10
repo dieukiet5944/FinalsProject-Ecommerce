@@ -58,26 +58,13 @@ const orderController = {
 
     getOrdersForAdmin: async (req, res) => {
         try {
-            const pageNumber = Number(req.query.pageNumber) || 1;
-            const pageSize = Number(req.query.pageSize) || 10; 
-            const skip = (pageNumber - 1) * pageSize;
-
-            const [response, totalItems] = await Promise.all([
-                OrderModel.find()
-                    .sort({ createdAt: -1 })
-                    .skip(skip)
-                    .limit(pageSize),
-                OrderModel.countDocuments()
-            ]);
+            const response = await OrderModel.find().sort({ createdAt: -1 });
 
             return res.status(200).json({
                 success: true,
                 message: "Admin: GET all orders successful",
-                data: response,
-                totalItems,
-                totalPages: Math.ceil(totalItems / pageSize),
-                pageNumber,
-                pageSize
+                data: response, 
+                totalItems: response.length
             });
         } catch (error) {
             return res.status(500).json({ success: false, message: error.message });

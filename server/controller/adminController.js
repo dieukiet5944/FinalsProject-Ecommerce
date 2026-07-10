@@ -50,7 +50,7 @@ const adminController = {
             await admin.save();
 
             return res.status(200).json({
-                message: "Success Login ❤️",
+                message: "Success Login",
                 data: {
                     accessToken,
                     refreshToken,

@@ -3,6 +3,7 @@ import 'dotenv/config';
 import express from 'express'
 import cors from 'cors'
 import mongoose from 'mongoose';
+import mongoSanitize from 'express-mongo-sanitize';
 
 import usersRouter from './routers/usersRouter.js';
 import productRouter from './routers/productsRouter.js';
@@ -12,6 +13,8 @@ import storeRouter from './routers/storeRouter.js';
 import promoRouter from './routers/promotionRouter.js'
 import reviewRouter from './routers/reviewRouter.js';
 import cartRouter from './routers/cartRouter.js';
+
+import { globalLimiter } from './middleware/rateLimiter.js';
 
 const PORT = process.env.PORT || 8080;
 
@@ -24,25 +27,32 @@ function myLogger(req, res, next) {
   next(); 
 }
 
-const allowedOrigins = [
-  'http://localhost:5173', 
-  'https://finals-project-ecommerce.vercel.app'
-];
 
 app.use(myLogger);
+
+const allowedOrigins = [
+  'http://localhost:5173', 
+  process.env.FRONTEND_URL
+];
 
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
-      callback(new Error('Deny by CORS: This access source is not permitted!'));
+      callback(null, false);
     }
   },
   credentials: true 
 }));
 
 app.use(express.json());
+
+
+app.use(mongoSanitize());
+
+//Global limiting
+app.use(globalLimiter);
 
 //USER
 app.use("/users", usersRouter);
@@ -75,14 +85,14 @@ const connectDatabase = async () => {
     try {
        
         await mongoose.connect(db_url);
-        console.log("=== Kết nối thành công tới MongoDB Atlas! ===");
+        console.log("=== Connection to MongoDB Atlas successful! ===");
 
         app.listen(PORT, () => {
-            console.log(`Server đang chạy ổn định tại port ${PORT}!`);
+            console.log(`The server is running stably at port ${PORT}!`);
         });
 
     } catch (error) {
-        console.log("Xảy ra lỗi nghiêm trọng khi kết nối DB:");
+        console.log("A serious error occurred while connecting to the DB:");
         console.error(error.message);
         process.exit(1); 
     }

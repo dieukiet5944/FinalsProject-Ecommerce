@@ -171,7 +171,7 @@ const productController = {
 
             res.status(201).send({
                 success: true,
-                message: `New product "${name}" added successfully! 🎉`,
+                message: `New product "${name}" added successfully!`,
                 data: newProduct
             });
 

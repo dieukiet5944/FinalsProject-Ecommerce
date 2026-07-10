@@ -214,7 +214,7 @@ const AdminReviews = () => {
             </div>
 
             <Modal
-                title={<span className="text-lg font-bold text-gray-800">Phản hồi đánh giá</span>}
+                title={<span className="text-lg font-bold text-gray-800">Feedback and reviews</span>}
                 open={isModalOpen}
                 onOk={handleSendReply}
                 onCancel={() => setIsModalOpen(false)}

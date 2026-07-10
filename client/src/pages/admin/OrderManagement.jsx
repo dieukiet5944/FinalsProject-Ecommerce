@@ -413,6 +413,7 @@ const Orders = () => {
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
         <Spin spinning={loading}>
+          {console.log(dataSource)}
           <Table
             columns={columns}
             dataSource={filteredData}

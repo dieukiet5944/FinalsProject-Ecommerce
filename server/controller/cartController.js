@@ -61,7 +61,6 @@ export const cartController = {
             await cart.save();
 
             await cart.populate('items.productId');
-            console.log("Dữ liệu giỏ hàng sau khi populate gửi về client:", JSON.stringify(cart.items, null, 2));
 
             return res.status(200).json({
                 success: true,

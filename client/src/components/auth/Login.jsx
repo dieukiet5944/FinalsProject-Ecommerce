@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth.js';
+import { useNavigate } from 'react-router-dom';
+import { googleLogin } from '../../services/authService.js';
+import { message } from 'antd';
+import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -9,7 +13,8 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const { loginUser } = useAuth();
+  const { loginUser, loginWithGoogleContext } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,6 +28,23 @@ const Login = () => {
       setError(err.message || "Invalid email or password");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      const result = await googleLogin(credentialResponse.credential);
+
+      if (result?.success) {
+        loginWithGoogleContext(result?.data);
+
+        message.success(`Login successful! Hello ${result?.data?.user?.name} `);
+
+        navigate('/');
+      }
+    } catch (error) {
+      console.error("Google Login Error:", error.result?.data || error.message);
+      message.error("Login failed: " + (error.result?.message || error.message));
     }
   };
 
@@ -127,7 +149,27 @@ const Login = () => {
             </button>
           </form>
 
-          <div className="mt-8 text-center space-y-3">
+          <div className="flex items-center my-6">
+            <div className="grow border-t border-gray-200"></div>
+            <span className="shrink mx-4 text-gray-400 text-sm font-medium bg-white px-2">
+              Or sign in with
+            </span>
+            <div className="grow border-t border-gray-200"></div>
+          </div>
+
+          <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+            <div className="flex justify-center w-full [&>div]:w-full transition-transform active:scale-[0.98]">
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={() => console.log('Login Failed')}
+                theme="outline"
+                size="large"
+                shape="rectangular"
+              />
+            </div>
+          </GoogleOAuthProvider>
+
+          <div className="pt-4 space-y-3">
             <p className="text-gray-600">
               Don't have an account?{' '}
               <Link to="/register" className="font-medium text-primary-500 hover:underline">

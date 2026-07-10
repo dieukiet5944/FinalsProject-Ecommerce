@@ -15,6 +15,14 @@ const adminSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    loginOTP: { 
+        type: String, 
+        default: null 
+    },
+    loginOTPExpires: { 
+        type: Date, 
+        default: null 
+    },
     role:{
         type: String,
         required: true,
