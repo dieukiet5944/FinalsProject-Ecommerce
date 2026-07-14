@@ -1,123 +1,57 @@
-import mongoose from 'mongoose';
-import ProductModel from "../model/products.js";
-import OrderModel from "../model/order.js";
-import crypto from 'crypto'
+import { productService } from "../service/productService.js";
+import { catchAsync } from "../utils/catchAsync.js";
 
 const productController = {
-    getProducts: async (req, res) => {
-        try {
-
+    getProducts: catchAsync( async (req, res) => {
             const { role } = req.query;
-
-            let queryCondition = {};
-
-
-            if (role === "user") {
-                queryCondition.status = { $in: ["IN STOCK", "LOW STOCK"] };
-            }
-
-            const response = await ProductModel.find(queryCondition)
-
-            if (!response || response.length === 0) {
-
-                return res.status(404).send({
-                    success: false,
-                    message: "Products list is empty"
-                })
-            }
+            const products = await productService.getProducts(role);
 
             return res.status(200).send({
                 success: true,
                 message: "Successful get Data Products",
-                data: response
-            })
+                data: products
+            });
+    }),
 
-        }
-        catch (error) {
-            console.log("Error fetching products", error.message)
-            res.status(500).send({
-                success: false,
-                message: "Internal Server Error",
-                error: error.message
-            })
-        }
-    },
-
-    getProductBySlug: async (req, res) => {
-        try {
+    getProductBySlug: catchAsync( async (req, res) => {
             const { slug } = req.params;
 
             if (!slug || slug === 'undefined') {
                 return res.status(400).json({ success: false, message: "Slug không hợp lệ" });
             }
-            const product = await ProductModel.findOne({ slug: slug });
 
-            if (!product) {
-                return res.status(404).json({ message: "Product not found" });
-            }
+            const product = await productService.getProductBySlug(slug);
 
-            res.status(200).json({
+            return res.status(200).json({
                 success: true,
                 message: "Successful get data Pro'slug",
                 data: product
-            })
-        } catch (error) {
-            res.status(500).json({ message: "Server error", error });
-        }
-    },
+            });
+    }),
 
-    getProductId: async (req, res) => {
-        try {
-            const { id } = req.params
+    getProductId: catchAsync( async (req, res) => {
+            const { id } = req.params;
+            const product = await productService.getProductById(id);
 
-            let response = null;
-            if (mongoose.Types.ObjectId.isValid(id)) {
-                response = await ProductModel.findById(id);
-            }
-
-            if (!response) {
-                response = await ProductModel.findOne({ id: id });
-            }
-
-            if (!response) {
-                return res.status(400).send({
-                    success: false,
-                    message: "This id is not valid or disconnected"
-                })
-            }
-
-            res.status(200).send({
+            return res.status(200).send({
                 success: true,
                 message: "Successful get data Pro'id",
-                data: response
-            })
+                data: product
+            });
+    }),
 
-        }
-        catch (error) {
-            console.log("Error fetching products'Id", error.message)
-            res.status(500).send({
-                success: false,
-                message: "Internal Server Error",
-                error: error.message
-            })
-        }
-    },
-
-    postUploadCloud: async (req, res) => {
+    postUploadCloud: catchAsync( async (req, res) => {
         if (!req.file) {
             return res.status(400).json({ message: 'No files were uploaded!' });
         }
-        res.status(200).json({
+        return res.status(200).json({
             message: 'Upload successful!',
             fileUrl: req.file.path
         });
-    },
+    }),
 
-    postCreateProduct: async (req, res) => {
-        try {
-
-            const { name, price, category, image, quantity, expiredAt, status, slug } = req.body;
-
+    postCreateProduct: catchAsync( async (req, res) => {
+            const { name, price, category, image, quantity, expiredAt, slug } = req.body;
 
             if (!name || price === undefined || !category || !image || quantity === undefined || !expiredAt || !slug) {
                 return res.status(400).send({
@@ -126,215 +60,58 @@ const productController = {
                 });
             }
 
-
-            if (!["CAKE", "DRINK"].includes(category)) {
-                return res.status(400).send({
-                    success: false,
-                    message: "Invalid product category. Only 'CAKE' or 'DRINK' will be accepted."
-                });
-            }
-
-
-            const productQuantity = parseInt(quantity);
-            const productPrice = parseFloat(price);
-
-            if (productQuantity > 100) {
-                return res.status(400).send({
-                    success: false,
-                    message: "The number of products created must not exceed 100!"
-                });
-            }
-
-            let finalStatus = "IN STOCK";
-            if (productQuantity === 0) {
-                finalStatus = "OUT OF STOCK";
-            } else if (productQuantity <= 20) {
-                finalStatus = "LOW STOCK";
-            } else {
-                finalStatus = "IN STOCK";
-            }
-
-            const newProduct = new ProductModel({
-                name,
-                price: productPrice,
-                category,
-                image,
-                stockBatches: [{
-                    quantity: productQuantity,
-                    expiredAt: new Date(expiredAt)
-                }],
-                status: finalStatus,
-                slug
+            const newProduct = await productService.createProduct({
+                name, price, category, image, quantity, expiredAt, slug
             });
 
-            await newProduct.save();
-
-            res.status(201).send({
+            return res.status(201).send({
                 success: true,
                 message: `New product "${name}" added successfully!`,
                 data: newProduct
             });
+    }),
 
-        } catch (error) {
-            console.log("Server error when creating a new product:", error.message);
-            res.status(500).send({
-                success: false,
-                message: "Internal Server Error (Database connection or saving error)",
-                error: error.message
-            });
-        }
-    },
-
-    putProductDetails: async (req, res) => {
-        try {
+    putProductDetails: catchAsync( async (req, res) => {
             const { id } = req.params;
             const { name, price, category, image, status, quantity, expiredAt, slug } = req.body;
 
-            const product = await ProductModel.findById(id);
-            if (!product) {
-                return res.status(404).send({
-                    success: false,
-                    message: "No products were found matching this ID."
-                });
-            }
+            const { product, totalQuantity } = await productService.updateProductDetails(id, {
+                name, price, category, image, status, quantity, expiredAt, slug
+            });
 
-            if (name) product.name = name;
-            if (price !== undefined) product.price = parseFloat(price);
-            if (category) product.category = category;
-            if (image) product.image = image;
-            if (status) product.status = status;
-            if (slug) product.slug = slug;
-            if (quantity && expiredAt) {
-                if (!product.stockBatches || !Array.isArray(product.stockBatches)) {
-                    product.stockBatches = [];
-                }
-
-                product.stockBatches.push({
-                    quantity: parseInt(quantity),
-                    expiredAt: new Date(expiredAt)
-                });
-            }
-
-            const totalQuantity = product.stockBatches.reduce((total, batch) => total + (batch.quantity || 0), 0);
-
-            if (totalQuantity > 100) {
-                return res.status(400).send({
-                    success: false,
-                    message: "Exceeded warehouse capacity (Maximum 100)!"
-                });
-            }
-
-            if (!status) {
-                if (totalQuantity === 0) {
-                    product.status = "OUT OF STOCK";
-                } else if (totalQuantity <= 20) {
-                    product.status = "LOW STOCK";
-                } else {
-                    product.status = "IN STOCK";
-                }
-            }
-
-            await product.save({ runValidators: true });
-
-            res.status(200).send({
+            return res.status(200).send({
                 success: true,
                 message: `Product "${product.name}" has been successfully received into inventory!`,
                 data: {
-                    ...product.toObject(),
+                    ...product,
                     quantity: totalQuantity
                 }
             });
+    }),
 
-        } catch (error) {
-            console.log("Server error when updating products:", error.message);
-            res.status(500).send({
-                success: false,
-                message: "Internal Server Error (Database Update Error)",
-                error: error.message
-            });
-        }
-    },
-
-    deleteProduct: async (req, res) => {
-        try {
+    deleteProduct: catchAsync( async (req, res) => {
             const { id } = req.params;
+            const deletedProduct = await productService.deleteProduct(id);
 
-            const product = await ProductModel.findById(id);
-            if (!product) {
-                return res.status(404).send({
-                    success: false,
-                    message: "This product could not be found on the system."
-                });
-            }
-
-            const isProductInOrder = await OrderModel.findOne({
-                items: { $elemMatch: { productId: id } }
-            });
-
-            if (isProductInOrder) {
-                return res.status(400).send({
-                    success: false,
-                    message: `The product "${product.name}" cannot be deleted because it already exists in the system's order history. You should update the quantity to 0 (OUT OF STOCK) instead of deleting it.`
-                });
-            }
-
-            await ProductModel.findByIdAndDelete(id);
-
-            res.status(200).send({
+            return res.status(200).send({
                 success: true,
-                message: `The product "${product.name}" has been successfully removed from the system.`
+                message: `The product "${deletedProduct.name}" has been successfully removed from the system.`
             });
+    }),
 
-        } catch (error) {
-            console.log("Server error when deleting a product:", error.message);
-            res.status(500).send({
-                success: false,
-                message: "Internal Server Error",
-                error: error.message
-            });
-        }
-    },
-
-    deleteExpiredBatch: async (req, res) => {
-        try {
+    deleteExpiredBatch: catchAsync( async (req, res) => {
             const { productId, batchId } = req.params;
+            const { product, totalQuantity } = await productService.deleteExpiredBatch(productId, batchId);
 
-            const product = await ProductModel.findByIdAndUpdate(
-                productId,
-                { $pull: { stockBatches: { _id: batchId } } },
-                { new: true }
-            );
-
-            if (!product) {
-                return res.status(404).send({ success: false, message: "No product found." });
-            }
-
-            const totalQuantity = product.stockBatches.reduce((total, batch) => total + batch.quantity, 0);
-
-            if (totalQuantity === 0) {
-                product.status = "OUT OF STOCK";
-            } else if (totalQuantity <= 20) {
-                product.status = "LOW STOCK";
-            } else {
-                product.status = "IN STOCK";
-            }
-
-            await product.save();
-
-            res.status(200).send({
+            return res.status(200).send({
                 success: true,
                 message: "The expired shipment has been successfully cancelled!",
                 data: {
-                    ...product.toObject(),
+                    ...product,
                     quantity: totalQuantity
                 }
             });
+    })
+};
 
-        } catch (error) {
-            console.error("Error deleting expired batches:", error);
-            res.status(500).send({ success: false, message: "System error while deleting a shipment." });
-        }
-    }
-}
-
-export default productController
+export default productController;
