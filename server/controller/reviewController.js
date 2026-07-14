@@ -1,9 +1,8 @@
-import reviewModel from "../model/review.js";
-import DOMPurify from 'isomorphic-dompurify';
+import { reviewService } from "../service/reviewService.js";
+import { catchAsync } from "../utils/catchAsync.js";
 
 export const reviewController = {
-    createReview: async (req, res) => {
-        try {
+    createReview: catchAsync( async (req, res) => {
             const { productId, userId, userName, userEmail, rating, comment, reviewImg } = req.body;
 
             if (!productId || !userId || !rating || !comment) {
@@ -13,100 +12,44 @@ export const reviewController = {
                 });
             }
 
-            const cleanComment = DOMPurify.sanitize(comment);
-
-            const newReview = new reviewModel({
-                productId,
-                userId,
-                userName,
-                userEmail,
-                rating,
-                comment: cleanComment,
-                reviewImg: reviewImg || null
+            const savedReview = await reviewService.createReview({
+                productId, userId, userName, userEmail, rating, comment, reviewImg
             });
-
-            const savedReview = await newReview.save();
 
             return res.status(201).json({
                 success: true,
                 message: "The review has been successfully submitted and is awaiting administrator approval!",
                 data: savedReview
             });
+    }),
 
-        } catch (error) {
-            console.error("Error in createReview:", error);
-            return res.status(500).json({
-                success: false,
-                message: "Internal server error, unable to submit review!"
-            });
-        }
-    },
-
-    getAllReviews: async (req, res) => {
-        try {
-            const reviews = await reviewModel.find().sort({ createdAt: -1 });
-
+    getAllReviews: catchAsync( async (req, res) => {
+            const reviews = await reviewService.getAllReviews();
             return res.status(200).json(reviews);
-        } catch (error) {
-            console.error("Error in getAllReviews:", error);
-            return res.status(500).json({ success: false, message: "Server error: Unable to retrieve the list!" });
-        }
-    },
+    }),
 
-    getApprovedReviewsByProduct: async (req, res) => {
-        try {
+    getApprovedReviewsByProduct: catchAsync( async (req, res) => {
             const { productId } = req.params;
-
-            const reviews = await reviewModel.find({
-                productId: productId,
-                status: 'approved'
-            }).sort({ createdAt: -1 });
+            const reviews = await reviewService.getApprovedReviewsByProduct(productId);
 
             return res.status(200).json({ success: true, data: reviews });
-        } catch (error) {
-            console.error("Error in getApprovedReviewsByProduct:", error);
-            return res.status(500).json({ success: false, message: "Error: Unable to load product reviews!" });
-        }
-    },
+    }),
 
-    updateStatus: async (req, res) => {
-        try {
+    updateStatus: catchAsync( async (req, res) => {
             const { id } = req.params;
             const { status } = req.body; 
 
-            if (!['approved', 'pending', 'hidden'].includes(status)) {
-                return res.status(400).json({ success: false, message: "Invalid status!" });
-            }
-
-            const updatedReview = await reviewModel.findByIdAndUpdate(
-                id,
-                { status: status },
-                { new: true }
-            );
+            const updatedReview = await reviewService.updateReviewStatus(id, status);
 
             return res.status(200).json({ success: true, data: updatedReview });
-        } catch (error) {
-            console.error("Error in updateStatus:", error);
-            return res.status(500).json({ success: false, message: "Status update error!" });
-        }
-    },
+    }),
 
-    updateReply: async (req, res) => {
-        try {
+    updateReply: catchAsync( async (req, res) => {
             const { id } = req.params;
             const { reply } = req.body;
 
-            const updatedReview = await reviewModel.findByIdAndUpdate(
-                id,
-                { reply: reply, status: 'approved' }, 
-                { new: true }
-            );
+            const updatedReview = await reviewService.updateReviewReply(id, reply);
 
             return res.status(200).json({ success: true, data: updatedReview });
-        } catch (error) {
-            console.error("Error in updateReply:", error);
-            return res.status(500).json({ success: false, message: "Feedback submission error!" });
-        }
-    }
+    })
 };
-

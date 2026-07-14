@@ -1,53 +1,21 @@
-import AdminModel from "../model/admin.js";
-import { jwtHelper } from "../utils/jwt.js";
-import bcrypt from 'bcrypt'
+import { adminService } from "../service/adminService.js";
+import { catchAsync } from "../utils/catchAsync.js";
 
 const adminController = {
-    getAdmin: async (req, res) => {
-        try {
+    getAdmin: catchAsync(async (req, res) => {
+        const admins = await adminService.getAllAdmins();
+        
+        return res.status(200).send({
+            success: true,
+            message: "Successful catch this data admin",
+            data: admins
+        });
+    }),
 
-            const response = await AdminModel.find();
+    loginAdmin: catchAsync( async (req, res) => {
+            const admin = req.admin; 
 
-            if (!response || response.length === 0) throw new Error(" Can't get data from database");
-
-            return res.status(200).send({
-                success: true,
-                message: "Successful catch this data admin",
-                data: response
-            })
-
-        }
-        catch (error) {
-            console.log("Error", error.message)
-            res.status(500).send({
-                success: false,
-                message: "Internal Server Error",
-                error: error.message
-            })
-        }
-    },
-
-    loginAdmin: async (req, res) => {
-        try {
-            const { email, password } = req.body;
-
-            const admin = req.admin;
-
-            const accessToken = jwtHelper.generateAccessToken({
-                adminId: admin._id,
-                email: admin.email
-            });
-
-            const refreshToken = jwtHelper.generateRefreshToken({
-                adminId: admin._id,
-                email: admin.email
-            });
-
-            admin.status = "online";
-
-            admin.refreshToken = refreshToken;
-
-            await admin.save();
+            const { admin: loggedAdmin, accessToken, refreshToken } = await adminService.loginAdmin(admin);
 
             return res.status(200).json({
                 message: "Success Login",
@@ -55,28 +23,19 @@ const adminController = {
                     accessToken,
                     refreshToken,
                     admin: {
-                        id: admin._id,
-                        email: admin.email,
-                        name: admin.name,
-                        avatar: admin.avatar,
-                        role: admin.role,
-                        createAt: admin.createdAt,
-                        phone: admin.phoneNumber
+                        id: loggedAdmin._id,
+                        email: loggedAdmin.email,
+                        name: loggedAdmin.name,
+                        avatar: loggedAdmin.avatar,
+                        role: loggedAdmin.role,
+                        createAt: loggedAdmin.createdAt,
+                        phone: loggedAdmin.phoneNumber
                     }
                 }
             });
-        } catch (error) {
-            console.error("Error at loginAdmin:", error.message);
-            return res.status(500).json({
-                success: false,
-                message: "Internal Server Error",
-                error: error.message
-            });
-        }
-    },
+    }),
 
-    logoutAdmin: async (req, res) => {
-        try {
+    logoutAdmin: catchAsync( async (req, res) => {
             const { id } = req.params;
 
             if (!id) {
@@ -86,57 +45,28 @@ const adminController = {
                 });
             }
 
-            const updatedAdmin = await AdminModel.findByIdAndUpdate(id, { status: "offline" }, { new: true });
+            await adminService.logoutAdmin(id);
 
-            if (!updatedAdmin) {
-                return res.status(404).send({
-                    success: false,
-                    message: "The Admin account does not exist in the system."
-                });
-            }
-
-            res.status(200).send({
+            return res.status(200).send({
                 success: true,
                 message: "Logout successful!"
             });
-        } catch (error) {
-            res.status(500).send({ success: false, message: error.message });
-        }
-    },
+    }),
 
-    registerAdmin: async (req, res) => {
-        try {
-            const { email, name, phoneNumber, password } = req.body
+    registerAdmin: catchAsync( async (req, res) => {
+            const { email, name, phoneNumber, password } = req.body;
 
             if (!email || !name || !phoneNumber || !password) {
                 return res.status(400).json({
                     message: "This field required!!!"
-                })
+                });
             }
 
+            const { newAdmin, salt, hashingPassword } = await adminService.registerAdmin({
+                email, name, phoneNumber, password
+            });
 
-            const admin = await AdminModel.findOne({ email });
-
-            if (admin) {
-                return res.status(403).json({
-                    message: "Oh no this email is valid, so you need to have another email !!!"
-                })
-            }
-
-            const salt = await bcrypt.genSaltSync(10);
-
-            const hashingPassword = await bcrypt.hash(password, salt);
-
-            const newAdmin = await AdminModel.create({
-                name,
-                email,
-                phoneNumber,
-                password: hashingPassword,
-                avatar: "logo-admin.jpg",
-                role: "admin",
-            })
-
-            res.status(201).json({
+            return res.status(201).json({
                 message: "Success create new ADMIN ",
                 salt: salt,
                 hash: hashingPassword,
@@ -144,21 +74,10 @@ const adminController = {
                     id: newAdmin._id,
                     email: newAdmin.email
                 }
-            })
+            });
+    }),
 
-
-        } catch (error) {
-            console.log("Error", error.message)
-            res.status(500).send({
-                success: false,
-                message: "Internal Server Error",
-                error: error.message
-            })
-        }
-    },
-
-    refreshToken: async (req, res) => {
-        try {
+    refreshToken: catchAsync( async (req, res) => {
             const { refreshToken } = req.body;
 
             if (!refreshToken) {
@@ -168,28 +87,7 @@ const adminController = {
                 });
             }
 
-            const decoded = jwtHelper.verifyRefreshToken(refreshToken);
-
-            const admin = await AdminModel.findById(decoded.userId);
-
-            if (!admin) {
-                return res.status(404).json({
-                    success: false,
-                    message: "User not found"
-                });
-            }
-
-            if (admin.refreshToken !== refreshToken) {
-                return res.status(403).json({
-                    success: false,
-                    message: "Invalid refresh token"
-                });
-            }
-
-            const newAccessToken = jwtHelper.generateAccessToken({
-                userId: admin._id,
-                email: admin.email
-            });
+            const newAccessToken = await adminService.refreshAdminToken(refreshToken);
 
             return res.status(200).json({
                 success: true,
@@ -197,50 +95,20 @@ const adminController = {
                     accessToken: newAccessToken
                 }
             });
+    }),
 
-        } catch (error) {
-            console.error("Error at refreshToken:", error.message);
-            return res.status(403).json({
-                success: false,
-                message: "Invalid or expired refresh token",
-                error: error.message
-            });
-        }
-    },
-
-    putAdminId: async (req, res) => {
-        try {
+    putAdminId: catchAsync( async (req, res) => {
             const { id } = req.params;
             const updateData = req.body;
 
-            const admin = await AdminModel.findById(id);
-            if (!admin) return res.status(404).json({ message: "Admin not found" });
-
-            if (updateData.currentPassword && updateData.newPassword) {
-                updateData.password = hashingPassword;
-                delete updateData.currentPassword; 
-                delete updateData.newPassword;
-            }
-
-            const updatedAdmin = await AdminModel.findByIdAndUpdate(
-                id,
-                { $set: updateData },
-                { new: true }
-            );
+            const updatedAdmin = await adminService.updateAdmin(id, updateData);
 
             return res.status(200).json({
                 success: true,
                 message: "Update successful!",
                 data: updatedAdmin
             });
+    }),
+};
 
-        } catch (error) {
-            return res.status(500).json({
-                message: "Server update processing error",
-                error: error.message
-            });
-        }
-    },
-}
-
-export default adminController
+export default adminController;

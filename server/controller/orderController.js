@@ -1,30 +1,19 @@
-import OrderModel from "../model/order.js";
-import ProductModel from "../model/products.js";
-import PromotionModel from "../model/promo.js";
-import CartModel from "../model/cart.js";
-import crypto from 'crypto'
+import { orderService } from "../service/orderService.js";
+import { catchAsync } from "../utils/catchAsync.js";
 
 const orderController = {
-    getOrders: async (req, res) => {
-        try {
+    getOrders: catchAsync( async (req, res) => {
             const { customerId } = req.params;
-
             const pageNumber = Number(req.query.pageNumber) || 1;
             const pageSize = Number(req.query.pageSize) || 3;
-            const skip = (pageNumber - 1) * pageSize;
 
-            const filter = { customerId };
+            const { orders, totalItems, totalPages } = await orderService.getOrdersByCustomer(
+                customerId, 
+                pageNumber, 
+                pageSize
+            );
 
-            const [response, totalItems] = await Promise.all([
-                OrderModel.find(filter)
-                    .sort({ createdAt: -1 })
-                    .skip(skip)
-                    .limit(pageSize),
-
-                OrderModel.countDocuments(filter)
-            ]);
-
-            if (!response || response.length === 0) {
+            if (orders.length === 0) {
                 return res.status(200).json({
                     success: true,
                     message: "No orders found for this user",
@@ -39,26 +28,16 @@ const orderController = {
             return res.status(200).json({
                 success: true,
                 message: "User orders fetched successfully",
-                data: response,
+                data: orders,
                 totalItems,
-                totalPages: Math.ceil(totalItems / pageSize),
+                totalPages,
                 pageNumber,
                 pageSize
             });
+    }),
 
-        } catch (error) {
-            console.error("Error at getOrders Controller:", error);
-            return res.status(500).json({
-                success: false,
-                message: error.message,
-                data: null
-            });
-        }
-    },
-
-    getOrdersForAdmin: async (req, res) => {
-        try {
-            const response = await OrderModel.find().sort({ createdAt: -1 });
+    getOrdersForAdmin: catchAsync( async (req, res) => {
+            const response = await orderService.getAllOrdersForAdmin();
 
             return res.status(200).json({
                 success: true,
@@ -66,13 +45,9 @@ const orderController = {
                 data: response, 
                 totalItems: response.length
             });
-        } catch (error) {
-            return res.status(500).json({ success: false, message: error.message });
-        }
-    },
+    }),
 
-    postOrder: async (req, res) => {
-        try {
+    postOrder: catchAsync( async (req, res) => {
             const { customerId, items, promotion } = req.body;
 
             if (!customerId || !items || items.length === 0) {
@@ -82,250 +57,51 @@ const orderController = {
                 });
             }
 
-            let subTotalPrice = 0;
-            const confirmedItems = [];
-            const productsToSave = [];
+            const newOrder = await orderService.createOrder({ customerId, items, promotion });
 
-            for (const item of items) {
-                const product = await ProductModel.findById(item.productId);
-
-                if (!product) {
-                    return res.status(404).json({
-                        success: false,
-                        message: `The product with ID ${item.productId} does not exist in the system.`
-                    });
-                }
-
-                const currentTotalQuantity = product.stockBatches.reduce((sum, batch) => sum + (batch.quantity || 0), 0);
-
-                if (product.status === "OUT OF STOCK" || currentTotalQuantity < item.qty) {
-                    return res.status(400).json({
-                        success: false,
-                        message: `The product "${product.name}" is out of stock or there is insufficient stock available. (Current total quantity: ${currentTotalQuantity})`
-                    });
-                }
-
-                const currentPrice = Number(product.price) || 0;
-                subTotalPrice += currentPrice * item.qty;
-
-                confirmedItems.push({
-                    productId: product._id,
-                    name: product.name,
-                    qty: item.qty,
-                    price: currentPrice
-                });
-
-                product.stockBatches.sort((a, b) => new Date(a.expiredAt) - new Date(b.expiredAt));
-
-                let quantityToDecrease = item.qty;
-
-                for (let i = 0; i < product.stockBatches.length; i++) {
-                    if (quantityToDecrease <= 0) break;
-
-                    let batch = product.stockBatches[i];
-                    if (batch.quantity <= 0) continue;
-
-                    if (batch.quantity >= quantityToDecrease) {
-                        batch.quantity -= quantityToDecrease;
-                        quantityToDecrease = 0;
-                    } else {
-                        quantityToDecrease -= batch.quantity;
-                        batch.quantity = 0;
-                    }
-                }
-
-                product.stockBatches = product.stockBatches.filter(batch => batch.quantity > 0);
-
-                const newTotalQuantity = product.stockBatches.reduce((sum, batch) => sum + (batch.quantity || 0), 0);
-
-                if (newTotalQuantity === 0) {
-                    product.status = "OUT OF STOCK";
-                } else if (newTotalQuantity <= 20) {
-                    product.status = "LOW STOCK";
-                } else {
-                    product.status = "IN STOCK";
-                }
-
-                productsToSave.push(product);
-            }
-
-            let discountAmount = 0;
-            let appliedCode = null;
-
-            if (promotion && promotion.code) {
-                const promoData = await PromotionModel.findOne({ code: promotion.code.toUpperCase(), isActive: true });
-
-                if (promoData && !promoData.usersUsed.includes(customerId) && subTotalPrice >= promoData.minOrderValue) {
-                    appliedCode = promoData.code;
-
-                    if (promoData.type === "percentage") {
-                        discountAmount = subTotalPrice * (promoData.value / 100);
-                        if (promoData.maxDiscount && discountAmount > promoData.maxDiscount) {
-                            discountAmount = promoData.maxDiscount;
-                        }
-                    } else if (promoData.type === "fixed") {
-                        discountAmount = promoData.value;
-                    }
-
-                    if (discountAmount > subTotalPrice) discountAmount = subTotalPrice;
-
-                    promoData.usedCount += 1;
-                    promoData.usersUsed.push(customerId);
-                    await promoData.save();
-                }
-            }
-
-            const finalTotalPrice = subTotalPrice - discountAmount;
-
-            await Promise.all(productsToSave.map(p => p.save({ runValidators: false })));
-
-            const newOrder = new OrderModel({
-                customerId,
-                items: confirmedItems,
-                subTotalPrice: subTotalPrice,
-                totalPrice: finalTotalPrice,
-                promotion: {
-                    code: appliedCode,
-                    discountAmount: discountAmount
-                }
-            });
-
-            await newOrder.save();
-
-            await CartModel.findOneAndUpdate(
-                { customerId: customerId },
-                { $set: { items: [] } }
-            );
-
-            res.status(201).json({
+            return res.status(201).json({
                 success: true,
                 message: "Order successful! Inventory has been updated and status synchronized.",
                 data: newOrder
             });
+    }),
 
-        } catch (error) {
-            console.log("Server error when I place an order:", error.message);
-            res.status(500).json({
-                success: false,
-                message: error.message
+    putUpdateOrder: catchAsync( async (req, res) => {
+            const { id } = req.params;
+            const { status, items } = req.body;
+
+            const updatedOrder = await orderService.updateOrderDetails(id, { status, items });
+
+            return res.status(200).json({
+                success: true,
+                message: "Order information successfully updated!",
+                data: updatedOrder
             });
-        }
-    },
+    }),
 
-    putUpdateOrder: async (req, res) => {
-        try {
+    putUpdateStateOrder: catchAsync( async (req, res) => {
             const { id } = req.params;
 
-            const {
-                status,
-                items,
-            } = req.body;
+            const completedOrder = await orderService.completeOrder(id);
 
-            const order = await OrderModel.findById(id);
-            if (!order) {
-                return res.status(404).json({
-                    success: false,
-                    message: "No orders with this ID were found in the system."
-                });
-            }
-
-            if (status) {
-                if (!["Pending", "Completed", "Canceled"].includes(status)) {
-                    return res.status(400).json({
-                        success: false,
-                        message: "Invalid order status! Only Pending, Completed, or Canceled will be accepted."
-                    });
-                }
-                order.status = status;
-            }
-
-            if (items && Array.isArray(items)) {
-                order.items = items;
-                let newTotal = 0;
-                for (const item of items) {
-                    newTotal += (item.qty || 0) * (item.price || 0);
-                }
-                order.totalPrice = newTotal;
-            }
-
-            await order.save({ runValidators: true });
-
-            res.status(200).json({
+            return res.status(200).json({
                 success: true,
-                message: `Order information successfully updated!`,
-                data: order
+                message: "Order accepted!",
+                data: completedOrder
             });
+    }),
 
-        } catch (error) {
-            console.log("Server error when updating order information:", error.message);
-            res.status(500).json({
-                success: false,
-                message: "Internal Server Error",
-                error: error.message
-            });
-        }
-    },
-
-    putUpdateStateOrder: async (req, res) => {
-        try {
-            const { id } = req.params
-
-            const order = await OrderModel.findById(id);
-            if (!order) {
-                return res.status(404).json({
-                    success: false,
-                    message: "No orders with this ID were found in the system."
-                });
-            }
-
-            order.status = "Completed"
-
-            await order.save({ runValidators: true });
-
-            res.status(200).json({
-                success: true,
-                message: `Order accepted!`,
-                data: order
-            });
-
-        } catch (error) {
-            console.log("Server error when updating order information:", error.message);
-            res.status(500).json({
-                success: false,
-                message: "Internal Server Error",
-                error: error.message
-            });
-        }
-    },
-
-    deleteOrder: async (req, res) => {
-        try {
+    deleteOrder: catchAsync( async (req, res) => {
             const { id } = req.params;
 
-            const order = await OrderModel.findByIdAndDelete(id);
+            const deletedOrder = await orderService.deleteOrder(id);
 
-            if (!order) {
-                return res.status(404).json({
-                    success: false,
-                    message: "No orders with this ID were found in the system."
-                });
-            }
-
-            res.status(200).json({
+            return res.status(200).json({
                 success: true,
                 message: "Order deleted successfully!",
-                data: order
+                data: deletedOrder
             });
-
-        } catch (error) {
-            console.log("Server error when deleting an order:", error.message);
-            res.status(500).json({
-                success: false,
-                message: "Internal Server Error",
-                error: error.message
-            });
-        }
-    }
-}
+    })
+};
 
 export default orderController;
