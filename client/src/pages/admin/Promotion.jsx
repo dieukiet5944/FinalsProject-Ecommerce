@@ -6,7 +6,7 @@ import {
 } from 'antd';
 import {
     PlusOutlined, EditOutlined, DeleteOutlined,
-    SearchOutlined
+    SearchOutlined, AlertFilled, BulbOutlined
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import {
@@ -60,13 +60,45 @@ function Promotion() {
         setIsModalOpen(true);
     };
 
+    const minOrderValue = Form.useWatch('minOrderValue', form) || 0;
+    const discountPercent = Form.useWatch('discountPercent', form) || 0;
+
+    const formatUSD = (value) => {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 2
+        }).format(value);
+    };
+
+    const getSuggestedMaxDiscount = () => {
+        if (minOrderValue <= 0 || discountPercent <= 0) return null;
+
+        const baseDiscount = minOrderValue * (discountPercent / 100);
+        const suggested = parseFloat((baseDiscount * 1.5).toFixed(2));
+
+        return {
+            min: baseDiscount,
+            suggested: suggested
+        };
+    };
+
+    const suggestion = getSuggestedMaxDiscount();
+
+    const applySuggestion = () => {
+        if (suggestion) {
+            form.setFieldsValue({ maxDiscount: suggestion.suggested });
+        }
+    };
+
     const handleFormSubmit = async (values) => {
         const { dateRange, ...restValues } = values;
         const promotionData = {
             ...restValues,
             code: restValues.code.toUpperCase(),
-            startDate: dateRange[0].startOf('day').toDate(),
-            endDate: dateRange[1].endOf('day').toDate(),
+            startDate: dateRange[0].startOf('day').toISOString(),
+            endDate: dateRange[1].endOf('day').toISOString(),
             maxDiscount: restValues.maxDiscount || 0,
             minOrderValue: restValues.minOrderValue || 0,
         };
@@ -115,6 +147,7 @@ function Promotion() {
         }
     };
 
+    3
     const columns = [
         {
             title: 'Programme',
@@ -171,7 +204,11 @@ function Promotion() {
             title: 'Status',
             dataIndex: 'isActive',
             key: 'isActive',
-            render: (isActive, record) => <Switch checked={isActive} onChange={(checked) => handleToggleActive(checked, record)} size="small" />,
+            render: (isActive, record) => {
+                const qty = record.usageLimit;
+                const use = record.usedCount;
+                return qty === use ? <span className="inline-flex items-center gap-1 text-[10px] font-bold text-red-500 bg-red-50 border border-red-100 px-1.5 py-0.5 rounded uppercase tracking-wider animate-pulse"><AlertFilled /> </span> : <Switch checked={isActive} onChange={(checked) => handleToggleActive(checked, record)} size="small" />
+            }
         },
         {
             title: 'Action',
@@ -217,7 +254,7 @@ function Promotion() {
                     loading={loading}
                     pagination={{
                         total: filteredPromotions.length,
-                        pageSize: 5, 
+                        pageSize: 5,
                         showSizeChanger: false,
                         placement: ['bottomRight'],
                         className: "px-6 py-4 border-t border-gray-50 !m-0"
@@ -226,7 +263,7 @@ function Promotion() {
             </Card>
 
             <Modal
-                title={<span className="text-lg font-bold text-gray-800">{editingId ?'Edit Program' : 'Create New Program (Limit 10 votes)'}</span>}
+                title={<span className="text-lg font-bold text-gray-800">{editingId ? 'Edit Program' : 'Create New Program (Limit 10 votes)'}</span>}
                 open={isModalOpen}
                 onCancel={() => setIsModalOpen(false)}
                 onOk={() => form.submit()}
@@ -253,16 +290,73 @@ function Promotion() {
                         </Form.Item>
                     </div>
 
-                    <Form.Item dependencies={['type']} noStyle>
-                        {({ getFieldValue }) => {
+                    <Form.Item dependencies={['type', 'value', 'minOrderValue']} noStyle>
+                        {({ getFieldValue, setFieldsValue }) => {
                             const isPercentage = getFieldValue('type') === 'percentage';
+                            const decreaseValue = getFieldValue('value') || 0;
+                            const minOrderValue = getFieldValue('minOrderValue') || 0;
+
+                            let suggestion = null;
+
+                            if (isPercentage && decreaseValue > 0 && minOrderValue > 0) {
+                                const minDiscount = minOrderValue * (decreaseValue / 100);
+                                const suggested = parseFloat((minDiscount * 1.5).toFixed(2));
+                                suggestion = {
+                                    min: minDiscount,
+                                    suggested: suggested
+                                };
+                            }
+
+                            const handleApplySuggestion = () => {
+                                if (suggestion) {
+                                    setFieldsValue({ maxDiscount: suggestion.suggested });
+                                }
+                            };
                             return (
                                 <div className="grid grid-cols-2 gap-4">
                                     <Form.Item name="value" label={isPercentage ? "Decrease Value (%)" : "Decrease Amount ($)"} rules={[{ required: true, message: 'Nhập giá trị!' }]}>
-                                        <InputNumber min={1} max={isPercentage ? 100 : 1000} className="w-full h-10 flex items-center" />
+                                        <InputNumber
+                                            min={0}
+                                            max={isPercentage ? 100 : 1000}
+                                            className="w-full h-10 flex items-center"
+                                            formatter={(value) => `${value}%`}
+                                            parser={(value) => value.replace('%', '')}
+                                            placeholder="e.g. 10"
+                                        />
                                     </Form.Item>
-                                    <Form.Item name="maxDiscount" label="Maximum discount ($)">
-                                        <InputNumber min={0} className="w-full h-10 flex items-center" placeholder="Unlimited" />
+                                    <Form.Item
+                                        name="maxDiscount"
+                                        label="Maximum reduction"
+                                        extra={
+                                            suggestion && (
+                                                <div className="mt-1.5 p-2 bg-blue-50 border border-blue-100 rounded text-xs text-blue-700 flex flex-col gap-1">
+                                                    <span className="flex items-center gap-1 font-medium">
+                                                        <BulbOutlined className="text-amber-500 text-sm animate-bounce" />
+                                                        Seller Suggestion:
+                                                    </span>
+                                                    <p className="m-0 text-gray-600">
+                                                        When a customer meets the minimum order, they get an instant discount of <strong className="text-gray-900">{formatUSD(suggestion.min)}</strong>.                                                    </p>
+                                                    <div className="flex items-center justify-between mt-1">
+                                                        <span className="text-gray-700">Recommended Max: <strong className="text-blue-600 font-bold">{formatUSD(suggestion.suggested)}</strong></span>
+                                                        <button
+                                                            type="button"
+                                                            onClick={handleApplySuggestion}
+                                                            className="px-2.5 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-[10px] font-bold uppercase cursor-pointer"
+                                                        >
+                                                            Apply
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )
+                                        }
+                                    >
+                                        <InputNumber
+                                            className="w-full"
+                                            min={0}
+                                            formatter={(value) => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                            parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                                            placeholder="Leave blank for unlimited"
+                                        />
                                     </Form.Item>
                                 </div>
                             );
@@ -271,7 +365,11 @@ function Promotion() {
 
                     <div className="grid grid-cols-2 gap-4">
                         <Form.Item name="minOrderValue" label="Minimum order ($)">
-                            <InputNumber min={0} className="w-full h-10 flex items-center" />
+                            <InputNumber
+                                min={0} className="w-full h-10 flex items-center"
+                                formatter={(value) => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+                                placeholder="e.g. 50" />
                         </Form.Item>
                         <Form.Item name="usageLimit" label="Number of ballots issued">
                             <InputNumber min={1} max={10} className="w-full h-10 flex items-center" disabled />

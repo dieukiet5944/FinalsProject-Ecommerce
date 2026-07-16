@@ -169,7 +169,7 @@ const Login = () => {
             </div>
           </GoogleOAuthProvider>
 
-          <div className="pt-4 space-y-3">
+          <div className="pt-4 space-y-3 text-center">
             <p className="text-gray-600">
               Don't have an account?{' '}
               <Link to="/register" className="font-medium text-primary-500 hover:underline">

@@ -1,68 +1,34 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Tabs, Button, message, Tooltip, Badge } from 'antd';
 import { GiftOutlined, CopyOutlined, ClockCircleOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { getAllPromosApi } from '../../services/promotionService.js';
+import dayjs from 'dayjs';
 
 const OfferPromotions = () => {
-    const [activeTab, setActiveTab] = useState('all');
+    const [promotion, setPromotion] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    const promoList = [
-        {
-            id: 1,
-            code: 'WELCOMEBEAR',
-            title: '20% Off First Order',
-            description: 'Applies to the entire Cake & Coffee menu for new accounts.',
-            expiry: 'Expires: 31/12/2026',
-            type: 'voucher',
-            discount: '20%',
-            minSpend: 'Minimum Order 0đ'
-        },
-        {
-            id: 2,
-            code: 'COFFEEBREAK',
-            title: 'All Items at 29k During Happy Hour',
-            description: 'All machine-made coffees at the same price from 14:00 - 17:00 every day.',
-            expiry: 'Expires: 30/09/2026',
-            type: 'combo',
-            discount: '29K',
-            minSpend: '14:00 - 17:00'
-        },
-        {
-            id: 3,
-            code: 'SWEETPAIR',
-            title: 'Tea & Croissant Combo',
-            description: 'Save 15% when you buy one fruit tea and one croissant together.',
-            expiry: 'Expiration: Until further notice',
-            type: 'combo',
-            discount: '15%',
-            minSpend: 'Buy by Combo'
-        },
-        {
-            id: 4,
-            code: 'VIPBEAN',
-            title: 'Birthday Gift for Members',
-            description: 'Get a 50k discount for members with birthdays in July.',
-            expiry: 'Expiration: 31/07/2026',
-            type: 'member',
-            discount: '50K',
-            minSpend: 'Membership level Bronze or higher'
-        }
-    ];
+    useEffect(() => {
+        const fetchPromotion = async () => {
+            try {
+                const response = await getAllPromosApi();
+
+                const result = response?.data;
+
+                setPromotion(result);
+            } catch (error) {
+                console.error(error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchPromotion();
+    }, []);
 
     const handleCopyCode = (code) => {
         navigator.clipboard.writeText(code);
         message.success(`Code has been copied successfully: ${code}!`);
     };
-
-    const filteredPromos = activeTab === 'all'
-        ? promoList
-        : promoList.filter(promo => promo.type === activeTab);
-
-    const tabItems = [
-        { key: 'all', label: 'All Offers' },
-        { key: 'voucher', label: 'Discount Code' },
-        { key: 'combo', label: 'Combo / Same Price' },
-        { key: 'member', label: 'VIP Privileges' },
-    ];
 
     return (
         <div className="min-h-screen bg-light-bg py-12 px-4 text-light-text">
@@ -78,24 +44,14 @@ const OfferPromotions = () => {
                     </p>
                 </div>
 
-                <div className="flex justify-center mb-8">
-                    <Tabs
-                        activeKey={activeTab}
-                        onChange={(key) => setActiveTab(key)}
-                        items={tabItems}
-                        className="w-full max-w-xl text-center [&_.ant-tabs-tab-active_.ant-tabs-tab-btn]:text-primary-500! [&_.ant-tabs-ink-bar]:bg-primary-500!"
-                    />
-                </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {filteredPromos.map((promo) => (
+                    {promotion.map((promo) => (
                         <div
                             key={promo.id}
-                            className="flex bg-white rounded-2xl border border-gray-100 shadow-3xs overflow-hidden h-36 relative group hover:shadow-xs transition-shadow duration-300"
+                            className="flex bg-white rounded-2xl border border-[#2a0614] shadow-3xs overflow-hidden h-36 relative group hover:shadow-xs transition-shadow duration-300"
                         >
                             <div className="w-28 sm:w-32 bg-[#2a0614] text-white flex flex-col justify-center items-center p-3 text-center border-r-2 border-dashed border-gray-200 relative">
-                                <span className="text-2xl sm:text-3xl font-black tracking-tighter">{promo.discount}</span>
-                                <span className="text-3xs uppercase tracking-wider text-white/70 mt-1 font-semibold">{promo.minSpend}</span>
+                                <span className="text-2xl sm:text-3xl font-black tracking-tighter">{promo.value}%</span>
 
                                 <div className="absolute -top-2 -right-2 w-4 h-4 bg-light-bg rounded-full border border-gray-100"></div>
                                 <div className="absolute -bottom-2 -right-2 w-4 h-4 bg-light-bg rounded-full border border-gray-100"></div>
@@ -105,20 +61,31 @@ const OfferPromotions = () => {
                                 <div>
                                     <div className="flex justify-between items-start gap-2">
                                         <h3 className="font-bold text-sm sm:text-base text-gray-800 line-clamp-1 group-hover:text-primary-500 transition-colors">
-                                            {promo.title}
+                                            {promo.name}
                                         </h3>
-                                        <Tooltip title={promo.description}>
-                                            <InfoCircleOutlined className="text-gray-400 text-xs cursor-pointer hover:text-gray-600" />
-                                        </Tooltip>
+                                        <div className="flex items-center gap-1.5">
+                                            <Badge
+                                                status={promo.isActive ? "success" : "default"}
+                                                text={
+                                                    <span className={promo.isActive ? "text-green-600 font-medium" : "text-gray-500"}>
+                                                        {promo.isActive ? "Active" : "Inactive"}
+                                                    </span>
+                                                }
+                                            />
+
+                                            <Tooltip title={promo.isActive ? "The program is currently being implemented." : "The program has been hidden or expired."}>
+                                                <InfoCircleOutlined className="text-gray-400 text-xs cursor-pointer hover:text-gray-600 dynamic-pulse" />
+                                            </Tooltip>
+                                        </div>
                                     </div>
                                     <p className="text-2xs sm:text-xs text-light-text-secondary line-clamp-2 mt-1 pr-2">
-                                        {promo.description}
+                                        Quantity: {promo.usedCount}/{promo.usageLimit}
                                     </p>
                                 </div>
 
                                 <div className="flex justify-between items-center pt-2 border-t border-gray-50/80">
                                     <span className="text-3xs text-gray-400 flex items-center gap-1">
-                                        <ClockCircleOutlined /> {promo.expiry}
+                                        <ClockCircleOutlined /> Expires: {dayjs(promo.endDate).format("DD/MM/YYYY")}
                                     </span>
 
                                     <Button
@@ -136,9 +103,9 @@ const OfferPromotions = () => {
                     ))}
                 </div>
 
-                {filteredPromos.length === 0 && (
+                {promotion.length === 0 && (
                     <div className="text-center py-12 text-gray-400 text-sm">
-                        Currently, there are no promotional programs in this category.                    
+                        Currently, there are no promotional programs in this category.
                     </div>
                 )}
             </div>

@@ -59,7 +59,7 @@ export const promotionService = {
             throw new Error("PROMO_EXISTS");
         }
 
-        const newPromo = new promotionRepository.create({
+        const newPromo = await promotionRepository.create({
             ...promoData,
             code: formattedCode,
             usageLimit: promoData.usageLimit || 10 

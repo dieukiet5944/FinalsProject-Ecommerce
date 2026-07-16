@@ -24,15 +24,14 @@ requiredEnvs.forEach((env) => {
 });
 
 if (missingEnvs.length > 0) {
-    console.error("\n❌ [CRITICAL ERROR] Missing or empty required environment variables:");
+    console.error("\n [CRITICAL ERROR] Missing or empty required environment variables:");
     console.error("----------------------------------------------------------------");
-    missingEnvs.forEach(env => console.error(`   👉 ${env}`));
+    missingEnvs.forEach(env => console.error(`  ${env}`));
     console.error("----------------------------------------------------------------");
-    console.error("💡 Please check your .env file. Server lifecycle aborted.\n");
+    console.error("Please check your .env file. Server lifecycle aborted.\n");
     process.exit(1); 
 }
 
-console.log("✅ [SUCCESS] All 11 environment variables validated successfully!");
 
 const env = {
     PORT: parseInt(process.env.PORT, 10) || 8080,
